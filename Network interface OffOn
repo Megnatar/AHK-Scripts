@@ -30,7 +30,5 @@ IfWinExist, ahk_group NetAccess
 	WinWaitClose, ahk_group NetAccess
 	IfWinNotExist, ahk_group NetAccess
 	runwait, %comspec% /c netsh.exe interface set interface name="Ethernet" admin=Disable, %SystemRoot%\System32\,Hide
-	else
-		return
 }
 return
