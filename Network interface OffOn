@@ -1,0 +1,36 @@
+#NoEnv  
+#Persistent
+#NoTrayIcon
+SetWorkingDir %A_ScriptDir% 
+DetectHiddenWindows, on
+SetBatchLines, -1
+ListLines, off
+
+;Making Netshell turn off my adapter on script launch. You could use the command in a shortcut to manually Enable/Disable you're interface. Change the name of "Ethernet" to whatever you're adapter is named.
+RunWait, %comspec% /c netsh.exe interface set interface name="Ethernet" admin=Disable, %SystemRoot%\System32\,Hide 
+
+;Setting up group "NetAccess" holding a application pool that are allowed network access.
+GroupAdd, NetAccess, ahk_class MozillaWindowClass
+GroupAdd, NetAccess, ahk_class QWidget           
+GroupAdd, NetAccess, ahk_class CabinetWClass Windows Update 
+GroupAdd, NetAccess, ahk_class Lib_DxGUIDxWindow   
+GroupAdd, NetAccess, ahk_class MainWindowClass
+GroupAdd, NetAccess, ahk_class SQMainFrame
+
+SetTimer, ChkAppRunning, 150
+return
+
+ChkAppRunning:
+IfWinNotExist, ahk_group NetAccess
+return
+IfWinExist, ahk_group NetAccess
+{
+	WinActivate
+	runwait, %comspec% /c netsh.exe interface set interface name="Ethernet" admin=Enable, %SystemRoot%\System32\,Hide
+	WinWaitClose, ahk_group NetAccess
+	IfWinNotExist, ahk_group NetAccess
+	runwait, %comspec% /c netsh.exe interface set interface name="Ethernet" admin=Disable, %SystemRoot%\System32\,Hide
+	else
+		return
+}
+return
