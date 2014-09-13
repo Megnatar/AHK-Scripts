@@ -12,7 +12,7 @@ RunWait, %comspec% /c netsh.exe interface set interface name="Ethernet" admin=Di
 ;Setting up group "NetAccess" holding a application pool that are allowed network access.
 GroupAdd, NetAccess, ahk_class MozillaWindowClass
 GroupAdd, NetAccess, ahk_class QWidget           
-GroupAdd, NetAccess, ahk_class CabinetWClass Windows Update 
+GroupAdd, NetAccess, Windows Update 
 GroupAdd, NetAccess, ahk_class Lib_DxGUIDxWindow   
 GroupAdd, NetAccess, ahk_class MainWindowClass
 GroupAdd, NetAccess, ahk_class SQMainFrame
