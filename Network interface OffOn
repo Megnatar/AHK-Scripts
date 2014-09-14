@@ -6,6 +6,8 @@ DetectHiddenWindows, on
 SetBatchLines, -1
 ListLines, off
 
+
+
 GetIfName() {
     Nic := Object()
     objWMIService := ComObjGet("winmgmts:{impersonationLevel = impersonate}!\\.\root\cimv2")
@@ -21,6 +23,8 @@ GetIfName() {
 }
 For NicName, IP in GetIfName() { 
 }
+
+;WAIT I NEED TO DO SOME INI OPERATIONS FIRST TO STORE FOUND ADAPETERNAME! BECAUSE %NIC% WIL RETURN ADAPTER INDEX-NR ONCE DISABLED  
 
 RunWait, %comspec% /c netsh.exe interface set interface name=%NicName% admin=Disable, %SystemRoot%\System32\,Hide 
 
