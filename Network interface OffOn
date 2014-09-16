@@ -6,8 +6,6 @@ DetectHiddenWindows, on
 SetBatchLines, -1
 ListLines, off
 
-
-
 GetIfName() {
     Nic := Object()
     objWMIService := ComObjGet("winmgmts:{impersonationLevel = impersonate}!\\.\root\cimv2")
