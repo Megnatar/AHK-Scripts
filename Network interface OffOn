@@ -1,25 +1,27 @@
 #NoEnv  
 #Persistent
-;#NoTrayIcon
+#NoTrayIcon
 SetWorkingDir %A_ScriptDir% 
 DetectHiddenWindows, on
 SetBatchLines, -1
 ListLines, off
 
-GetIfName() {
-    Nic := Object()
-    objWMIService := ComObjGet("winmgmts:{impersonationLevel = impersonate}!\\.\root\cimv2")
-    colItems := objWMIService.ExecQuery("SELECT * FROM Win32_NetworkAdapter")._NewEnum, colItems[objItem]
-    While (colItems[objItem])
-        Nic.Insert(objItem.InterfaceIndex,objItem.NetConnectionID)
-    For index, name in Nic {
-        colItems := objWMIService.ExecQuery("SELECT * FROM Win32_NetworkAdapterConfiguration WHERE InterfaceIndex = '" index "'")._NewEnum, colItems[objItem]
-        If (name && objItem.IPAddress[0])
-            nic.Insert(name,objItem.IPAddress[0])
+NetConnectionID()
+{
+    for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE DeviceID = 1")
+    {
+        if (objItem.DeviceID = 1 )
+        {
+            return, % {1 :ObjItem.NetConnectionID[0]}
+        }
     }
-  Return Nic
 }
-For NicName, IP in GetIfName() { 
+
+for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE DeviceID = 1")
+{
+      if (objItem.DeviceID = 1 ) {
+        NicName := objItem.NetConnectionID[0]
+      }
 }
 
 If NicName is not number
@@ -35,13 +37,14 @@ if NicName is number
 }
 
 GroupAdd, NetAccess, ahk_class MozillaWindowClass
-GroupAdd, NetAccess, ahk_class QWidget           
+GroupAdd, NetAccess, ahk_class MozillaDialogClass
 GroupAdd, NetAccess, Windows Update 
-GroupAdd, NetAccess, ahk_class Lib_DxGUIDxWindow   
-GroupAdd, NetAccess, ahk_class MainWindowClass
-GroupAdd, NetAccess, ahk_class SQMainFrame
+GroupAdd, NetAccess, AutoHotkey Setup
+GroupAdd, NetAccess, SciTE4AutoHotkey Updater ahk_exe InternalAHK.exe
+GroupAdd, NetAccess, ahk_class QWidget      
+GroupAdd, NetAccess, Extensions and Updates ahk_exe devenv.exe
 
-SetTimer, ChkAppRunning, 250
+SetTimer, ChkAppRunning, 100
 return
 
 ChkAppRunning:
@@ -50,10 +53,8 @@ return
 IfWinExist, ahk_group NetAccess
 {
 	runwait, %comspec% /c netsh.exe interface set interface name=%NicName% admin=Enable, %SystemRoot%\System32\,Hide
-	WinActivate
 	WinWaitClose, ahk_group NetAccess
 	IfWinNotExist, ahk_group NetAccess
 	runwait, %comspec% /c netsh.exe interface set interface name=%NicName% admin=Disable, %SystemRoot%\System32\,Hide
 }
 return
-
