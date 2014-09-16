@@ -24,9 +24,18 @@ GetIfName() {
 For NicName, IP in GetIfName() { 
 }
 
-;WAIT I NEED TO DO SOME INI OPERATIONS FIRST TO STORE FOUND ADAPETERNAME! NOW %NicName% WIL RETURN ADAPTER INDEX-NR ONCE DISABLED  
+If NicName is not number
+{
+    IniWrite, %NicName%, settings.ini, AdpterSettins, NetConnectionID
+    RunWait, %comspec% /c netsh.exe interface set interface name=%NicName% admin=Disable, %SystemRoot%\System32\,Hide 
+}
+if NicName is number
+{   
+    Nicname =
+    iniread, NicName, Settings.ini, AdpterSettins, NetConnectionID
+    runwait, %comspec% /c netsh.exe interface set interface name=%NicName%  admin=Enable, %SystemRoot%\System32\,Hide
+}
 
-RunWait, %comspec% /c netsh.exe interface set interface name=%NicName% admin=Disable, %SystemRoot%\System32\,Hide 
 
 GroupAdd, NetAccess, ahk_class MozillaWindowClass
 GroupAdd, NetAccess, ahk_class QWidget           
