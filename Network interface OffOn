@@ -24,7 +24,7 @@ For NicName, IP in GetIfName() {
 
 If NicName is not number
 {
-    IniWrite, NicName, settings.ini, AdpterSettins, NetConnectionID
+    IniWrite, %NicName%, settings.ini, AdpterSettins, NetConnectionID
     RunWait, %comspec% /c netsh.exe interface set interface name=%NicName% admin=Disable, %SystemRoot%\System32\,Hide 
 }
 if NicName is number
@@ -34,7 +34,6 @@ if NicName is number
     runwait, %comspec% /c netsh.exe interface set interface name=%NicName%  admin=Enable, %SystemRoot%\System32\,Hide
 }
 
-
 GroupAdd, NetAccess, ahk_class MozillaWindowClass
 GroupAdd, NetAccess, ahk_class QWidget           
 GroupAdd, NetAccess, Windows Update 
@@ -42,7 +41,7 @@ GroupAdd, NetAccess, ahk_class Lib_DxGUIDxWindow
 GroupAdd, NetAccess, ahk_class MainWindowClass
 GroupAdd, NetAccess, ahk_class SQMainFrame
 
-SetTimer, ChkAppRunning, 150
+SetTimer, ChkAppRunning, 250
 return
 
 ChkAppRunning:
