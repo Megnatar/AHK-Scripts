@@ -24,7 +24,7 @@ For NicName, IP in GetIfName() {
 
 If NicName is not number
 {
-    IniWrite, %NicName%, settings.ini, AdpterSettins, NetConnectionID
+    IniWrite, NicName, settings.ini, AdpterSettins, NetConnectionID
     RunWait, %comspec% /c netsh.exe interface set interface name=%NicName% admin=Disable, %SystemRoot%\System32\,Hide 
 }
 if NicName is number
