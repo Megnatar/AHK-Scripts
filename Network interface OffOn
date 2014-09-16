@@ -24,17 +24,7 @@ for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win
       }
 }
 
-If NicName is not number
-{
-    IniWrite, %NicName%, settings.ini, AdpterSettins, NetConnectionID
-    RunWait, %comspec% /c netsh.exe interface set interface name=%NicName% admin=Disable, %SystemRoot%\System32\,Hide 
-}
-if NicName is number
-{   
-    Nicname =
-    iniread, NicName, Settings.ini, AdpterSettins, NetConnectionID
-    runwait, %comspec% /c netsh.exe interface set interface name=%NicName%  admin=Enable, %SystemRoot%\System32\,Hide
-}
+RunWait, %comspec% /c netsh.exe interface set interface name=%NicName% admin=Disable, %SystemRoot%\System32\,Hide 
 
 GroupAdd, NetAccess, ahk_class MozillaWindowClass
 GroupAdd, NetAccess, ahk_class MozillaDialogClass
