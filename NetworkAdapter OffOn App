@@ -1,11 +1,10 @@
 #NoEnv  
 #Persistent
-; #NoTrayIcon
+#NoTrayIcon
 SetWorkingDir %A_ScriptDir% 
 DetectHiddenWindows, on
-DetectHiddenText, on
 SetBatchLines, -1
-;ListLines, off
+ListLines, off
 
 NetConnectionID()
 {
@@ -24,6 +23,7 @@ for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win
         NicName := objItem.NetConnectionID[0]
     }
 }
+
 GroupAdd, NetAccess, ahk_class MozillaWindowClass
 GroupAdd, NetAccess, ahk_class MozillaDialogClass
 GroupAdd, NetAccess, Windows Update 
