@@ -1,10 +1,11 @@
 #NoEnv  
 #Persistent
-#NoTrayIcon
+; #NoTrayIcon
 SetWorkingDir %A_ScriptDir% 
 DetectHiddenWindows, on
+DetectHiddenText, on
 SetBatchLines, -1
-ListLines, off
+;ListLines, off
 
 NetConnectionID()
 {
@@ -16,16 +17,13 @@ NetConnectionID()
         }
     }
 }
-
 for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE DeviceID = 1")
 {
-      if (objItem.DeviceID = 1 ) {
+    if (objItem.DeviceID = 1 ) 
+    {
         NicName := objItem.NetConnectionID[0]
-      }
+    }
 }
-
-RunWait, %comspec% /c netsh.exe interface set interface name=%NicName% admin=Disable, %SystemRoot%\System32\,Hide 
-
 GroupAdd, NetAccess, ahk_class MozillaWindowClass
 GroupAdd, NetAccess, ahk_class MozillaDialogClass
 GroupAdd, NetAccess, Windows Update 
@@ -33,18 +31,21 @@ GroupAdd, NetAccess, AutoHotkey Setup
 GroupAdd, NetAccess, SciTE4AutoHotkey Updater ahk_exe InternalAHK.exe
 GroupAdd, NetAccess, ahk_class QWidget      
 GroupAdd, NetAccess, Extensions and Updates ahk_exe devenv.exe
+GroupAdd, NetAccess,  ahk_exe  NetworkMiner.exe
 
-SetTimer, ChkAppRunning, 100
-return
-
-ChkAppRunning:
-IfWinNotExist, ahk_group NetAccess
-return
-IfWinExist, ahk_group NetAccess
+Loop 
 {
-	runwait, %comspec% /c netsh.exe interface set interface name=%NicName% admin=Enable, %SystemRoot%\System32\,Hide
-	WinWaitClose, ahk_group NetAccess
-	IfWinNotExist, ahk_group NetAccess
-	runwait, %comspec% /c netsh.exe interface set interface name=%NicName% admin=Disable, %SystemRoot%\System32\,Hide
+    IfWinNotExist, ahk_group NetAccess
+    {
+        runwait, %comspec% /c netsh.exe interface set interface name=%NicName% admin=Disable, %SystemRoot%\System32\,Hide
+        WinWait, ahk_group NetAccess
+        WinActivate
+    }
+    IfWinExist, ahk_group NetAccess   
+    {
+        WinActivate, ahk_group NetAccess
+        runwait, %comspec% /c netsh.exe interface set interface name=%NicName% admin=Enable, %SystemRoot%\System32\,Hide
+        WinWaitClose, ahk_group NetAccess 
+    }
 }
 return
