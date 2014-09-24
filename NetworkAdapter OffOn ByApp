@@ -50,10 +50,10 @@ IfWinExist, ahk_Group NetAccess
 }
 IfWinNotExist, ahk_Group NetAccess
 {
-    if (CheckRun = 1)
+    if (CheckRun <> !CheckRun)
     {
         run, %comspec% /c netsh.exe interface set interface name=%NicName2% admin=Disable, %SystemRoot%\System32\,Hide
-        CheckRun--
+        CheckRun =
     }
     else
     {
