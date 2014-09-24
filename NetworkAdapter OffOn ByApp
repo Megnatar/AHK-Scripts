@@ -27,18 +27,19 @@ for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win
 }
 
 GroupAdd, NetAccess, ahk_exe firefox.exe
-GroupAdd, NetAccess, Microsoft Internet Explorer
-GroupAdd, NetAccess, Windows Update ahk_exe explorer.exe
-GroupAdd, NetAccess, Extensions and Updates ahk_exe devenv.exe
-;etc......
+GroupAdd, NetAccess, ahk_exe TRANSM~1.EXE
+GroupAdd, NetAccess, ahk_exe vlc.exe
+GroupAdd, NetAccess,  ahk_exe  NetworkMiner.ex
 
-Settimer, AdapterActivity, 350
+CheckRun = 0
+
+Settimer, AdapterActivity, 500
 Return
 
 AdapterActivity:
 IfWinExist, ahk_Group NetAccess
 {
-    if (CheckRun <> CheckRun) 
+    if CheckRun = 0 
     {
         run, %comspec% /c netsh.exe interface set interface name=%NicName2% admin=Enable, %SystemRoot%\System32\,Hide
         CheckRun++
@@ -50,10 +51,10 @@ IfWinExist, ahk_Group NetAccess
 }
 IfWinNotExist, ahk_Group NetAccess
 {
-    if (CheckRun <> !CheckRun)
+    if CheckRun = 1
     {
         run, %comspec% /c netsh.exe interface set interface name=%NicName2% admin=Disable, %SystemRoot%\System32\,Hide
-        CheckRun =
+        CheckRun--
     }
     else
     {
