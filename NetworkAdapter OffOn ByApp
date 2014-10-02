@@ -1,60 +1,66 @@
 #NoEnv  
 #Persistent
 #NoTrayIcon
+SetTitleMatchMode, RegEx
 DetectHiddenWindows, on
 SetBatchLines, -1
 ListLines, off
 
-NetConnectionID()
+for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE PhysicalAdapter  = True")
 {
-    for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE DeviceID = 1").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE DeviceID = 2")
-            if (objItem.DeviceID = 1 && 2)
-            {
-                return, % {1 : ObjItem.NetConnectionID[0]},{2 : ObjItem.NetConnectionID[0]}
-            }
-}
-for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE DeviceID = 1 ")
-     for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE DeviceID = 2")
-{
-    if (objItem.DeviceID = 1 ) 
+    if (objItem.PNPDeviceID != "ROOT\NET\0000")
         {
            NicName := objItem.NetConnectionID[0]
         }
-        else (objItem.DeviceID =  2) 
-        {
-           NicName2 := objItem.NetConnectionID[0]
-        }
+    NicToToggle =%Nicname%
 }
 
+Run, %comspec% /c netsh.exe interface set interface name=%NicToToggle% admin=Disable, %A_WinDir%\system32\,Hide
+ 
+;ToDo: NetAccess needs to be a file containing authorized applications. 
 GroupAdd, NetAccess, ahk_exe firefox.exe
-GroupAdd, NetAccess, ahk_exe TRANSM~1.EXE
-GroupAdd, NetAccess, ahk_exe vlc.exe
 GroupAdd, NetAccess,  ahk_exe  NetworkMiner.ex
+GroupAdd, NetAccess,  ahk_exe IPNetInfo.exe
+GroupAdd, NetAccess,  Windows Update ahk_exe Explorer.exe
+;Change VLC option --input-title-format $Z  to --input-title-format $t $g $p for station name to show in title.
+GroupAdd, NetAccess, Radio .* ahk_exe vlc.exe  
 
-CheckRun = 0
 
-Settimer, AdapterActivity, 500
-Return
+Settimer, AdapterNotActive, 1000
+return
 
-AdapterActivity:
+AdapterNotActive:
 IfWinExist, ahk_Group NetAccess
 {
-    if CheckRun = 0 
+    ;ToDo...  get procces, force w8 till connection is up.
+    WinGet, Proccess_ID, PID, ahk_Group NetAccess
+    
+    if (CheckRun <= 0)
     {
-        run, %comspec% /c netsh.exe interface set interface name=%NicName2% admin=Enable, %SystemRoot%\System32\,Hide
+        Settimer, AdapterNotActive, off
+        run, %comspec% /c netsh.exe interface set interface name=%NicToToggle% admin=Enable, %A_WinDir%\system32\,Hide
         CheckRun++
+        Settimer, AdapterActive, 1000
     }
     else
     {
         return
     }
 }
+return
+
+Settimer, AdapterActive, 1000
+return
+
+AdapterActive:
 IfWinNotExist, ahk_Group NetAccess
 {
-    if CheckRun = 1
+    if (CheckRun >= 1)
     {
-        run, %comspec% /c netsh.exe interface set interface name=%NicName2% admin=Disable, %SystemRoot%\System32\,Hide
+        Settimer, AdapterActive, off
+        run, %comspec% /c netsh.exe interface set interface name=%NicToToggle% admin=Disable, %A_WinDir%\system32\,Hide
         CheckRun--
+        Settimer, AdapterNotActive, 1000
     }
     else
     {
