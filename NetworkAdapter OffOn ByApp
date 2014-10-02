@@ -6,6 +6,8 @@ DetectHiddenWindows, on
 SetBatchLines, -1
 ListLines, off
 
+;ToDo: Systray icon showing connection status.
+
 for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE PhysicalAdapter  = True")
 {
 
@@ -16,7 +18,7 @@ for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win
     NicToToggle = %Nicname%
 }
 
-;ToDo: Change the netshell command to ComObject driver class
+;ToDo: Change the netshell command to ComObject driver class for interface toggle.
 Runwait, %comspec% /c netsh.exe interface set interface name=%NicToToggle% admin=Disable, %A_WinDir%\system32\,Hide
  
 ;ToDo: NetAccess needs to be a file containing authorized applications. 
@@ -26,7 +28,6 @@ GroupAdd, NetAccess,  ahk_exe IPNetInfo.exe
 GroupAdd, NetAccess,  Windows Update ahk_exe Explorer.exe
 ;Change VLC option --input-title-format $Z  to --input-title-format $t $g $p for station name to show in title.
 GroupAdd, NetAccess, Radio .* ahk_exe vlc.exe  
-
 
 AdapterActive:
 IfWinNotExist, ahk_Group NetAccess
