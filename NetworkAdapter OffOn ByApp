@@ -28,45 +28,37 @@ GroupAdd, NetAccess,  Windows Update ahk_exe Explorer.exe
 GroupAdd, NetAccess, Radio .* ahk_exe vlc.exe  
 
 
-Settimer, AdapterNotActive, 1000
-return
-
-AdapterNotActive:
-IfWinExist, ahk_Group NetAccess
-{
-    ;ToDo...  get procces, force w8 till connection is up.
-    WinGet, Proccess_ID, PID, ahk_Group NetAccess
-    
-    if (CheckRun <= 0)
-    {
-        Settimer, AdapterNotActive, off
-        Runwait, %comspec% /c netsh.exe interface set interface name=%NicToToggle% admin=Enable, %A_WinDir%\system32\,Hide
-        CheckRun++
-        Settimer, AdapterActive, 1000
-    }
-    else
-    {
-        return
-    }
-}
-return
-
-Settimer, AdapterActive, 1000
-return
-
 AdapterActive:
 IfWinNotExist, ahk_Group NetAccess
 {
     if (CheckRun >= 1)
     {
         Settimer, AdapterActive, off
-        Runwait, %comspec% /c netsh.exe interface set interface name=%NicToToggle% admin=Disable, %A_WinDir%\system32\,Hide
+        RunWait, %comspec% /c netsh.exe interface set interface name=%NicToToggle% admin=Disable, %A_WinDir%\system32\,Hide
         CheckRun--
+        Settimer, AdapterNotActive, on
+    }
+    if (CheckRun <= 0)
+    {
         Settimer, AdapterNotActive, 1000
     }
-    else
+}
+return
+
+AdapterNotActive:
+IfWinExist, ahk_Group NetAccess
+{
+   ;WinGet, Proccess_ID, PID,  NetAccess
+    if (CheckRun <= 0)
     {
-        return
+        Settimer, AdapterNotActive, off
+        RunWait, %comspec% /c netsh.exe interface set interface name=%NicToToggle% admin=Enable, %A_WinDir%\system32\,Hide
+        CheckRun++
+        Settimer, AdapterActive, on
+    }
+    if (CheckRun >= 1)
+    {
+        Settimer, AdapterActive, 1000
     }
 }
 return
