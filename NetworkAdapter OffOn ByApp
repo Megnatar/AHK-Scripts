@@ -48,7 +48,6 @@ return
 AdapterNotActive:
 IfWinExist, ahk_Group NetAccess
 {
-   ;WinGet, Proccess_ID, PID,  NetAccess
     if (CheckRun <= 0)
     {
         Settimer, AdapterNotActive, off
