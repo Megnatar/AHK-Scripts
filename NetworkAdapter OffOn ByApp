@@ -8,14 +8,16 @@ ListLines, off
 
 for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE PhysicalAdapter  = True")
 {
+
     if (objItem.PNPDeviceID != "ROOT\NET\0000")
         {
            NicName := objItem.NetConnectionID[0]
         }
-    NicToToggle =%Nicname%
+    NicToToggle = %Nicname%
 }
 
-Run, %comspec% /c netsh.exe interface set interface name=%NicToToggle% admin=Disable, %A_WinDir%\system32\,Hide
+;ToDo: Change the netshell command to ComObject driver class
+Runwait, %comspec% /c netsh.exe interface set interface name=%NicToToggle% admin=Disable, %A_WinDir%\system32\,Hide
  
 ;ToDo: NetAccess needs to be a file containing authorized applications. 
 GroupAdd, NetAccess, ahk_exe firefox.exe
@@ -38,7 +40,7 @@ IfWinExist, ahk_Group NetAccess
     if (CheckRun <= 0)
     {
         Settimer, AdapterNotActive, off
-        run, %comspec% /c netsh.exe interface set interface name=%NicToToggle% admin=Enable, %A_WinDir%\system32\,Hide
+        Runwait, %comspec% /c netsh.exe interface set interface name=%NicToToggle% admin=Enable, %A_WinDir%\system32\,Hide
         CheckRun++
         Settimer, AdapterActive, 1000
     }
@@ -58,7 +60,7 @@ IfWinNotExist, ahk_Group NetAccess
     if (CheckRun >= 1)
     {
         Settimer, AdapterActive, off
-        run, %comspec% /c netsh.exe interface set interface name=%NicToToggle% admin=Disable, %A_WinDir%\system32\,Hide
+        Runwait, %comspec% /c netsh.exe interface set interface name=%NicToToggle% admin=Disable, %A_WinDir%\system32\,Hide
         CheckRun--
         Settimer, AdapterNotActive, 1000
     }
