@@ -1,0 +1,68 @@
+#NoEnv  
+#SingleInstance force
+SendMode Input 
+SetWorkingDir %A_ScriptDir% 
+SetBatchLines, -1 
+ListLines, off 
+detectHiddenWindows, on
+
+GameExe = ""
+GamePath = ""
+SomeKey = ""
+Proccess_ID = ""
+
+IfWinExist, ahk_exe %GameExe%
+{   
+    WinActivate, ahk_exe %GameExe%
+    WinWaitActive, ahk_exe %GameExe%
+    WinGet, Proccess_ID, PID, ahk_exe %GameExe%,, 
+} 
+Else 
+#IfWinNotExist, ahk_exe GameExe
+{
+    runwait,%GameExe%, %GamePath%,,Proccess_ID   
+}
+
+SetTimer ChkProcces, 5000
+Return
+
+#IfWinActive, ahk_exe GameExe
+{
+bAutorun =
+Xbutton2::                                ;Toggle W usually handy for autorun                         
+If (bAutorun := !bAutorun) {
+    send {w down}
+}Else{
+    send {w up}
+}
+Return
+
+Rbutton:: 
+keywait, Rbutton, T0.32
+if errorlevel = 1 
+{
+    while GetKeyState("Rbutton", "P")     ;KeyPress
+    {
+        send, {Rbutton down}        
+        KeyWait, Rbutton 
+    }
+    send, {Rbutton up}  
+return 
+}
+else
+keywait, Rbutton, D T0.32                 ;Double clik
+if errorlevel = 0          
+{
+    send, {somekey} 
+    return               
+ }
+else                     
+Send, {click right}                       ;Clicked once
+return 
+}
+
+ChkProcces:
+	Process Exist, %Proccess_ID%
+	If ErrorLevel = 0
+		Exitapp
+Return
