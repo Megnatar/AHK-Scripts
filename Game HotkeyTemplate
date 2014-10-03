@@ -11,6 +11,8 @@ GamePath = ""
 SomeKey = ""
 Proccess_ID = ""
 
+GroupAdd, ContextVar, ahk_exe %GameExe%
+
 IfWinExist, ahk_exe %GameExe%
 {   
     WinActivate, ahk_exe %GameExe%
@@ -18,7 +20,7 @@ IfWinExist, ahk_exe %GameExe%
     WinGet, Proccess_ID, PID, ahk_exe %GameExe%,, 
 } 
 Else 
-#IfWinNotExist, ahk_exe GameExe
+#IfWinNotExist, ahk_group ContextVar
 {
     runwait,%GameExe%, %GamePath%,,Proccess_ID   
 }
@@ -26,7 +28,7 @@ Else
 SetTimer ChkProcces, 5000                 ;Close script when procced is not active
 Return
 
-#IfWinActive, ahk_exe GameExe
+#IfWinActive, ahk_group ContextVar
 {
 bAutorun =
 Xbutton2::                                ;Toggle W, usually handy for autorun and so on.                         
