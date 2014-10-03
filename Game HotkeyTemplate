@@ -23,13 +23,13 @@ Else
     runwait,%GameExe%, %GamePath%,,Proccess_ID   
 }
 
-SetTimer ChkProcces, 5000
+SetTimer ChkProcces, 5000                 ;Close script when procced is not active
 Return
 
 #IfWinActive, ahk_exe GameExe
 {
 bAutorun =
-Xbutton2::                                ;Toggle W usually handy for autorun                         
+Xbutton2::                                ;Toggle W, usually handy for autorun and so on.                         
 If (bAutorun := !bAutorun) {
     send {w down}
 }Else{
@@ -41,7 +41,7 @@ Rbutton::
 keywait, Rbutton, T0.32
 if errorlevel = 1 
 {
-    while GetKeyState("Rbutton", "P")     ;KeyPress
+    while GetKeyState("Rbutton", "P")     ;Key is pressed down
     {
         send, {Rbutton down}        
         KeyWait, Rbutton 
@@ -50,7 +50,7 @@ if errorlevel = 1
 return 
 }
 else
-keywait, Rbutton, D T0.32                 ;Double clik
+keywait, Rbutton, D T0.32                 ;Double cliked
 if errorlevel = 0          
 {
     send, {somekey} 
@@ -61,8 +61,8 @@ Send, {click right}                       ;Clicked once
 return 
 }
 
-ChkProcces:
-	Process Exist, %Proccess_ID%
-	If ErrorLevel = 0
-		Exitapp
+ChkProcces:                               ;Close script when procced is not active
+Process, Exist, %Proccess_ID%
+If ErrorLevel = 0
+Exitapp
 Return
