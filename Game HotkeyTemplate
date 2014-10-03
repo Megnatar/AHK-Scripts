@@ -11,7 +11,7 @@ GamePath = ""
 SomeKey = ""
 Proccess_ID = ""
 
-GroupAdd, ContextVar, ahk_exe %GameExe%
+GroupAdd, KeysForWindow, ahk_exe %GameExe% ;#IfWin does not support variable names. Workaround 
 
 IfWinExist, ahk_exe %GameExe%
 {   
@@ -20,22 +20,40 @@ IfWinExist, ahk_exe %GameExe%
     WinGet, Proccess_ID, PID, ahk_exe %GameExe%,, 
 } 
 Else 
-#IfWinNotExist, ahk_group ContextVar
+If WinNotExist ahk_exe %GameExe%
 {
     runwait,%GameExe%, %GamePath%,,Proccess_ID   
 }
 
-SetTimer ChkProcces, 5000                 ;Close script when procced is not active
+SetTimer ChkProcces, 5000                 ;5 second period for checking proccess
 Return
 
-#IfWinActive, ahk_group ContextVar
+#IfWinActive, ahk_group KeysForWindow
 {
-bAutorun =
+
+bAutorun0 =
+bAutorun1 = 0
+
 Xbutton2::                                ;Toggle W, usually handy for autorun and so on.                         
-If (bAutorun := !bAutorun) {
+If (bAutorun0 := !bAutorun0) {
     send {w down}
 }Else{
     send {w up}
+}
+Return
+
+Xbutton1::                               ;A other way to toggle keys
+If (bAutorun1 = 0)
+{
+	bAutorun1++
+	send {Up down}
+	Return
+}
+If (bAutorun1 = 1)
+{
+	bAutorun1--
+    send {Up up}
+	Return
 }
 Return
 
