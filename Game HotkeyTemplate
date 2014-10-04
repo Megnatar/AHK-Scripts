@@ -60,7 +60,7 @@ Rbutton::
 keywait, Rbutton, T0.32
 if errorlevel = 1 
 {
-    while GetKeyState("Rbutton", "P")     ;Key is pressed down
+    while GetKeyState("Rbutton", "P")     ;Triggers if Key is pressed down
     {
         send, {Rbutton down}&&{SomeOtherKey Down}        
         KeyWait, Rbutton && SomeOtherKey
@@ -69,15 +69,15 @@ if errorlevel = 1
 return 
 }
 else
-keywait, Rbutton, D T0.32                 ;Double cliked
+keywait, Rbutton, D T0.32                 ;Triggers on double cliked
 if errorlevel = 0          
 {
     send, {SomeOtherKey} 
     return               
  }
 else                     
-Send, {click right}                       ;Clicked once
-return 
+Send, {click right}                       ;Triggers when Clicked once
+return Triggers on 
 }
 
 ChkProcces:                               ;Close script when procced isn't active anymore
