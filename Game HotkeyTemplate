@@ -10,14 +10,16 @@ GameExe = ""
 GamePath = ""
 SomeKey = ""
 Proccess_ID = ""
+bAutorun0 = ""
+bAutorun1 = 0
 
-GroupAdd, KeysForWindow, ahk_exe %GameExe% ;#IfWin does not support variable names. Workaround 
+GroupAdd, ForThisWinOnly, ahk_exe %GameExe% ;The #IfWin directive doesn't support variable names. Workaround 
 
 IfWinExist, ahk_exe %GameExe%
 {   
     WinActivate, ahk_exe %GameExe%
     WinWaitActive, ahk_exe %GameExe%
-    WinGet, Proccess_ID, PID, ahk_exe %GameExe%,, 
+    WinGet, Proccess_ID, PID, ahk_exe %GameExe% 
 } 
 Else 
 If WinNotExist ahk_exe %GameExe%
@@ -28,13 +30,10 @@ If WinNotExist ahk_exe %GameExe%
 SetTimer ChkProcces, 5000                 ;5 second period for checking proccess
 Return
 
-#IfWinActive, ahk_group KeysForWindow
+#IfWinActive, ahk_group ForThisWinOnly
 {
 
-bAutorun0 =
-bAutorun1 = 0
-
-Xbutton2::                                ;Toggle W, usually handy for autorun and so on.                         
+Xbutton2::                                ;Toggle W key, usually handy for autorun and so on.                         
 If (bAutorun0 := !bAutorun0) {
     send {w down}
 }Else{
@@ -52,7 +51,7 @@ If (bAutorun1 = 0)
 If (bAutorun1 = 1)
 {
 	bAutorun1--
-    send {Up up}
+    	send {Up up}
 	Return
 }
 Return
@@ -63,17 +62,17 @@ if errorlevel = 1
 {
     while GetKeyState("Rbutton", "P")     ;Key is pressed down
     {
-        send, {Rbutton down}        
-        KeyWait, Rbutton 
+        send, {Rbutton down}&&{SomeOtherKey Down}        
+        KeyWait, Rbutton && SomeOtherKey
     }
-    send, {Rbutton up}  
+    send, {Rbutton up}&&{SomeOtherKey Up}  
 return 
 }
 else
 keywait, Rbutton, D T0.32                 ;Double cliked
 if errorlevel = 0          
 {
-    send, {somekey} 
+    send, {SomeOtherKey} 
     return               
  }
 else                     
@@ -81,7 +80,7 @@ Send, {click right}                       ;Clicked once
 return 
 }
 
-ChkProcces:                               ;Close script when procced is not active
+ChkProcces:                               ;Close script when procced isn't active anymore
 Process, Exist, %Proccess_ID%
 If ErrorLevel = 0
 Exitapp
