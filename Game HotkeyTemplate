@@ -69,7 +69,7 @@ if errorlevel = 1
 return 
 }
 else
-keywait, Rbutton, D T0.32                 ;Triggers on double cliked
+keywait, Rbutton, D T0.32                 ;Triggers when Rbutton is double cliked
 if errorlevel = 0          
 {
     send, {SomeOtherKey} 
@@ -85,3 +85,57 @@ Process, Exist, %Proccess_ID%
 If ErrorLevel = 0
 Exitapp
 Return
+
+;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#IfWinExist, ahk_class SciTEWindow
+#IfWinActive, ahk_class SciTEWindow
+
+AfterKeyRelease:
+Secs++
+Return
+
+Lbutton:: 
+SetKeyDelay,20,20
+keywait, Lbutton, T0.25
+if errorlevel = 1 
+{
+    While GetKeyState("Lbutton", "P") 
+    {		
+        if  GetKeyState("Rbutton", "P")
+        {
+	MsgBox, 64, Click Actions, Rbutton and Lbutton down:`n`nHolding down the Right mouse button and then the left one wil execute this part of the while loop. Handy for zooming`, aiming etc etc..., 30
+	KeyWait, Rbutton
+   	;sendplay, {............. Down}        
+        ;sendplay, {............. Up} 
+	KeyWait, Lbutton, D
+	return
+	}
+        else
+        {
+	settimer, AfterKeyRelease, on
+        ;sendplay, {............. Down}    
+        KeyWait, Lbutton
+	settimer, AfterKeyRelease, off
+	MsgBox, 64, Click Actions, Left Button down:`n`nThe Left button was down and again released after: %Secs% seconds`nHowever This part of the while loop was triggerd after 250ms .,30
+        ;sendplay, {............. Up} 
+        return
+        }
+	Break
+    }
+}  
+else 
+keywait, Lbutton, D T0.35
+if errorlevel = 0 
+{
+     MsgBox, 64, Click Actions, Double Click:`n`nSince neighter of the above conditions turns out to be true and a second click was detected with the "D"  option in keywait.,20
+     ;sendplay, {.............}
+}
+else
+{
+     MsgBox, 64, Click Actions, Single mouse Click:`n`nSince neighter of the above conditions turned out to be true., 10  
+     ;sendplay, {click}
+}
+return
+
+
