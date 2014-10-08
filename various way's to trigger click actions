@@ -1,5 +1,5 @@
 ;//////////////////////////Toggle Key's//////////////////////////
-Xbutton2::	           ;Using keywait and errorlevel	
+Xbutton2::	           		;Using keywait and errorlevel	
 KeyWait, w, T
 if  Not errorlevel 
 send {w down}
@@ -16,10 +16,10 @@ send {w up}
 }
 Return
 
-Xbutton2::				;Using a variable and ++/-- operator,to check against variable
+Xbutton2::				;Using a variable and ++/-- operator.
 If (bAutorun = 0)
 {
-	bAutorun1++
+	bAutorun++
 	send {Up down}
 Return
 }
@@ -37,7 +37,7 @@ Space::
 keywait, space, T0.25
 if errorlevel = 1
 {
-	while GetKeyState("space", "P") ;Triggers if Key is pressed down
+	while GetKeyState("space", "P")
 	{
         MsgBox key is down
 	break
@@ -45,7 +45,7 @@ if errorlevel = 1
 return
 }
 else
-keywait, space, D T0.25 ;Triggers when space is double cliked
+keywait, space, D T0.2
 if errorlevel = 0
 {
     MsgBox double click
@@ -58,6 +58,8 @@ else
 return
 
 ;/////Same as above but in combination with a second key held down./////
+;I use them with sendplay or sendevent since sendmode input ignors sekeydelay.
+
 
 AfterKeyRelease:
 Secs++
