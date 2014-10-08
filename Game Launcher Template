@@ -25,21 +25,19 @@ If WinNotExist ahk_exe %GameExe%
 }
 
 SetTimer ChkProcess, 5000                   ;5 second period for checking process
-Return                                      ;Here ends the AutoExecute Section
+Return
+
+;--------------------------AutoExecute Section End--------------------------
 
 #IfWinActive, ahk_group ForThisWinOnly
 {
 ;
-;					                         ;Actions will be put here
+;                                           ;Actions will be placed here
 ;
 }
                     
-ChkProcess:                                   ;Close script when process isn't active anymore
+ChkProcess:                                 ;Close script when process isn't active anymore
 Process, Exist, %Process_ID%
 If ErrorLevel = 0
 Exitapp
 Return
-
-
-
-
