@@ -31,7 +31,7 @@ If (bAutorun = 1)
 }
 ;//////////////////////////Single, Double or Down key state //////////////////////////
 ;Spacebar is used as the trigger key in these key examples.  
-;The rightmouse button will be used as second trigger key when.
+;The rightmousebutton will be used as second trigger key.
 
 Space::
 keywait, space, T0.25
