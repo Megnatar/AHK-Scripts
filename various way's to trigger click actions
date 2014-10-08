@@ -149,7 +149,7 @@ Else
 if Counter > 3
     {
 
-        MsgBox,,,300 milliseconds is to short for the tread to discover all the key presses!`nI've set the value of var EveluationTime to 550Ms. Timing is very importand!!!!`n`nThe script will exit after you press oke.
+        MsgBox,,,420 milliseconds is to short for the tread to discover all the key presses!`nI've set the value of var EveluationTime to 550Ms. Timing is very importand!!!!`n`nThe script will exit after you press oke.
         gosub, ExitScript
     }
 Counter =
