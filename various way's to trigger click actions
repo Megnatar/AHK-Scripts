@@ -1,0 +1,159 @@
+;//////////////////////////Toggle Key's//////////////////////////
+Xbutton2::	           ;Using keywait and errorlevel	
+KeyWait, w, T
+if  Not errorlevel 
+send {w down}
+else
+send {w up}
+Return
+
+
+Xbutton2::				;Using a variable and check against itself if its true or not.
+If (Autorun := !Autorun) {
+send {w down}
+}Else{
+send {w up}
+}
+Return
+
+Xbutton2::				;Using a variable and ++/-- operator,to check against variable
+If (bAutorun = 0)
+{
+	bAutorun1++
+	send {Up down}
+Return
+}
+If (bAutorun = 1)
+{
+	bAutorun--
+	send {Up up}
+	Return
+}
+;//////////////////////////Single, Double or Down key state //////////////////////////
+;Spacebar is used as the trigger key in these key examples.  
+;The rightmouse button will be used as second trigger key when.
+
+Space::
+keywait, space, T0.25
+if errorlevel = 1
+{
+	while GetKeyState("space", "P") ;Triggers if Key is pressed down
+	{
+        MsgBox key is down
+	break
+	}
+return
+}
+else
+keywait, space, D T0.25 ;Triggers when space is double cliked
+if errorlevel = 0
+{
+    MsgBox double click
+return
+}
+else
+{
+    MsgBox single click
+}
+return
+
+;/////Same as above but in combination with a second key held down./////
+
+AfterKeyRelease:
+Secs++
+Return
+
+Space:: 
+SetKeyDelay,20,20
+keywait, Space, T0.25
+if errorlevel = 1 
+{
+    While GetKeyState("Space", "P") 
+    {		
+        if  GetKeyState("Rbutton", "P")
+        {
+            KeyWait, Space, D
+            MsgBox, 64, Click Actions, Rbutton and Space down:`n`nHolding down the right key button and pressing space key`, down or up depenig on keywait`, wil execute this part of the while loop. Handy for zooming`, aiming etc etc..., 30
+		return
+        }
+        else
+        {
+        settimer, AfterKeyRelease, on
+        KeyWait, Space
+        settimer, AfterKeyRelease, off
+        MsgBox, 64, Click Actions, Key down:`n`nThe Left button was down and again released after: %Secs% seconds`nHowever This part of the while loop was triggerd after 250ms .,30
+        return
+        }
+    Break
+    }
+}  
+else 
+keywait, Space, D T0.35
+if errorlevel = 0 
+{
+     MsgBox, 64, Click Actions, Double Click:`n`nSince neighter of the above conditions turns out to be true and a second click was detected with the "D"  option in keywait.,20
+}
+else
+{
+     MsgBox, 64, Click Actions, Single key Click:`n`nSince neighter of the above conditions turned out to be true., 10  
+}
+return
+
+;
+
+;//////////////////////////Single, Double or Tripple key state using timers //////////////////////////
+
+MsgBoxTimeOut = 15
+EveluationTime = 420
+again = 1
+
+Space::
+if Counter 
+{    
+    Counter++
+}
+else
+{
+    Counter = 1
+    SetTimer, CaptureKeyThread, %EveluationTime%
+}
+Return
+
+CaptureKeyThread:
+SetTimer, CaptureKeyThread, off
+if Counter = 1
+    {
+        MsgBox,,,You pressed the key once.`n`nCan you press it twice?,%MsgBoxTimeOut%
+    }
+Else 
+if Counter = 2
+    {
+        MsgBox,,,Yay you pressed the key twice.`n`nNow trie three times!,%MsgBoxTimeOut%
+    }
+Else 
+if Counter = 3
+    {        
+    if again <= 3
+        {
+            MsgBox,,,Well don! You managed to press space 3 times once every 100 milliseconds!`n`nThis attempt NR:%again%,%MsgBoxTimeOut%    
+            again++
+        }
+        else 
+        if again >= 4
+        {
+            MsgBox,,,Again only 3 key presses detected`nYou will never manage to hit 4 times within 300 Ms`nThough... try once more!,%MsgBoxTimeOut%
+            EveluationTime = 550
+        }
+    }
+Else 
+if Counter > 3
+    {
+
+        MsgBox,,,300 milliseconds is to short for the tread to discover all the key presses!`nI've set the value of var EveluationTime to 550Ms. Timing is very importand!!!!`n`nThe script will exit after you press oke.
+        gosub, ExitScript
+    }
+Counter =
+Return
+
+ExitScript:
+ExitApp
