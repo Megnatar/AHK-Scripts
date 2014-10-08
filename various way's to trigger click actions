@@ -135,21 +135,21 @@ if Counter = 3
     {        
     if again <= 3
         {
-            MsgBox,,,Well don! You managed to press space 3 times once every 100 milliseconds!`n`nThis attempt NR:%again%,%MsgBoxTimeOut%    
+            MsgBox,,,You managed to press space 3 times once about every 140 milliseconds!.`nTry 4 times?`n`nThis attempt NR:%again%,%MsgBoxTimeOut%    
             again++
         }
         else 
         if again >= 4
         {
-            MsgBox,,,Again only 3 key presses detected`nYou will never manage to hit 4 times within 300 Ms`nThough... try once more!,%MsgBoxTimeOut%
-            EveluationTime = 550
+            MsgBox,,,Again only 3 key presses detected`nYou will never manage to hit 4 times within 420 Ms`nThough... try once more!,%MsgBoxTimeOut%
+            EveluationTime = 800
         }
     }
 Else 
 if Counter > 3
     {
 
-        MsgBox,,,420 milliseconds is to short for the tread to discover all the key presses!`nI've set the value of var EveluationTime to 550Ms. Timing is very importand!!!!`n`nThe script will exit after you press oke.
+        MsgBox,,,420 milliseconds is to short for the tread to discover all the key presses!`nI've set the value of var EveluationTime to 800Ms. Timing is very importand!!!!`n`nThe script will exit after you press oke.
         gosub, ExitScript
     }
 Counter =
