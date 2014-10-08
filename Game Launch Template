@@ -9,9 +9,7 @@ detectHiddenWindows, on
 GameExe = ""
 GamePath = ""
 SomeKey = ""
-Proccess_ID = ""
-bAutorun0 = ""
-bAutorun1 = 0
+Process_ID = ""
 
 GroupAdd, ForThisWinOnly, ahk_exe %GameExe% ;The #IfWin directive doesn't support variable names. Workaround 
 
@@ -19,123 +17,30 @@ IfWinExist, ahk_exe %GameExe%
 {   
     WinActivate, ahk_exe %GameExe%
     WinWaitActive, ahk_exe %GameExe%
-    WinGet, Proccess_ID, PID, ahk_exe %GameExe% 
+    WinGet, Process_ID, PID, ahk_exe %GameExe% 
 } 
 Else 
 If WinNotExist ahk_exe %GameExe%
 {
-    runwait,%GameExe%, %GamePath%,,Proccess_ID   
+    runwait,%GameExe%, %GamePath%,,Process_ID   
 }
 
-SetTimer ChkProcces, 5000                 ;5 second period for checking proccess
+SetTimer ChkProcess, 5000                 ;5 second period for checking process
 Return
 
 #IfWinActive, ahk_group ForThisWinOnly
 {
-
-Xbutton2::                                ;Toggle W key, usually handy for autorun and so on.                         
-If (bAutorun0 := !bAutorun0) {
-    send {w down}
-}Else{
-    send {w up}
-}
-Return
-
-Xbutton1::                               ;A other way to toggle keys
-If (bAutorun1 = 0)
-{
-	bAutorun1++
-	send {Up down}
-	Return
-}
-If (bAutorun1 = 1)
-{
-	bAutorun1--
-    	send {Up up}
-	Return
-}
-Return
-
-Rbutton:: 
-keywait, Rbutton, T0.32
-if errorlevel = 1 
-{
-    while GetKeyState("Rbutton", "P")     ;Triggers if Key is pressed down
-    {
-        send, {Rbutton down}&&{SomeOtherKey Down}        
-        KeyWait, Rbutton && SomeOtherKey
-    }
-    send, {Rbutton up}&&{SomeOtherKey Up}  
-return 
-}
-else
-keywait, Rbutton, D T0.32                 ;Triggers when Rbutton is double cliked
-if errorlevel = 0          
-{
-    send, {SomeOtherKey} 
-    return               
- }
-else                     
-Send, {click right}                       ;Triggers when Clicked once
-return Triggers on 
+;
+;					  ;Actions will be put here
+;
 }
 
-ChkProcces:                               ;Close script when procced isn't active anymore
-Process, Exist, %Proccess_ID%
+ChkProcess:                               ;Close script when process isn't active anymore
+Process, Exist, %Process_ID%
 If ErrorLevel = 0
 Exitapp
 Return
 
-;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#IfWinExist, ahk_class SciTEWindow
-#IfWinActive, ahk_class SciTEWindow
-
-AfterKeyRelease:
-Secs++
-Return
-
-Lbutton:: 
-SetKeyDelay,20,20
-keywait, Lbutton, T0.25
-if errorlevel = 1 
-{
-    While GetKeyState("Lbutton", "P") 
-    {		
-        if  GetKeyState("Rbutton", "P")
-        {
-	MsgBox, 64, Click Actions, Rbutton and Lbutton down:`n`nHolding down the Right mouse button and then the left one wil execute this part of the while loop. Handy for zooming`, aiming etc etc..., 30
-	KeyWait, Rbutton
-   	;sendplay, {............. Down}        
-        ;sendplay, {............. Up} 
-	KeyWait, Lbutton, D
-	return
-	}
-        else
-        {
-	settimer, AfterKeyRelease, on
-        ;sendplay, {............. Down}    
-        KeyWait, Lbutton
-	settimer, AfterKeyRelease, off
-	MsgBox, 64, Click Actions, Left Button down:`n`nThe Left button was down and again released after: %Secs% seconds`nHowever This part of the while loop was triggerd after 250ms .,30
-        ;sendplay, {............. Up} 
-        return
-        }
-    Break
-    }
-}  
-else 
-keywait, Lbutton, D T0.35
-if errorlevel = 0 
-{
-     MsgBox, 64, Click Actions, Double Click:`n`nSince neighter of the above conditions turns out to be true and a second click was detected with the "D"  option in keywait.,20
-     ;sendplay, {.............}
-}
-else
-{
-     MsgBox, 64, Click Actions, Single mouse Click:`n`nSince neighter of the above conditions turned out to be true., 10  
-     ;sendplay, {click}
-}
-return
 
 
