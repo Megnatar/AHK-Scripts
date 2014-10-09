@@ -1,6 +1,7 @@
 #NoEnv  
 #Persistent
 #NoTrayIcon
+SetTitleMatchMode, 1
 SetTitleMatchMode, RegEx
 DetectHiddenWindows, on
 SetBatchLines, -1
@@ -11,13 +12,14 @@ for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win
         if (objItem.PNPDeviceID != "ROOT\NET\0000")
             {
                 NicName := objItem.NetConnectionID[0]
+                Interface_ID := objItem.DeviceID
             }
-    NicToToggle =%Nicname%
+    NicToToggle = "%Nicname%"
 }
 
-;ToDo: Change the netshell command to ComObject driver class
-RunWait, %comspec% /c netsh.exe interface set interface name=%NicToToggle% admin=Disable, %A_WinDir%\system32\,Hide
- 
+objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
+objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Disable")
+
 GroupAdd, NetAccess, ahk_exe firefox.exe
 GroupAdd, NetAccess, ahk_exe iexplore.exe
 GroupAdd, NetAccess, Windows Update ahk_exe Explorer.exe
@@ -30,7 +32,8 @@ IfWinNotExist, ahk_Group NetAccess
     if (CheckRun >= 1)
     {
         Settimer, AdapterActive, off
-        RunWait, %comspec% /c netsh.exe interface set interface name=%NicToToggle% admin=Disable, %A_WinDir%\system32\,Hide
+        objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
+        objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Disable")
         CheckRun--
         Settimer, AdapterNotActive, on
     }
@@ -44,14 +47,14 @@ return
 AdapterNotActive:
 IfWinExist, ahk_Group NetAccess
 {
-   ;WinGet, Proccess_ID, PID,  NetAccess
     if (CheckRun = "" || CheckRun >= 0 )
     {
         Settimer, AdapterNotActive, off
-        RunWait, %comspec% /c netsh.exe interface set interface name=%NicToToggle% admin=Enable, %A_WinDir%\system32\,Hide
+        objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
+        objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Enable")
         CheckRun++
     }
-    if (CheckRun >= 1)
+if (CheckRun >= 1)
     {
         Settimer, AdapterActive, 1000
     }
