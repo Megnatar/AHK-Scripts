@@ -61,25 +61,27 @@ Process_ID = ""
 GroupAdd, ForThisWinOnly, %WinTitle%
 GroupAdd, ForThisWinOnly, ahk_exe %GameExe%
 
-GIfWinNotExist, ahk_exe %GameExe%
+IfWinNotExist, ahk_exe %GameExe%
 {
-    runwait,%GameExe%, %GamePath%,,Process_ID
+    run,%GameExe%, %GamePath%,,Process_ID
+    Process, Priority, %Process_ID%, H
+    Process, WaitClose, %Process_ID%
+    ExitApp
 }
 else
 IfWinExist, ahk_exe %GameExe%
 {
     WinActivate, ahk_exe %GameExe%
-    WinGet, Process_ID, PID, ahk_exe %GameExe%
     WinWaitActive, ahk_pid %Process_ID%
+    WinGet, Process_ID, PID, ahk_exe %GameExe%
+    Process, Priority, %Process_ID%, H
+        Process, WaitClose, %Process_ID%
+    ExitApp
 }
-#IfWinExist, ahk_group ForThisWinOnly
-{
-    IfWinNotExist, ahk_pid %Process_ID%
-    {
-        ExitApp
-    }
-#IfWinActive, ahk_group ForThisWinOnly
 
+#IfWinExist, ahk_group ForThisWinOnly
+#IfWinActive, ahk_group ForThisWinOnly
+{
                                             ;Actions will be placed here
                                             ;AutoExecute Section will end where the first return is encounterd
 }
