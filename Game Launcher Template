@@ -41,3 +41,45 @@ Process, Exist, %Process_ID%
 If ErrorLevel = 0
 Exitapp
 Return
+
+
+;////////////////////////Or Without the use of settimer////////////////////////
+
+;--------------------------AutoExecute Section--------------------------
+#NoEnv  
+#SingleInstance force
+SendMode Input 
+SetWorkingDir %A_ScriptDir% ;
+SetBatchLines, -1 ;
+detectHiddenWindows, on
+
+GameExe = ""
+GamePath = ""
+WinTitle = ""
+Process_ID = ""
+
+GroupAdd, ForThisWinOnly, %WinTitle%
+GroupAdd, ForThisWinOnly, ahk_exe %GameExe%
+
+GIfWinNotExist, ahk_exe %GameExe%
+{
+    runwait,%GameExe%, %GamePath%,,Process_ID
+}
+else
+IfWinExist, ahk_exe %GameExe%
+{
+    WinActivate, ahk_exe %GameExe%
+    WinGet, Process_ID, PID, ahk_exe %GameExe%
+    WinWaitActive, ahk_pid %Process_ID%
+}
+#IfWinExist, ahk_group ForThisWinOnly
+{
+    IfWinNotExist, ahk_pid %Process_ID%
+    {
+        ExitApp
+    }
+#IfWinActive, ahk_group ForThisWinOnly
+
+                                            ;Actions will be placed here
+                                            ;AutoExecute Section will end where the first return is encounterd
+}
