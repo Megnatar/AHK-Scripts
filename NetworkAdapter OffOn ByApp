@@ -1,11 +1,24 @@
 #NoEnv  
 #Persistent
 #NoTrayIcon
-SetTitleMatchMode, 1
+SetTitleMatchMode, 2
 SetTitleMatchMode, RegEx
+SetWorkingDir %A_ScriptDir% 
 DetectHiddenWindows, on
+DetectHiddenText, on
 SetBatchLines, -1
+SetWinDelay, 50
 ListLines, off
+
+CheckRun = 1
+
+Loop, read, NetAccess.acc
+{
+    Loop, parse, A_LoopReadLine, %A_Tab%
+    {
+        GroupAdd, NetAccess, %A_LoopField%
+    }
+}
 
 for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE PhysicalAdapter  = True")
 {
@@ -17,46 +30,38 @@ for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win
     NicToToggle = "%Nicname%"
 }
 
-objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
-objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Disable")
-
-GroupAdd, NetAccess, ahk_exe firefox.exe
-GroupAdd, NetAccess, ahk_exe iexplore.exe
-GroupAdd, NetAccess, Windows Update ahk_exe Explorer.exe
-;Change VLC option --input-title-format $Z  to --input-title-format $t $g $p 
-GroupAdd, NetAccess, Radio .* ahk_exe vlc.exe
-
 AdapterActive:
 IfWinNotExist, ahk_Group NetAccess
 {
-    if (CheckRun >= 1)
+    if (CheckRun = 1)
     {
         Settimer, AdapterActive, off
         objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
         objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Disable")
         CheckRun--
-        Settimer, AdapterNotActive, on
     }
-}
-if (CheckRun = "")
-{ 
-    Settimer, AdapterNotActive, 1000
+    if (CheckRun = 0)
+    { 
+        Settimer, AdapterNotActive, 300
+        gosub, AdapterNotActive
+    }
 }
 return
 
 AdapterNotActive:
 IfWinExist, ahk_Group NetAccess
 {
-    if (CheckRun = "" || CheckRun >= 0 )
+    if (CheckRun = 0)
     {
         Settimer, AdapterNotActive, off
         objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
         objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Enable")
         CheckRun++
     }
-if (CheckRun >= 1)
+    if (CheckRun = 1)
     {
-        Settimer, AdapterActive, 1000
+        Settimer, AdapterActive, 300
+        gosub, AdapterActive
     }
 }
 return
