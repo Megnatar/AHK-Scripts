@@ -7,61 +7,61 @@ SetWorkingDir %A_ScriptDir%
 DetectHiddenWindows, on
 DetectHiddenText, on
 SetBatchLines, -1
-SetWinDelay, 50
+SetWinDelay, 100
 ListLines, off
 
 CheckRun = 1
 
 Loop, read, NetAccess.acc
 {
-    Loop, parse, A_LoopReadLine, %A_Tab%
-    {
-        GroupAdd, NetAccess, %A_LoopField%
-    }
+        Loop, parse, A_LoopReadLine, %A_Tab%
+        {
+            GroupAdd, NetAccess, %A_LoopField%
+        }
 }
 
 for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE PhysicalAdapter  = True")
 {
         if (objItem.PNPDeviceID != "ROOT\NET\0000")
-            {
-                NicName := objItem.NetConnectionID[0]
-                Interface_ID := objItem.DeviceID
-            }
+        {
+            NicName := objItem.NetConnectionID[0]
+            Interface_ID := objItem.DeviceID
+        }
     NicToToggle = "%Nicname%"
 }
 
-AdapterActive:
+AdapterActive:    
 IfWinNotExist, ahk_Group NetAccess
 {
-    if (CheckRun = 1)
-    {
-        Settimer, AdapterActive, off
-        objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
-        objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Disable")
-        CheckRun--
-    }
-    if (CheckRun = 0)
-    { 
-        Settimer, AdapterNotActive, 300
-        gosub, AdapterNotActive
-    }
+        if CheckRun = 1
+        {
+            Settimer, AdapterActive, off
+            objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
+            objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Disable")
+            CheckRun--
+        }
+        if  CheckRun = 0
+        { 
+            Settimer, AdapterNotActive, 400
+            gosub, AdapterNotActive
+        }
 }
 return
 
 AdapterNotActive:
 IfWinExist, ahk_Group NetAccess
 {
-    if (CheckRun = 0)
-    {
-        Settimer, AdapterNotActive, off
-        objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
-        objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Enable")
-        CheckRun++
-    }
-    if (CheckRun = 1)
-    {
-        Settimer, AdapterActive, 300
-        gosub, AdapterActive
-    }
+        if CheckRun = 0 
+        {
+            Settimer, AdapterNotActive, off
+            objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
+            objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Enable")
+            CheckRun++
+        }
+        if CheckRun = 1
+        {
+            Settimer, AdapterActive, 400
+            gosub, AdapterActive
+        }
 }
 return
