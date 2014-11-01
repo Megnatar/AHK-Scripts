@@ -159,3 +159,23 @@ Return
 
 ExitScript:
 ExitApp
+
+;//////////////////////////Looping left/right clik if Lbutton is down//////////////////////////
+
+Lbutton::
+keywait, Lbutton, T0.30
+if errorlevel = 1
+{
+    while GetKeyState("Lbutton", "P")  
+    {
+        send, {click}{click right}
+    }
+    	keywait, Lbutton
+    send, {Lbutton up}
+Return
+}
+if errorlevel = 0
+{
+	send {click}
+}
+return
