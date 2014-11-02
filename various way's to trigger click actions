@@ -163,15 +163,18 @@ ExitApp
 ;//////////////////////////Looping left/right clik if Lbutton is down//////////////////////////
 
 Lbutton::
-keywait, Lbutton, T0.30
+keywait, Lbutton, T0.40
 if errorlevel = 1
 {
     while GetKeyState("Lbutton", "P")  
     {
-        send, {click}{click right}
+        send, {click down}{click up}
+        sleep, 100
+        send {click right down}{click right up}
+        sleep, 100
     }
-    	keywait, Lbutton
-    send, {Lbutton up}
+        keywait, Lbutton
+    send, {click up}{click right up}
 Return
 }
 if errorlevel = 0
