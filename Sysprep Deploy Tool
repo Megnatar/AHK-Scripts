@@ -1,0 +1,161 @@
+#SingleInstance, force
+#Persistent
+
+IfExist, C:\WINDOWS\system32\Run
+Gosub, SecondRun
+
+IfExist, C:\WINDOWS\system32\RunLock
+Gosub, RunLock
+
+Else 
+{
+Runwait, Net Use O: \\XX.XX.XX.XX\Share /User:Domain\User Password /PERSISTENT:NO,,Hide ;Put you're settings here
+sleep, 5000
+
+File = C:\mac.txt
+RunWait, %ComSpec% /c ipconfig /all > %file%,, Hide
+FileRead, INFILE1, %File%
+RegexMatch( INFILE1, "Physical Address\D*\K[\dA-F\-]{17}", MacA ) ;If you're OS language is other than EN change Physical Address.
+FileDelete, C:\mac.txt
+
+File2 = O:\Macs.txt
+FileRead, INFILE2, %File2%
+RegExMatch( INFILE2, MacA ".*?\K(\w.*)", CompNm)
+
+Empty =
+If (CompNm = Empty)
+  {
+    MsgBox, 262144, UnknowPC, Computer not found. Contact you're helpdesk!
+    IfMsgBox, ok
+    RegDelete, HKLM, SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon, AutoAdminLogon
+    sleep, 50
+    RegDelete, HKLM, SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon, ForceAutoLogon
+    sleep, 50
+    RegDelete, HKLM, SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon, DefaultUserName
+    sleep, 50
+    RegDelete, HKLM, SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon, DefaultPassword
+    sleep, 50
+    ExitApp
+   }
+
+Gui +LastFound +Disabled  +Owner -border -Caption -SysMenu +AlwaysOnTop
+GUI_ID:=WinExist()
+Gui, font, cC0C0C0, Fixedsys
+Gui, color, 000000
+Gui, Add, Text,,`nSettings are applied for computer: %CompNm%`nOne moment please......
+Gui, Add, Progress, x70 y65 w250 h10 cGray vUpdater
+Gui,Show,w400 h90, Layer
+DllCall("AnimateWindow","UInt",GUI_ID,"Int",500,"UInt","0xa0000")
+WinSet, Transparent, 200, Layer
+
+NrOfActions := 13
+percentage := 100/NrOfActions
+
+FileRemoveDir, c:\Drivers, 1
+GoSub, UpdateProgress
+Regwrite, Reg_sz, HKLM, SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce, LastRun, c:\windows\SysSettins.exe
+GoSub, UpdateProgress
+RegWrite, Reg_Dword, HKLM, SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon, DisableCAD, 1
+GoSub, UpdateProgress
+Regwrite, Reg_sz, HKLM, SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon, DefaultDomainName, %CompNm%
+GoSub, UpdateProgress
+Regwrite, Reg_sz, HKLM, SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon, AltDefaultDomainName, %CompNm%
+GoSub, UpdateProgress
+Regwrite, Reg_sz, HKLM, SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon, CachePrimaryDomain, %CompNm%
+GoSub, UpdateProgress
+RegWrite, Reg_sz, HKLM, SYSTEM\CurrentControlSet\Control\ComputerName\ComputerName, ComputerName, %CompNm%
+GoSub, UpdateProgress
+RegWrite, Reg_sz, HKLM, SYSTEM\CurrentControlSet\Control\ComputerName\ActiveComputerName, ComputerName, %CompNm%
+GoSub, UpdateProgress
+RegWrite, Reg_sz, HKLM, SYSTEM\ControlSet001\Services\Tcpip\Parameters, Hostname, %CompNm%
+GoSub, UpdateProgress
+RegWrite, Reg_sz, HKLM, SYSTEM\ControlSet001\Services\Tcpip\Parameters, NV Hostname, %CompNm%
+GoSub, UpdateProgress
+RegWrite, Reg_sz, HKLM, SYSTEM\ControlSet003\Services\Tcpip\Parameters, Hostname, %CompNm%
+GoSub, UpdateProgress
+RegWrite, Reg_sz, HKLM, SYSTEM\ControlSet003\Services\Tcpip\Parameters, NV Hostname, %CompNm%
+GoSub, UpdateProgress
+RunWait Netdom.exe  /Join %CompNM% /Domain:Domain /UserD:User /passwordD:Password,, Hide ;Put you're settings here
+GoSub, UpdateProgress
+
+
+UpdateProgress:
+ProgressTicker += percentage
+
+GuiControl,, Updater, %ProgressTicker%
+Sleep 1000
+
+If ( ProgressTicker >= 100 )
+gosub, ExitFirst
+Return
+}
+
+ExitFirst:
+WinSet, Transparent, 255, Layer
+WinSet, Transparent, Off, Layer
+DllCall("AnimateWindow","UInt",GUI_ID,"Int",500,"UInt","0x90000")
+FileAppend,,C:\WINDOWS\system32\Run
+exitapp
+
+SecondRun:
+{
+Gui +LastFound +Disabled  +Owner -border -Caption -SysMenu +AlwaysOnTop
+GUI_ID:=WinExist()
+Gui, font, cC0C0C0, Fixedsys
+Gui, color, 000000
+Gui, Add, Text,,`nDefault domain is set and computer policy's`nare applied. The computer will reboot.
+Gui, Add, Progress, x70 y65 w250 h10 cGray vUpdater2
+Gui,Show,w400 h90, Layer2
+DllCall("AnimateWindow","UInt",GUI_ID,"Int",500,"UInt","0xa0000")
+WinSet, Transparent, 200, Layer2
+
+NrOfActions2 := 10
+percentage2 := 100/NrOfActions2
+
+FileRemoveDir, c:\Drivers, 1
+GoSub, UpdateProgress2
+RegWrite, Reg_Dword, HKLM, SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon, DisableCAD, 0
+GoSub, UpdateProgress
+RegDelete, HKLM, SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon, AutoAdminLogon
+GoSub, UpdateProgress2
+RegDelete, HKLM, SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon, ForceAutoLogon
+GoSub, UpdateProgress2
+RegDelete, HKLM, SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon, DefaultUserName
+GoSub, UpdateProgress2
+RegDelete, HKLM, SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon, DefaultPassword
+GoSub, UpdateProgress2
+Regwrite, Reg_sz, HKLM, SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon, DefaultDomainName, Domain ;Put you're domain name here
+GoSub, UpdateProgress2
+Regwrite, Reg_sz, HKLM, SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon, AltDefaultDomainName, Domain ;Put you're domain name here
+GoSub, UpdateProgress2
+Regwrite, Reg_sz, HKLM, SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon, CachePrimaryDomain, Domain ;Put you're domain name here
+GoSub, UpdateProgress2
+Runwait, gpupdate /force
+GoSub, UpdateProgress2
+
+UpdateProgress2:
+ProgressTicker2 += percentage2
+
+GuiControl,, Updater2, %ProgressTicker2%
+Sleep 1000
+
+If ( ProgressTicker2 >= 100 )
+gosub, ExitSecond
+Return
+
+ExitSecond:
+WinSet, Transparent, 255, Layer2
+WinSet, Transparent, Off, Layer2
+DllCall("AnimateWindow","UInt",GUI_ID,"Int",500,"UInt","0x90000")
+
+FileDelete, C:\WINDOWS\system32\Run
+FormatTime, InstallDate 
+FileAppend, Installdate of this computer is:`n%InstallDate%, C:\WINDOWS\system32\RunLock
+FileSetAttrib, +SHR, C:\WINDOWS\system32\RunLock
+runwait, shutdown -r -t 4,,Hide
+ExitApp
+}
+
+RunLock:
+MsgBox,,, You are not allowed to run this script, 5
+Exitapp
