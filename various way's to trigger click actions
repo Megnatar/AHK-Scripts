@@ -1,9 +1,14 @@
 ;//////////////////////////Toggle Key's//////////////////////////
+;When the key you sending is already a toggle enabled key. Like shift down to hold possition.
+;Dont try and use that key, change it in game to something like numpad0, because the game will likely 
+;get confused about keystatus is up or down if you don't change it.
+
+
 Xbutton2::	           		;Using keywait and errorlevel	
 KeyWait, w, T
 if  Not errorlevel 
 send {w down}
-else
+Else
 send {w up}
 Return
 
@@ -16,19 +21,15 @@ send {w up}
 }
 Return
 
-Xbutton2::				;Using a variable and ++/-- operator.
-If (bAutorun = 0)
-{
-	bAutorun++
-	send {Up down}
+Xbutton2::				;Using a variable and ++/-- operator. Variable bNum0 might not declare properlay underfly.
+If (bNum0 = 0) {			;Declare it in the auto-execution section!
+    Send {Numpad0 down}			;I prefer this method since it's sollid.
+    bNum0++
+}Else{
+    Send {Numpad0 up}
+    bNum0--
+}
 Return
-}
-If (bAutorun = 1)
-{
-	bAutorun--
-	send {Up up}
-	Return
-}
 ;//////////////////////////Single, Double or Down key state //////////////////////////
 ;Spacebar is used as the trigger key in these key examples.  
 ;The rightmousebutton will be used as second trigger key.
