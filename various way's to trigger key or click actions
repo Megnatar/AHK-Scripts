@@ -23,7 +23,7 @@ Return
 
 Xbutton2::				;Using a variable and ++/-- operator. Variable bNum0 might not declare properlay underfly.
 If (bNum0 = 0) {			;Declare it in the auto-execution section!
-    Send {Numpad0 down}			;I prefer this method since it's sollid.
+    Send {Numpad0 down}			;I prefer this toggle method since it's sollid.
     bNum0++
 }Else{
     Send {Numpad0 up}
