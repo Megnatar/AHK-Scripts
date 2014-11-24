@@ -58,6 +58,34 @@ else
 }
 return
 
+;Or use it like this....................
+		
+~Lbutton:				;~ makes the hot NOT compremise Lbuttons native action		 
+keywait, Lbutton, T0.15
+if errorlevel = 1 
+{
+    while GetKeyState("Lbutton", "P") 
+    {
+        send, {Lbutton down}  
+        				;Or use some other key to send while Lbutton is held down.
+        KeyWait, Lbutton 
+    }
+    send, {Lbutton up}  
+return 
+}
+else
+keywait, Lbutton, D T0.15
+if errorlevel = 0          
+{
+    send, {q down}			;Bubble click will send Q and W key down
+    send, {w down}
+    KeyWait, Lbutton
+    send, {q up}			;And sending key's up again once Lbutton is released from doubleclick.
+    send, {w up}
+    return               
+ }
+
+
 ;/////Same as above but in combination with a second key held down./////
 ;I use them with sendplay or sendevent since sendmode input ignors sekeydelay.
 
