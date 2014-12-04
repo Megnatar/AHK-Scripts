@@ -54,11 +54,12 @@ Return
 
 ;--------------------------AutoExecute Section--------------------------
 #NoEnv  
-#SingleInstance force
+#SingleInstance, force
 SetKeyDelay, 10, 10
-SetWorkingDir %A_ScriptDir% ;
-SetBatchLines, -1 ;
+SetWorkingDir, %A_ScriptDir%
+SetBatchLines, -1
 detectHiddenWindows, on
+ListLines, off
 
 GameExe = 
 GamePath = 
@@ -85,5 +86,5 @@ IfWinExist, ahk_exe %GameExe%
 #IfWinExist, ahk_group ForThisWinOnly
 #IfWinActive, ahk_group ForThisWinOnly
 {
-                                        ;Actions will go here  
+
 }
