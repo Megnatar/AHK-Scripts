@@ -1,3 +1,5 @@
+
+;////////////////////////Using settimer for terminating script when application exists////////////////////////
 ;--------------------------AutoExecute Section--------------------------
 #NoEnv  
 #SingleInstance force
@@ -78,6 +80,8 @@ IfWinExist, ahk_exe %GameExe%
 #IfWinExist, ahk_group ForThisWinOnly
 #IfWinActive, ahk_group ForThisWinOnly
 {
-                                            ;Actions will be placed here. Use SendEvent or Play for sending key's.
-                                            ;AutoExecute Section will end where the first return is encounterd
+                                            /*
+                                            Actions will be placed here. Use SendEvent or Play for sending key's.
+                                            AutoExecute Section will end where the first return is encounterd
+                                            */
 }
