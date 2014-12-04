@@ -6,7 +6,7 @@ DetectHiddenWindows, on
 SetKeyDelay, 20, 20
 SetWorkingDir, %A_ScriptDir%
 
-IfExist %A_ScriptDir%\Settings.ini
+IfExist, %A_ScriptDir%\Settings.ini
 {
 IniRead, xPoss, Settings.ini, GuiPoss, xPoss
 IniRead, yPoss, Settings.ini, GuiPoss, yPoss
