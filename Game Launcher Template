@@ -1,5 +1,11 @@
-
-;////////////////////////Using settimer for terminating script when application exists////////////////////////
+/* 
+Two scripts for launching a game or application. The first is using SetTimer for closing the script once the
+application quits. The Second script does the exect same thing but simply waits for the programe/process
+to close, thus it's much faster. Variables are blank and they need to be specified, but Process_ID will 
+be assigned by the script. Use SendEvent or SendPlay for sending key's. SetKeyDelay might need some adjustments
+when the key's are not triggerd by you're application. Timing is very important!
+*/
+;////////////////////////Using settimer for terminating script when application closes////////////////////////
 
 ;--------------------------AutoExecute Section--------------------------
 #NoEnv  
@@ -10,8 +16,8 @@ SetBatchLines,-1
 ListLines, off 
 detectHiddenWindows, on
 
-GameExe = ""
-GamePath = ""
+GameExe = 
+GamePath =
 Process_ID = ""
 
 GroupAdd, ForThisWinOnly, ahk_exe %GameExe%  ;The #IfWin directive doesn't support variable names. Workaround 
@@ -27,16 +33,14 @@ If WinNotExist ahk_exe %GameExe%
     run,%GameExe%, %GamePath%,,Process_ID   
 }
 
-SetTimer ChkProcess, 5000                   ;5 second period for checking process
+SetTimer ChkProcess, 5000                   ;5 second period for checking process to close
 Return
 
 ;--------------------------AutoExecute Section End--------------------------
 
 #IfWinActive, ahk_group ForThisWinOnly
 {
-/*
-                                           Actions will be placed here
-*/
+                                            ;Actions will go here
 }
                     
 ChkProcess:                                 ;Close script when process isn't active anymore
@@ -56,9 +60,9 @@ SetWorkingDir %A_ScriptDir% ;
 SetBatchLines, -1 ;
 detectHiddenWindows, on
 
-GameExe = ""
-GamePath = ""
-WinTitle = ""
+GameExe = 
+GamePath = 
+WinTitle = 
 Process_ID = ""
 
 GroupAdd, ForThisWinOnly, %WinTitle%
@@ -81,8 +85,5 @@ IfWinExist, ahk_exe %GameExe%
 #IfWinExist, ahk_group ForThisWinOnly
 #IfWinActive, ahk_group ForThisWinOnly
 {
-                                            /*
-                                            Actions will be placed here. Use SendEvent or Play for sending key's.
-                                            AutoExecute Section will end where the first return is encounterd
-                                            */
+                                        ;Actions will go here  
 }
