@@ -9,7 +9,7 @@ when the key's are not triggerd by you're application. Timing is very important!
 
 ;--------------------------AutoExecute Section--------------------------
 #NoEnv  
-#SingleInstance force
+#SingleInstance, force
 SetKeyDelay, 10, 10
 SetWorkingDir %A_ScriptDir% 
 SetBatchLines,-1 
@@ -73,7 +73,7 @@ GroupAdd, ForThisWinOnly, ahk_exe %GameExe%
 IfWinNotExist, ahk_exe %GameExe%
 {
     run,%GameExe%, %GamePath%,,Process_ID
-    Process, WaitClose, %Process_ID%
+    Process, WaitClose, %Process_ID%		;This thread keeps running and waits here for process to close
     ExitApp
 }
 else
@@ -88,7 +88,7 @@ IfWinExist, ahk_exe %GameExe%
 #IfWinActive, ahk_group ForThisWinOnly
 {
 
-Xbutton1::                                      ;Toggle key. Autorun when eighter of the two thumb buttons are pressed once.
+Xbutton1::                                      ;Togglekey. Autorun when eighter of the two thumb buttons are pressed once.
 Xbutton2::
 If (bAutorun = 0) {
     SendEvent, {w down}
@@ -115,10 +115,10 @@ if errorlevel = 1
 return
 }
 else
-keywait, Lbutton, D T0.25                    ;Shift is down when left button is clicked twice and then pressed down.
+keywait, Lbutton, D T0.25                    	;Shift is down when left button is clicked twice and then pressed down.
 if errorlevel = 0          
 {
-    SendEvent, {Shift down}
+    	SendEvent, {Shift down}
 	KeyWait, Lbutton
 	SendEvent, {Shift up}
     return               
