@@ -4,23 +4,23 @@ SetBatchLines, -1
 ListLines, off 
 DetectHiddenWindows, on
 SetKeyDelay, 20, 20
-SetWorkingDir , %A_ScriptDir%
+SetWorkingDir, %A_ScriptDir%
 
 IfExist %A_ScriptDir%\Settings.ini
 {
-IniRead, xPoss , Settings.ini, GuiPoss , xPoss
-IniRead, yPoss , Settings.ini, GuiPoss , yPoss
+IniRead, xPoss, Settings.ini, GuiPoss, xPoss
+IniRead, yPoss, Settings.ini, GuiPoss, yPoss
 
-IniRead , timer1 , Settings.ini , UserInput , timer1
-IniRead , timer2 , Settings.ini , UserInput , timer2
-IniRead , timer3 , Settings.ini , UserInput , timer3
-IniRead , timer4 , Settings.ini , UserInput , timer4
+IniRead, timer1, Settings.ini, UserInput, timer1
+IniRead, timer2, Settings.ini, UserInput, timer2
+IniRead, timer3, Settings.ini, UserInput, timer3
+IniRead, timer4, Settings.ini, UserInput, timer4
 
-IniRead , OnOff1 , Settings.ini , UserInput , OnOff1
-IniRead , OnOff2 , Settings.ini , UserInput , OnOff2
-IniRead , OnOff3 , Settings.ini , UserInput , OnOff3
-IniRead , OnOff4 , Settings.ini , UserInput , OnOff4
-IniRead , Game , Settings.ini , UserInput , Game
+IniRead, OnOff1, Settings.ini, UserInput, OnOff1
+IniRead, OnOff2, Settings.ini, UserInput, OnOff2
+IniRead, OnOff3, Settings.ini, UserInput, OnOff3
+IniRead, OnOff4, Settings.ini, UserInput, OnOff4
+IniRead, Game, Settings.ini, UserInput, Game
 }
 else
 {
@@ -30,84 +30,84 @@ OnOff1=0
 OnOff2=0
 OnOff3=0
 OnOff4=0
-IniWrite , %xPoss% , Settings.ini , GuiPoss , xPoss
-IniWrite , %yPoss% , Settings.ini , GuiPoss , yPoss
+IniWrite, %xPoss%, Settings.ini, GuiPoss, xPoss
+IniWrite, %yPoss%, Settings.ini, GuiPoss, yPoss
 
-IniWrite , %timer1% , Settings.ini , UserInput , timer1
-IniWrite , %timer2% , Settings.ini , UserInput , timer2
-IniWrite , %timer3% , Settings.ini , UserInput , timer3
-IniWrite , %timer4% , Settings.ini , UserInput , timer4
+IniWrite, %timer1%, Settings.ini, UserInput, timer1
+IniWrite, %timer2%, Settings.ini, UserInput, timer2
+IniWrite, %timer3%, Settings.ini, UserInput, timer3
+IniWrite, %timer4%, Settings.ini, UserInput, timer4
 
-IniWrite , %OnOff1% , Settings.ini , UserInput , OnOff1
-IniWrite , %OnOff2% , Settings.ini , UserInput , OnOff2
-IniWrite , %OnOff3% , Settings.ini , UserInput , OnOff3
-IniWrite , %OnOff4% , Settings.ini , UserInput , OnOff4
-IniWrite , %Game% , Settings.ini , UserInput , Game
+IniWrite, %OnOff1%, Settings.ini, UserInput, OnOff1
+IniWrite, %OnOff2%, Settings.ini, UserInput, OnOff2
+IniWrite, %OnOff3%, Settings.ini, UserInput, OnOff3
+IniWrite, %OnOff4%, Settings.ini, UserInput, OnOff4
+IniWrite, %Game%, Settings.ini, UserInput, Game
 }
 
-Gui , Add , Text , x115 y56 w20 h20 , 4
-Gui , Add , Edit, x135 y56 w30 h20 vTime1 0x2000, %timer1%  
-Gui , Add , Checkbox , x165 y56 w50 h20 vOnOff1 Checked%OnOff1% , on/off
-Gui , Add , Text, x115 y16 w20 h20 , 3
-Gui , Add , Edit, x135 y16 w30 h20 vTime2 0x2000, %timer2%
-Gui , Add , Checkbox , x165 y16 w50 h20 vOnOff2 Checked%OnOff2% , on/off 
-Gui , Add , Text, x15 y56 w20 h20 , 2
-Gui , Add , Edit, x35 y56 w30 h20 vTime3 0x2000, %timer3%
-Gui , Add , Checkbox , x65 y56 w50 h20 vOnOff3 Checked%OnOff3% , on/off
-Gui , Add , Text, x15 y16 w20 h20 , 1
-Gui , Add , Edit, x35 y16 w30 h20 vTime4 0x2000, %timer4%
-Gui , Add , Checkbox , x65 y16 w50 h20 vOnOff4 Checked%OnOff4% , on/off 
-Gui , Add , Button , x23 y134 w50 h20 , Start
-Gui , Add , Button , x83 y134 w50 h20 , Stop
-Gui , Add , Button , x142 y133 w50 h20 , Exit
-Gui , Add , Text , x80 y90 w64 h15 , WindowTitle:
-Gui , Add , Edit , x67 y106 w95 h18 vGame, %Game%
-Gui , Add , Text , x81 y91 w64 h15 , WindowTitle: 
-Gui , Show , w226 h161  x%xPoss% y%yPoss% , Universal AutoBuff
+Gui, Add, Text, x115 y56 w20 h20, 4
+Gui, Add, Edit, x135 y56 w30 h20 vTime1 0x2000, %timer1%  
+Gui, Add, Checkbox, x165 y56 w50 h20 vOnOff1 Checked%OnOff1%, on/off
+Gui, Add, Text, x115 y16 w20 h20, 3
+Gui, Add, Edit, x135 y16 w30 h20 vTime2 0x2000, %timer2%
+Gui, Add, Checkbox, x165 y16 w50 h20 vOnOff2 Checked%OnOff2%, on/off 
+Gui, Add, Text, x15 y56 w20 h20, 2
+Gui, Add, Edit, x35 y56 w30 h20 vTime3 0x2000, %timer3%
+Gui, Add, Checkbox, x65 y56 w50 h20 vOnOff3 Checked%OnOff3%, on/off
+Gui, Add, Text, x15 y16 w20 h20, 1
+Gui, Add, Edit, x35 y16 w30 h20 vTime4 0x2000, %timer4%
+Gui, Add, Checkbox, x65 y16 w50 h20 vOnOff4 Checked%OnOff4%, on/off 
+Gui, Add, Button, x23 y134 w50 h20, Start
+Gui, Add, Button, x83 y134 w50 h20, Stop
+Gui, Add, Button, x142 y133 w50 h20, Exit
+Gui, Add, Text, x80 y90 w64 h15, WindowTitle:
+Gui, Add, Edit, x67 y106 w95 h18 vGame, %Game%
+Gui, Add, Text, x81 y91 w64 h15, WindowTitle: 
+Gui, Show, w226 h161  x%xPoss% y%yPoss%, Universal AutoBuff
 Return
 
 !q:: 
-Gosub , ButtonExit
+Gosub, ButtonExit
 
 GuiClose: 
-Gosub , ButtonExit
+Gosub, ButtonExit
 
 ButtonExit:
-WinGetPos , xPoss, yPoss
-IniWrite , %xPoss% , Settings.ini , GuiPoss , xPoss
-IniWrite , %yPoss% , Settings.ini , GuiPoss , yPoss
+WinGetPos, xPoss, yPoss
+IniWrite, %xPoss%, Settings.ini, GuiPoss, xPoss
+IniWrite, %yPoss%, Settings.ini, GuiPoss, yPoss
 
-IniWrite , %timer1% , Settings.ini , UserInput , timer1
-IniWrite , %timer2% , Settings.ini , UserInput , timer2
-IniWrite , %timer3% , Settings.ini , UserInput , timer3
-IniWrite , %timer4% , Settings.ini , UserInput , timer4
+IniWrite, %timer1%, Settings.ini, UserInput, timer1
+IniWrite, %timer2%, Settings.ini, UserInput, timer2
+IniWrite, %timer3%, Settings.ini, UserInput, timer3
+IniWrite, %timer4%, Settings.ini, UserInput, timer4
 
-IniWrite , %OnOff1% , Settings.ini , UserInput , OnOff1
-IniWrite , %OnOff2% , Settings.ini , UserInput , OnOff2
-IniWrite , %OnOff3% , Settings.ini , UserInput , OnOff3
-IniWrite , %OnOff4% , Settings.ini , UserInput , OnOff4
-IniWrite , %Game% , Settings.ini , UserInput , Game
+IniWrite, %OnOff1%, Settings.ini, UserInput, OnOff1
+IniWrite, %OnOff2%, Settings.ini, UserInput, OnOff2
+IniWrite, %OnOff3%, Settings.ini, UserInput, OnOff3
+IniWrite, %OnOff4%, Settings.ini, UserInput, OnOff4
+IniWrite, %Game%, Settings.ini, UserInput, Game
 ExitApp
 
 !p::       
 ButtonStop:
-Settimer , Buff1 , Off
-Settimer , Buff2 , Off
-Settimer , Buff3 , Off
-Settimer , Buff4 , Off
-SetTimer , Show1 , Off
-SetTimer , Show2 , Off 
-SetTimer , Show3 , Off 
-SetTimer , Show4 , Off
-GuiControl , Text, Time1 , %timer1%
-GuiControl , Text, Time2 , %timer2%
-GuiControl , Text, Time3 , %timer3%
-GuiControl , Text, Time4 , %timer4%
+Settimer, Buff1, Off
+Settimer, Buff2, Off
+Settimer, Buff3, Off
+Settimer, Buff4, Off
+SetTimer, Show1, Off
+SetTimer, Show2, Off 
+SetTimer, Show3, Off 
+SetTimer, Show4, Off
+GuiControl, Text, Time1, %timer1%
+GuiControl, Text, Time2, %timer2%
+GuiControl, Text, Time3, %timer3%
+GuiControl, Text, Time4, %timer4%
 Return
 
 ButtonStart:
-WinActivate , %game% 
-Gui , submit , nohide        
+WinActivate, %game% 
+Gui, submit, nohide        
 
 Timer1 = %Time1%          
 Timer2 = %Time2%
@@ -124,49 +124,49 @@ Time4 := Time4 * 1000
  
 If (onoff1 = True) 
 {
-     Settimer , Buff1 , %Time1%     
-     SetTimer , Show1 , 1000        
-     Gosub , Buff1                 
+     Settimer, Buff1, %Time1%     
+     SetTimer, Show1, 1000        
+     Gosub, Buff1                 
 }
 Else 
 {
-    Settimer , Buff1 , Off          
-    SetTimer , Show1 , Off
+    Settimer, Buff1, Off          
+    SetTimer, Show1, Off
 }
 
 If (onoff2 = True) 
 {
-     Settimer , Buff2 , %Time2%
-     SetTimer , Show2 , 1000
-     Gosub , Buff2
+     Settimer, Buff2, %Time2%
+     SetTimer, Show2, 1000
+     Gosub, Buff2
 }
 Else 
 {
-    Settimer , Buff2 , Off
-    SetTimer , Show2 , Off
+    Settimer, Buff2, Off
+    SetTimer, Show2, Off
 }
 
 If (onoff3 = True) 
 {
-     Settimer , Buff3 , %Time3%
-     SetTimer , Show3 , 1000
-     Gosub , Buff3
+     Settimer, Buff3, %Time3%
+     SetTimer, Show3, 1000
+     Gosub, Buff3
 }
 Else 
 {
-    Settimer , Buff3 , Off
-    SetTimer , Show3 , Off
+    Settimer, Buff3, Off
+    SetTimer, Show3, Off
 }
 If (onoff4 = True) 
 {
-     Settimer , Buff4 , %Time4%
-     SetTimer , Show4 , 1000
-     Gosub , Buff4
+     Settimer, Buff4, %Time4%
+     SetTimer, Show4, 1000
+     Gosub, Buff4
 }
 Else 
 {
-    Settimer , Buff4 , Off
-    SetTimer , Show4 , Off
+    Settimer, Buff4, Off
+    SetTimer, Show4, Off
 }
 Return
 
@@ -189,7 +189,7 @@ return
 Show1:
 Stop1 += 1              
 Counter1 := Timer1-Stop1 
-GuiControl , Text, Time1 , %Counter1% 
+GuiControl, Text, Time1, %Counter1% 
 If Stop1 = %Timer1%                
 {
 Stop1 = 0                          
@@ -199,7 +199,7 @@ return
 Show2:
 Stop2 += 1 
 Counter2 := Timer2-Stop2 
-GuiControl , Text, Time2 , %Counter2%
+GuiControl, Text, Time2, %Counter2%
 If Stop2 = %Timer2% 
 {
 Stop2 = 0
@@ -209,7 +209,7 @@ return
 Show3:
 Stop3 += 1 
 Counter3 := Timer3-Stop3
-GuiControl , Text, Time3 , %Counter3%
+GuiControl, Text, Time3, %Counter3%
 If Stop3 = %Timer3% 
 {
 Stop3 = 0
@@ -219,7 +219,7 @@ return
 Show4:
 Stop4 += 1 
 Counter4 := Timer4-Stop4
-GuiControl , Text, Time4 , %Counter4% 
+GuiControl, Text, Time4, %Counter4% 
 If Stop4 = %Timer4% 
 {
 Stop4 = 0
