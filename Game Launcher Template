@@ -1,5 +1,6 @@
 
 ;////////////////////////Using settimer for terminating script when application exists////////////////////////
+
 ;--------------------------AutoExecute Section--------------------------
 #NoEnv  
 #SingleInstance force
@@ -33,9 +34,9 @@ Return
 
 #IfWinActive, ahk_group ForThisWinOnly
 {
-;
-;                                           ;Actions will be placed here
-;
+/*
+                                           Actions will be placed here
+*/
 }
                     
 ChkProcess:                                 ;Close script when process isn't active anymore
