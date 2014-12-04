@@ -65,6 +65,7 @@ GameExe =
 GamePath = 
 WinTitle = 
 Process_ID = ""
+bAutorun = 0
 
 GroupAdd, ForThisWinOnly, %WinTitle%
 GroupAdd, ForThisWinOnly, ahk_exe %GameExe%
@@ -87,4 +88,39 @@ IfWinExist, ahk_exe %GameExe%
 #IfWinActive, ahk_group ForThisWinOnly
 {
 
+Xbutton1::                                      ;Toggle key. Autorun when eighter of the two thumb buttons are pressed once.
+Xbutton2::
+If (bAutorun = 0) {
+    SendEvent, {w down}
+    bAutorun++
+}Else{
+    SendEvent, {w up}
+    bAutorun--
+}
+Return
+
+~Lbutton::
+SendEvent, {w up}
+bAutorun = 0
+
+keywait, Lbutton, T0.25                         ;Left mouse click is down as long as the leftbutton is pressed.
+if errorlevel = 1 
+{
+    while GetKeyState("Lbutton", "P") 
+    {
+        SendEvent, {click down}
+        keywait, Lbutton
+        SendEvent, {click up}
+    } 
+return
+}
+else
+keywait, Lbutton, D T0.25                    ;Shift is down when left button is clicked twice and then pressed down.
+if errorlevel = 0          
+{
+    SendEvent, {Shift down}
+	KeyWait, Lbutton
+	SendEvent, {Shift up}
+    return               
+ }
 }
