@@ -1,7 +1,7 @@
 ;--------------------------AutoExecute Section--------------------------
 #NoEnv  
 #SingleInstance force
-SendMode Input 
+SetKeyDelay, 10, 10
 SetWorkingDir %A_ScriptDir% 
 SetBatchLines,-1 
 ListLines, off 
@@ -48,7 +48,7 @@ Return
 ;--------------------------AutoExecute Section--------------------------
 #NoEnv  
 #SingleInstance force
-SendMode Input 
+SetKeyDelay, 10, 10
 SetWorkingDir %A_ScriptDir% ;
 SetBatchLines, -1 ;
 detectHiddenWindows, on
@@ -78,6 +78,6 @@ IfWinExist, ahk_exe %GameExe%
 #IfWinExist, ahk_group ForThisWinOnly
 #IfWinActive, ahk_group ForThisWinOnly
 {
-                                            ;Actions will be placed here
+                                            ;Actions will be placed here. Use SendEvent or Play for sending key's.
                                             ;AutoExecute Section will end where the first return is encounterd
 }
