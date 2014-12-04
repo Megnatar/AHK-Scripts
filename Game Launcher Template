@@ -20,7 +20,7 @@ GameExe =
 GamePath =
 Process_ID = ""
 
-GroupAdd, ForThisWinOnly, ahk_exe %GameExe%  ;The #IfWin directive doesn't support variable names. Workaround 
+GroupAdd, ForThisWinOnly, ahk_exe %GameExe%  ;The #IfWin directive doesn't support variable names. Workaround.
 
 IfWinExist, ahk_exe %GameExe%
 {   
@@ -33,7 +33,7 @@ If WinNotExist ahk_exe %GameExe%
     run,%GameExe%, %GamePath%,,Process_ID   
 }
 
-SetTimer ChkProcess, 5000                   ;5 second period for checking process to close
+SetTimer ChkProcess, 5000                   ;5 second period for checking process to close.
 Return
 
 ;--------------------------AutoExecute Section End--------------------------
@@ -43,7 +43,7 @@ Return
                                             ;Actions will go here
 }
                     
-ChkProcess:                                 ;Close script when process isn't active anymore
+ChkProcess:                                 ;Close script when process isn't active anymore.
 Process, Exist, %Process_ID%
 If ErrorLevel = 0
 Exitapp
@@ -73,7 +73,7 @@ GroupAdd, ForThisWinOnly, ahk_exe %GameExe%
 IfWinNotExist, ahk_exe %GameExe%
 {
     run,%GameExe%, %GamePath%,,Process_ID
-    Process, WaitClose, %Process_ID%		;This thread keeps running and waits here for process to close
+    Process, WaitClose, %Process_ID%		;This thread keeps running and waits here for process to close.
     ExitApp
 }
 else
