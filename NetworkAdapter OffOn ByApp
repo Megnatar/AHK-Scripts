@@ -12,14 +12,6 @@ ListLines, off
 
 CheckRun = 1
 
-Loop, read, NetAccess.acc
-{
-        Loop, parse, A_LoopReadLine, %A_Tab%
-        {
-            GroupAdd, NetAccess, %A_LoopField%
-        }
-}
-
 for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE PhysicalAdapter  = True")
 {
         if (objItem.PNPDeviceID != "ROOT\NET\0000")
@@ -30,7 +22,14 @@ for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win
     NicToToggle = "%Nicname%"
 }
 
-AdapterActive:    
+AdapterActive: 
+Loop, read, %A_ScriptDir%\NetAccess.acc
+{
+        Loop, parse, A_LoopReadLine, %A_Tab%
+        {
+            GroupAdd, NetAccess, %A_LoopField%
+        }
+}
 IfWinNotExist, ahk_Group NetAccess
 {
         if CheckRun = 1
@@ -49,6 +48,13 @@ IfWinNotExist, ahk_Group NetAccess
 return
 
 AdapterNotActive:
+Loop, read, %A_ScriptDir%\NetAccess.acc
+{
+        Loop, parse, A_LoopReadLine, %A_Tab%
+        {
+            GroupAdd, NetAccess, %A_LoopField%
+        }
+}
 IfWinExist, ahk_Group NetAccess
 {
         if CheckRun = 0 
