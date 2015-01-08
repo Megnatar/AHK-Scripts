@@ -10,6 +10,14 @@ SetBatchLines, -1
 SetWinDelay, 100
 ListLines, off
 
+IfnotExist, %A_ScriptDir%\NetAccess.acc
+{
+FileAppend, ahk_exe firefox.exe, %A_ScriptDir%\NetAccess.acc
+FileAppend, `nahk_exe Iexplore.exe, %A_ScriptDir%\NetAccess.acc
+FileAppend, `nahk_exe vlc.exe, %A_ScriptDir%\NetAccess.acc
+FileAppend, `nahk_exe tor.exe, %A_ScriptDir%\NetAccess.acc
+}
+IfExist, %A_ScriptDir%\NetAccess.acc
 CheckRun = 1
 
 for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE PhysicalAdapter  = True")
