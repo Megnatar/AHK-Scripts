@@ -84,6 +84,33 @@ if errorlevel = 0
     send, {w up}
     return               
  }
+ 
+ ;///////////////Same as above but thw while-loop is replaced by loop/continue/brake//////////////////
+ :               I prefer this method for sending because its faster
+ 
+ Lbutton::
+ keywait, Lbutton, T0.01
+Loop {
+LButtState := GetKeyState("Lbutton", "P")
+If (LButtState = 1)
+    {
+        SendEvent, {Lbutton down}
+        KeyWait, Lbutton
+        continue
+    }
+If (LButtState = 0)
+    {
+        SendEvent, {Lbutton up}
+        break
+    }
+}
+keywait, Lbutton, D T0.15     
+if errorlevel = 1 
+    SendEvent, {click}         ;Key send when singel click is detected
+else
+if errorlevel = 0
+    SendEvent, {1}            ;Key send when Double clicked
+Return
 
 
 ;/////Same as above but in combination with a second key held down./////
