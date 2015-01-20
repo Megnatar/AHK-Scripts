@@ -31,8 +31,32 @@ If (bNum0 = 0) {			;Declare it in the auto-execution section!
 }
 Return
 ;//////////////////////////Single, Double or Down key state //////////////////////////
+;               I prefer this method for sending mouse clicks because its fast
+ 
+Lbutton::
+keywait, Lbutton, T0.05                ;50 milliseconds to determine key down or single click state
+Loop {
+LButtState := GetKeyState("Lbutton", "P")
+If (LButtState = 1)
+    {
+        SendEvent, {Lbutton down}	;Single click or down satate
+        KeyWait, Lbutton
+        continue
+    }
+If (LButtState = 0)
+    {
+        SendEvent, {Lbutton up}
+        break
+    }
+}
+keywait, Lbutton, D T0.15		;150 milliseconds for bouble click. Since you never can perform a bouble click with anything lower than that.          
+if errorlevel = 0
+    SendEvent, {1}			;Key send when Double clicked
+Return
+
+ 
+ ;///////////////Same as above but with a while loop//////////////////
 ;Spacebar is used as the trigger key in these key examples.  
-;The rightmousebutton will be used as second trigger key.
 
 Space::
 keywait, space, T0.25
@@ -58,9 +82,9 @@ else
 }
 return
 
-;Or use it like this....................
+ ;///////////////Same as above but the ~ prefix handles single click actions//////////////////
 		
-~Lbutton:				;~ makes the hot NOT compremise Lbuttons native action		 
+~Lbutton:				 
 keywait, Lbutton, T0.15
 if errorlevel = 1 
 {
@@ -84,37 +108,9 @@ if errorlevel = 0
     send, {w up}
     return               
  }
- 
- ;///////////////Same as above but thw while-loop is replaced by loop/continue/brake//////////////////
- :               I prefer this method for sending because its faster
- 
- Lbutton::
- keywait, Lbutton, T0.01
-Loop {
-LButtState := GetKeyState("Lbutton", "P")
-If (LButtState = 1)
-    {
-        SendEvent, {Lbutton down}
-        KeyWait, Lbutton
-        continue
-    }
-If (LButtState = 0)
-    {
-        SendEvent, {Lbutton up}
-        break
-    }
-}
-keywait, Lbutton, D T0.15     
-if errorlevel = 1 
-    SendEvent, {click}         ;Key send when singel click is detected
-else
-if errorlevel = 0
-    SendEvent, {1}            ;Key send when Double clicked
-Return
 
 
 ;/////Same as above but in combination with a second key held down./////
-;I use them with sendplay or sendevent since sendmode input ignors sekeydelay.
 
 
 AfterKeyRelease:
