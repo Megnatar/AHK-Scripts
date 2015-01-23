@@ -31,27 +31,33 @@ If (bNum0 = 0) {			;Declare it in the auto-execution section!
 }
 Return
 ;//////////////////////////Single, Double or Down key state //////////////////////////
-;               I prefer this method for sending mouse clicks because its fast
- 
-Lbutton::
-keywait, Lbutton, T0.05                ;50 milliseconds to determine key down or single click state
-Loop {
-LButtState := GetKeyState("Lbutton", "P")
-If (LButtState = 1)
-    {
-        SendEvent, {Lbutton down}	;Single click or down satate
-        KeyWait, Lbutton
-        continue
-    }
-If (LButtState = 0)
-    {
-        SendEvent, {Lbutton up}
-        break
-    }
+T::
+keywait, T, T0.15
+If errorlevel = 1
+{
+	Loop 
+	{
+	LButtState := GetKeyState("T", "P")
+	If (LButtState = 1)
+		{
+			MsgBox 1
+			KeyWait, T
+			continue
+		}
+	If (LButtState = 0)
+		{
+			MsgBox 2
+			break
+		}
+	}
+	return
 }
-keywait, Lbutton, D T0.15		;150 milliseconds for bouble click. Since you never can perform a bouble click with anything lower than that.          
+else
+keywait, T, D T0.15
 if errorlevel = 0
-    SendEvent, {1}			;Key send when Double clicked
+{
+   MsgBox 3	
+}	
 Return
 
  
