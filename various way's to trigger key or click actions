@@ -35,28 +35,27 @@ T::
 keywait, T, T0.15
 If errorlevel = 1
 {
-	Loop 
-	{
+	Loop {
 	LButtState := GetKeyState("T", "P")
 	If (LButtState = 1)
 		{
-			MsgBox 1
+			MsgBox,,,Key is hold down,2
 			KeyWait, T
 			continue
 		}
 	If (LButtState = 0)
 		{
-			MsgBox 2
+			MsgBox key is released from down
 			break
 		}
 	}
 	return
 }
 else
-keywait, T, D T0.15
+keywait, T, D  T0.15
 if errorlevel = 0
 {
-   MsgBox 3	
+   MsgBox,,, Double click!,2	
 }	
 Return
 
@@ -163,7 +162,7 @@ return
 
 ;//////////////////////////Single, Double or Tripple key state using timers //////////////////////////
 
-MsgBoxTimeOut = 15
+MsgBoxTimeOut = 2
 EveluationTime = 420
 again = 1
 
