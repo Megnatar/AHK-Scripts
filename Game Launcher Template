@@ -19,12 +19,13 @@ detectHiddenWindows, on
 GameExe = 
 GamePath =
 Process_ID = ""
+WinTitle =
 
 GroupAdd, ForThisWinOnly, ahk_exe %GameExe%  ;The #IfWin directive doesn't support variable names. Workaround.
 
 IfWinExist, ahk_exe %GameExe%
 {   
-    WinActivate, ahk_exe %GameExe%
+    WinActivate, %WinTitle%
     WinGet, Process_ID, PID, ahk_exe %GameExe% 
 } 
 Else 
@@ -79,7 +80,7 @@ IfWinNotExist, ahk_exe %GameExe%
 else
 IfWinExist, ahk_exe %GameExe%
 {
-    WinActivate, ahk_exe %GameExe%
+    WinActivate, %WinTitle%
     WinGet, Process_ID, PID, ahk_exe %GameExe%
     Process, WaitClose, %Process_ID%
     ExitApp
