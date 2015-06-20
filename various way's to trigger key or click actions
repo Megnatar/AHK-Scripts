@@ -51,9 +51,7 @@ else
 }
 if Counter = 2
 {
-	SendEvent, {space down}
-	SendEvent, {w}
-        SendEvent, {space up}
+	SendEvent, +{w}
         Counter =
 }
 If counter >= 3
