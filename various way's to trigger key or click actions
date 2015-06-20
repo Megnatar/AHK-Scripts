@@ -31,6 +31,44 @@ If (bNum0 = 0) {			;Declare it in the auto-execution section!
 }
 Return
 ;//////////////////////////Single, Double or Down key state //////////////////////////
+
+/*
+Here I'm using Settimer to clear the variable declared as Counter. Wich holds the times/number the 'W' key
+is pressed. This method is fast and does not wait for the settimer routine to reach zero like most other
+examples do.
+*/
+
+~W::
+if Counter 
+{    
+    	Counter++
+}
+else
+{
+    	Counter = 1
+	KeyWait, w
+	settimer, ClearWDouble, 400
+}
+if Counter = 2
+{
+	SendEvent, {space down}
+	SendEvent, {w}
+        SendEvent, {space up}
+        Counter =
+}
+If counter >= 3
+{
+        Counter =
+}
+else
+return
+
+ClearWDouble:
+Counter =
+settimer, ClearWDouble, off
+Return
+
+;//////////////////////////////////////////////////////////////////////////////////////////
 T::
 keywait, T, T0.15
 If errorlevel = 1
