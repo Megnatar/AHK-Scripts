@@ -45,15 +45,15 @@ if Counter = 1          ; Counter is empty the first time you press W so this wi
 }
 else
 {
-    	Counter = 1     ; The first time W is pressed counter is empty, setting it here to 1
-	KeyWait, w
+    	Counter = 1     ; The first time W is pressed counter is empty, setting it here to 1.
+	KeyWait, w      ; Waiting for W to be released making sure no looping occurs.
 	settimer, ClearCounter, 200 ; This timer clears the value of counter after 200ms when W is pressed only once or pusshed down.
 }
-if Counter >= 2        ; Here is the double click action. Where counter holds the value of 2
+if Counter >= 2         ; Here is the double click action. Where counter holds the value of 2
 {
-	SendEvent, +{w}
-        Counter =      ; Clearing the variable to so it can be used again correctly.
-        settimer, ClearCounter, off
+	SendEvent, +{w} ; Some shift+w combo
+        Counter =       ; Clearing the variable so it can be used again correctly.
+        settimer, ClearCounter, off ; There is no need to keep the timer running so turning it off.
 }
 else
 return
