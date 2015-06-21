@@ -39,31 +39,28 @@ examples do.
 */
 
 ~W::
-if Counter 
-{    
-    	Counter++
+if Counter = 1          ; Counter is empty the first time you press W so this will be skipped.
+{                       ; Press W again then the value of counter is 1, the ++ operator increments +1
+    	Counter++       ; making the value of counter 2.
 }
 else
 {
-    	Counter = 1
+    	Counter = 1     ; The first time W is pressed counter is empty, setting it here to 1
 	KeyWait, w
-	settimer, ClearWDouble, 400
+	settimer, ClearCounter, 200 ; This timer clears the value of counter after 200ms when W is pressed only once or pusshed down.
 }
-if Counter = 2
+if Counter >= 2        ; Here is the double click action. Where counter holds the value of 2
 {
 	SendEvent, +{w}
-        Counter =
-}
-If counter >= 3
-{
-        Counter =
+        Counter =      ; Clearing the variable to so it can be used again correctly.
+        settimer, ClearCounter, off
 }
 else
 return
 
-ClearWDouble:
+ClearCounter:
 Counter =
-settimer, ClearWDouble, off
+settimer, ClearCounter, off
 Return
 
 ;//////////////////////////////////////////////////////////////////////////////////////////
