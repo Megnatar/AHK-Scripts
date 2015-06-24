@@ -32,30 +32,19 @@ If (bNum0 = 0) {			;Declare it in the auto-execution section!
 Return
 ;//////////////////////////Single, Double or Down key state //////////////////////////
 
-/*
-Here I'm using Settimer to clear the variable declared as Counter. Wich holds the times/number the 'W' key
-is pressed. This method is fast and does not wait for the settimer routine to reach zero like most other
-examples do.
-*/
-
-~W::
-if Counter = 1          ; Counter is empty the first time you press W so this will be skipped.
-{                       ; Press W again then the value of counter is 1, the ++ operator increments +1
-    	Counter++       ; making the value of counter 2.
+~W::                    ;This will work best when single click is handled by the programe you use it on
+if Counter =            
+{                       
+    	Counter++       
+	KeyWait, w
+	settimer, ClearCounter,
 }
-else
+if Counter >= 1         ; W is pressed twice so SendEvent will send it's key's. Here that will be shift+w
 {
-    	Counter = 1     ; The first time W is pressed counter is empty, setting it here to 1.
-	KeyWait, w      ; Waiting for W to be released making sure no looping occurs.
-	settimer, ClearCounter, 200 ; This timer clears the value of counter after 200ms when W is pressed only once or pusshed down.
+	SendEvent, +{w} 
+        Counter =       
+        settimer, ClearCounter, off 
 }
-if Counter >= 2         ; Here is the double click action. Where counter holds the value of 2
-{
-	SendEvent, +{w} ; Some shift+w combo
-        Counter =       ; Clearing the variable so it can be used again correctly.
-        settimer, ClearCounter, off ; There is no need to keep the timer running so turning it off.
-}
-else
 return
 
 ClearCounter:
