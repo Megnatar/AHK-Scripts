@@ -111,31 +111,27 @@ return
 
  ;///////////////Same as above but the ~ prefix handles single click actions//////////////////
 		
-~Lbutton:				 
+Lbutton:				 
 keywait, Lbutton, T0.15
 if errorlevel = 1 
 {
     while GetKeyState("Lbutton", "P") 
     {
-        send, {Lbutton down}  
-        				;Or use some other key to send while Lbutton is held down.
-        KeyWait, Lbutton 
+        send, +{w down}  	;Holding down the left mouse button wil also hold down Shift+w
+        KeyWait, Lbutton 	;Waiting for lbutton to be released
     }
-    send, {Lbutton up}  
+    send, +{w up} 
 return 
 }
 else
 keywait, Lbutton, D T0.15
 if errorlevel = 0          
 {
-    send, {q down}			;Bubble click will send Q and W key down
-    send, {w down}
-    KeyWait, Lbutton
-    send, {q up}			;And sending key's up again once Lbutton is released from doubleclick.
-    send, {w up}
-    return               
+	SendEvent {space} ; Left click twice will send space	
+    	return               
  }
-
+SendEvent {Lbutton}
+Return
 
 ;/////Same as above but in combination with a second key held down./////
 
