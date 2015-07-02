@@ -11,12 +11,11 @@ IfExist %A_ScriptName%
      IniRead, xPoss, %A_ScriptName%, GuiPoss, xPoss
      If (xPoss = "")
      {
-          
-          xPoss:=A_ScreenWidth/100*50-113                             ;Or xPoss:=A_ScreenWidth/2-113
+          xPoss:=A_ScreenWidth/100*50-150                             ;Or xPoss:=A_ScreenWidth/2-150
      }
      If (yPoss = "")
      {
-          yPoss:=A_ScreenHeight/100*50-80.5                           ;Or yPoss:=A_ScreenHeight/2-80.5 
+          yPoss:=A_ScreenHeight/100*50-89.5                           ;Or yPoss:=A_ScreenHeight/2-80.5 
      }
      IniRead, timer4, %A_ScriptName%, UserInput, timer4
      IniRead, timer2, %A_ScriptName%, UserInput, timer2
@@ -61,6 +60,10 @@ WinWait,Universal AutoBuff
 WinGetPos,,,wWide,hTall,Universal AutoBuff
 wWide:=wWide/2
 hTall:=hTall/2
+xPoss:=A_ScreenWidth/100*50
+xPoss:=xPoss-wWide
+yPoss:=A_ScreenHeight/100*50
+yPoss:=yPoss-hTall
 Return
 
 ButtonClear: 
