@@ -1,8 +1,8 @@
 #NoEnv  
 #SingleInstance force
-;#KeyHistory 0
+#KeyHistory 0
 SetBatchLines, -1 
-;ListLines, off 
+ListLines, off 
 SetWorkingDir, %A_ScriptDir%
 
 IfExist %A_ScriptName%
@@ -11,6 +11,7 @@ IfExist %A_ScriptName%
      IniRead, xPoss, %A_ScriptName%, GuiPoss, xPoss
      If (xPoss = "")
      {
+          
           xPoss:=A_ScreenWidth/100*50-113                             ;Or xPoss:=A_ScreenWidth/2-113
      }
      If (yPoss = "")
@@ -51,15 +52,25 @@ Gui, Add, Checkbox, x237 y51 w50 h20  vOnOff4 Checked%OnOff4%, on/off
 Gui, Add, Button, x68 y129 w50 h20 , Start
 Gui, Add, Button, x128 y129 w50 h20 , Stop
 Gui, Add, Button, x187 y129 w50 h20 , Exit
-Gui, Add, Button, x100 y150 w100 h20 , ClearVars
+Gui, Add, Button, x14 y90 w32 h28 , Clear
 Gui, Add, Text, x120 y85 w64 h15 , WindowTitle:
 Gui, Add, Edit, x90 y100 w120 h18  vGame, %Game%
 Gui, Show, w300 h179  x%xPoss% y%yPoss%, Universal AutoBuff
+
+WinWait,Universal AutoBuff
+WinGetPos,,,wWide,hTall,Universal AutoBuff
+wWide:=wWide/2
+hTall:=hTall/2
 Return
 
-ButtonClearVars: 
-xPoss:=A_ScreenWidth/100*50-148.5
-yPoss:=A_ScreenHeight/100*50-89.5
+ButtonClear: 
+Gui, submit, nohide 
+xPoss:=A_ScreenWidth/100*50
+xPoss:=xPoss-wWide
+yPoss:=A_ScreenHeight/100*50
+yPoss:=yPoss-hTall
+xPoss1:=xPoss
+yPoss1:=yPoss
 timer4=
 timer2=
 timer3=
@@ -71,8 +82,8 @@ OnOff1=0
 Game=
 Key1=1
 Key2=2
-Key3=3
-Key4=4
+Key3=A
+Key4=B
 GuiControl, Text, Game, %Game%
 GuiControl, Text, Key1, %Key1%
 GuiControl, Text, Key2, %Key2%
@@ -84,24 +95,23 @@ GuiControl, Text, Time3, %timer3%
 GuiControl, Text, Time4, %timer4%
 return
 
-
 !q::                ;Alt+Q = Quit/Exit
 ButtonExit:
 GuiClose: 
-WinGetPos, xPoss, yPoss
+If (xPoss1 <> xPoss || yPoss1 <> yPoss ) 
+{
+     WinGetPos,xPoss,yPoss
+}
 IniWrite, %xPoss%, %A_ScriptName%, GuiPoss, xPoss
 IniWrite, %yPoss%, %A_ScriptName%, GuiPoss, yPoss
-
 IniWrite, %timer4%, %A_ScriptName%, UserInput, timer4
 IniWrite, %timer2%, %A_ScriptName%, UserInput, timer2
 IniWrite, %timer3%, %A_ScriptName%, UserInput, timer3
 IniWrite, %timer1%, %A_ScriptName%, UserInput, timer1
-
 IniWrite, %Key1%, %A_ScriptName%, UserInput, Key1
 IniWrite, %Key2%, %A_ScriptName%, UserInput, Key2
 IniWrite, %Key3%, %A_ScriptName%, UserInput, Key3
 IniWrite, %Key4%, %A_ScriptName%, UserInput, Key4
-
 IniWrite, %OnOff4%, %A_ScriptName%, UserInput, OnOff4
 IniWrite, %OnOff2%, %A_ScriptName%, UserInput, OnOff2
 IniWrite, %OnOff3%, %A_ScriptName%, UserInput, OnOff3
@@ -111,10 +121,6 @@ ExitApp
 
 !p::                ;Alt+P =Stop/Pause
 ButtonStop:
-Settimer, Buff1, Off
-Settimer, Buff2, Off
-Settimer, Buff3, Off
-Settimer, Buff4, Off
 SetTimer, Show1, Off
 SetTimer, Show2, Off 
 SetTimer, Show3, Off 
@@ -129,7 +135,6 @@ Return
 ButtonStart:
 WinActivate, %game% 
 Gui, submit, nohide        
-
 Key1 = %Key1%
 Key2 = %Key2%
 Key3 = %Key3%
@@ -146,56 +151,31 @@ Time1 := Time1 * 1000
 Time2 := Time2 * 1000
 Time3 := Time3 * 1000
 Time4 := Time4 * 1000
-
 ;--------------------------Timer1--------------------------
 If (OnOff1 = True){
-     Settimer, Buff1, %Time1%     
      SetTimer, Show1, 1000                
-}Else{
-    Settimer, Buff1, Off          
+}Else{       
     SetTimer, Show1, Off
 }
 ;--------------------------Timer2--------------------------
 If (onoff2 = True){
-     Settimer, Buff2, %Time2%
      SetTimer, Show2, 1000
 }Else{
-    Settimer, Buff2, Off
     SetTimer, Show2, Off
 }
 ;--------------------------Timer3--------------------------
 If (onoff3 = True){
-     Settimer, Buff3, %Time3%
      SetTimer, Show3, 1000
 }Else{
-    Settimer, Buff3, Off
     SetTimer, Show3, Off
 }
 ;--------------------------Timer4--------------------------
 If (OnOff4 = True){
-     Settimer, Buff4, %Time4%
      SetTimer, Show4, 1000
 }Else{
-    Settimer, Buff4, Off
     SetTimer, Show4, Off
 }
 Return
-
-Buff1:
-SendEvent, {4 down}{4 up}                             
-return
-
-Buff2:
-SendEvent, {3 down}{3 up}  
-return
-
-Buff3:
-SendEvent, {2 down}{2 up}  
-return
-
-Buff4:
-SendEvent, {1 down}{1 up}  
-return
 ;--------------------------GuiUpDateEvent1--------------------------
 Show1:
 Stop1 += 1              
@@ -203,7 +183,8 @@ Counter1 := timer1-Stop1
 GuiControl, Text, Time1, %Counter1% 
 If Stop1 = %timer1%                
 {
-     Stop1 = 0                          
+     Stop1 = 0
+     SendEvent, {%Key1%} 
 }
 return
 ;--------------------------GuiUpDateEvent2--------------------------
@@ -214,6 +195,7 @@ GuiControl, Text, Time2, %Counter2%
 If Stop2 = %Timer2% 
 {
      Stop2 = 0
+     SendEvent, {%Key2%}
 }
 return
 ;--------------------------GuiUpDateEvent3--------------------------
@@ -224,6 +206,7 @@ GuiControl, Text, Time3, %Counter3%
 If Stop3 = %Timer3% 
 {
      Stop3 = 0
+     SendEvent, {%Key3%}
 }
 return
 ;--------------------------GuiUpDateEvent4--------------------------
@@ -234,6 +217,7 @@ GuiControl, Text, Time4, %Counter4%
 If Stop4 = %timer4% 
 {
      Stop4 = 0
+     SendEvent, {%Key4%}
 }
 return
 ;--------------------------Script Variables--------------------------
@@ -246,14 +230,14 @@ yPoss=
 timer4=
 timer2=
 timer3=
-timer1=
-OnOff4=0
+timer1=3
+OnOff4=1
 OnOff2=0
 OnOff3=0
-OnOff1=0
+OnOff1=1
 Game=
 Key1=1
 Key2=2
-Key3=3
-Key4=4
+Key3=A
+Key4=B
 */
