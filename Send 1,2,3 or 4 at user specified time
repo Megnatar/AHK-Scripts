@@ -11,7 +11,7 @@ IfExist %A_ScriptName%
      IniRead, xPoss, %A_ScriptName%, GuiPoss, xPoss
      If (xPoss = "")
      {
-          xPoss:=A_ScreenWidth/100*50-150                             ;Or xPoss:=A_ScreenWidth/2-150
+          xPoss:=A_ScreenWidth/100*50-150                            ;Or xPoss:=A_ScreenWidth/2-113
      }
      If (yPoss = "")
      {
@@ -31,28 +31,23 @@ IfExist %A_ScriptName%
      IniRead, OnOff1, %A_ScriptName%, UserInput, OnOff1
      IniRead, Game, %A_ScriptName%, UserInput, Game
 }
-
 Gui, Add, Edit, x21 y11 w20 h20 vKey1, %Key1%
 Gui, Add, Edit, x41 y11 w30 h20 vTime1 0x2000, %timer1%
 Gui, Add, Checkbox, x80 y11 w50 h20  vOnOff1 Checked%OnOff1%, on/off 
-
 Gui, Add, Edit, x179 y11 w20 h20 vKey2 , %Key2%
 Gui, Add, Edit, x199 y11 w30 h20 vTime2 0x2000, %timer2%
 Gui, Add, Checkbox, x237 y11 w50 h20  vOnOff2 Checked%OnOff2%, on/off 
-
 Gui, Add, Edit, x21 y51 w20 h20 vKey3, %Key3%
 Gui, Add, Edit, x41 y51 w30 h20 vTime3 0x2000, %timer3%
 Gui, Add, Checkbox, x80 y51 w50 h20 vOnOff3 Checked%OnOff3%, on/off 
-
 Gui, Add, Edit, x179 y51 w20 h20 vKey4, %Key4%
 Gui, Add, Edit, x199 y51 w30 h20 vTime4 0x2000, %timer4% 
 Gui, Add, Checkbox, x237 y51 w50 h20  vOnOff4 Checked%OnOff4%, on/off
-
 Gui, Add, Button, x68 y129 w50 h20 , Start
 Gui, Add, Button, x128 y129 w50 h20 , Stop
 Gui, Add, Button, x187 y129 w50 h20 , Exit
 Gui, Add, Button, x14 y90 w32 h28 , Clear
-Gui, Add, Text, x120 y85 w64 h15 , WindowTitle:
+Gui, Add, Text, x110 y85 w64 h15 , WindowTitle:
 Gui, Add, Edit, x90 y100 w120 h18  vGame, %Game%
 Gui, Show, w300 h179  x%xPoss% y%yPoss%, Universal AutoBuff
 
@@ -96,12 +91,27 @@ GuiControl, Text, Time1, %timer1%
 GuiControl, Text, Time2, %timer2%
 GuiControl, Text, Time3, %timer3%
 GuiControl, Text, Time4, %timer4%
+Gui, Show, w300 h179  x%xPoss% y%yPoss%, Universal AutoBuff
 return
 
 !q::                ;Alt+Q = Quit/Exit
 ButtonExit:
 GuiClose: 
-If (xPoss1 <> xPoss || yPoss1 <> yPoss) 
+Gui, submit
+Key1 = %Key1%
+Key2 = %Key2%
+Key3 = %Key3%
+Key4 = %Key4%
+timer4 = %Time4%          
+Timer2 = %Time2%
+Timer3 = %Time3%
+timer1 = %Time1%
+Stop1 = 0                 
+Stop2 = 0 
+Stop3 = 0 
+Stop4 = 0
+
+If (xPoss1 <> xPoss || yPoss1 <> yPoss ) 
 {
      WinGetPos,xPoss,yPoss
 }
@@ -179,7 +189,7 @@ If (OnOff4 = True){
     SetTimer, Show4, Off
 }
 Return
-;--------------------------GuiUpDateEvent1--------------------------
+;--------------------------GuiUpdateEvent1--------------------------
 Show1:
 Stop1 += 1              
 Counter1 := timer1-Stop1 
@@ -190,7 +200,7 @@ If Stop1 = %timer1%
      SendEvent, {%Key1%} 
 }
 return
-;--------------------------GuiUpDateEvent2--------------------------
+;--------------------------GuiUpdateEvent2--------------------------
 Show2:
 Stop2 += 1 
 Counter2 := Timer2-Stop2 
@@ -201,7 +211,7 @@ If Stop2 = %Timer2%
      SendEvent, {%Key2%}
 }
 return
-;--------------------------GuiUpDateEvent3--------------------------
+;--------------------------GuiUpdateEvent3--------------------------
 Show3:
 Stop3 += 1 
 Counter3 := Timer3-Stop3
@@ -212,7 +222,7 @@ If Stop3 = %Timer3%
      SendEvent, {%Key3%}
 }
 return
-;--------------------------GuiUpDateEvent4--------------------------
+;--------------------------GuiUpdateEvent4--------------------------
 Show4:
 Stop4 += 1 
 Counter4 := timer4-Stop4
@@ -233,14 +243,14 @@ yPoss=
 timer4=
 timer2=
 timer3=
-timer1=3
+timer1=
 OnOff4=1
-OnOff2=0
-OnOff3=0
+OnOff2=1
+OnOff3=1
 OnOff1=1
 Game=
 Key1=1
 Key2=2
 Key3=A
-Key4=B
+Key4=r
 */
