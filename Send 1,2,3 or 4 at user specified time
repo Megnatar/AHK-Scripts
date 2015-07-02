@@ -203,9 +203,9 @@ timer4=
 timer2=
 timer3=
 timer1=
-OnOff4=
-OnOff2=
-OnOff3=
-OnOff1=
+OnOff4=0
+OnOff2=0
+OnOff3=0
+OnOff1=0
 Game=
 */
