@@ -24,8 +24,8 @@ IniRead, Game, Settings.ini, UserInput, Game
 }
 else
 {
-xPoss=0
-yPoss=0
+xPoss:=A_ScreenWidth/100*50-113     ;xPoss:=A_ScreenWidth/2-113
+yPoss:=A_ScreenHeight/100*50-80.5   ;yPoss:=A_ScreenHeight/2-80.5
 OnOff1=0
 OnOff2=0
 OnOff3=0
