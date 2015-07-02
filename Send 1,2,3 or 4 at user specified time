@@ -98,7 +98,7 @@ return
 !q::                ;Alt+Q = Quit/Exit
 ButtonExit:
 GuiClose: 
-If (xPoss1 <> xPoss || yPoss1 <> yPoss ) 
+If (xPoss1 <> xPoss || yPoss1 <> yPoss) 
 {
      WinGetPos,xPoss,yPoss
 }
