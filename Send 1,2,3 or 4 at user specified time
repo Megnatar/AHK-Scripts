@@ -1,95 +1,90 @@
-#NoEnv
+#NoEnv  
 #SingleInstance force
+#KeyHistory 0
 SetBatchLines, -1 
 ListLines, off 
-DetectHiddenWindows, on
-SetKeyDelay, 20, 20
 SetWorkingDir, %A_ScriptDir%
 
-IfExist, %A_ScriptDir%\Settings.ini
-{
-IniRead, xPoss, Settings.ini, GuiPoss, xPoss
-IniRead, yPoss, Settings.ini, GuiPoss, yPoss
-
-IniRead, timer1, Settings.ini, UserInput, timer1
-IniRead, timer2, Settings.ini, UserInput, timer2
-IniRead, timer3, Settings.ini, UserInput, timer3
-IniRead, timer4, Settings.ini, UserInput, timer4
-
-IniRead, OnOff1, Settings.ini, UserInput, OnOff1
-IniRead, OnOff2, Settings.ini, UserInput, OnOff2
-IniRead, OnOff3, Settings.ini, UserInput, OnOff3
-IniRead, OnOff4, Settings.ini, UserInput, OnOff4
-IniRead, Game, Settings.ini, UserInput, Game
-}
-else
-{
-xPoss:=A_ScreenWidth/100*50-113     ;xPoss:=A_ScreenWidth/2-113
-yPoss:=A_ScreenHeight/100*50-80.5   ;yPoss:=A_ScreenHeight/2-80.5
-OnOff1=0
+OnOff4=0
 OnOff2=0
 OnOff3=0
-OnOff4=0
-IniWrite, %xPoss%, Settings.ini, GuiPoss, xPoss
-IniWrite, %yPoss%, Settings.ini, GuiPoss, yPoss
+OnOff1=0
 
-IniWrite, %timer1%, Settings.ini, UserInput, timer1
-IniWrite, %timer2%, Settings.ini, UserInput, timer2
-IniWrite, %timer3%, Settings.ini, UserInput, timer3
-IniWrite, %timer4%, Settings.ini, UserInput, timer4
+IfExist %A_ScriptName%
+{
+     If (xPoss = "")
+     {
+          xPoss:=A_ScreenWidth/100*50-113                                                       ;xPoss:=A_ScreenWidth/2-113
+     }
+     else
+     {
+          IniRead, xPoss, %A_ScriptName%, GuiPoss, xPoss
+     }
+     If (yPoss = "")
+     {
+          yPoss:=A_ScreenHeight/100*50-80.5                                                 ;yPoss:=A_ScreenHeight/2-80.5 
+     }
+     else
+     {
+          IniRead, yPoss, %A_ScriptName%, GuiPoss, yPoss
+     }
 
-IniWrite, %OnOff1%, Settings.ini, UserInput, OnOff1
-IniWrite, %OnOff2%, Settings.ini, UserInput, OnOff2
-IniWrite, %OnOff3%, Settings.ini, UserInput, OnOff3
-IniWrite, %OnOff4%, Settings.ini, UserInput, OnOff4
-IniWrite, %Game%, Settings.ini, UserInput, Game
+     IniRead, timer4, %A_ScriptName%, UserInput, timer4
+     IniRead, timer2, %A_ScriptName%, UserInput, timer2
+     IniRead, timer3, %A_ScriptName%, UserInput, timer3
+     IniRead, timer1, %A_ScriptName%, UserInput, timer1
+
+     IniRead, OnOff4, %A_ScriptName%, UserInput, OnOff4
+     IniRead, OnOff2, %A_ScriptName%, UserInput, OnOff2
+     IniRead, OnOff3, %A_ScriptName%, UserInput, OnOff3
+     IniRead, OnOff1, %A_ScriptName%, UserInput, OnOff1
+     IniRead, Game, %A_ScriptName%, UserInput, Game
 }
+Gui, Add, Text, x15 y16 w20 h20, 1
+Gui, Add, Edit, x35 y16 w30 h20 vTime1 0x2000, %timer1%
+Gui, Add, Checkbox, x65 y16 w50 h20 vOnOff1 Checked%OnOff1%, on/off 
 
-Gui, Add, Text, x115 y56 w20 h20, 4
-Gui, Add, Edit, x135 y56 w30 h20 vTime1 0x2000, %timer1%  
-Gui, Add, Checkbox, x165 y56 w50 h20 vOnOff1 Checked%OnOff1%, on/off
-Gui, Add, Text, x115 y16 w20 h20, 3
+Gui, Add, Text, x115 y16 w20 h20, 2
 Gui, Add, Edit, x135 y16 w30 h20 vTime2 0x2000, %timer2%
 Gui, Add, Checkbox, x165 y16 w50 h20 vOnOff2 Checked%OnOff2%, on/off 
-Gui, Add, Text, x15 y56 w20 h20, 2
+
+Gui, Add, Text, x15 y56 w20 h20, 3
 Gui, Add, Edit, x35 y56 w30 h20 vTime3 0x2000, %timer3%
 Gui, Add, Checkbox, x65 y56 w50 h20 vOnOff3 Checked%OnOff3%, on/off
-Gui, Add, Text, x15 y16 w20 h20, 1
-Gui, Add, Edit, x35 y16 w30 h20 vTime4 0x2000, %timer4%
-Gui, Add, Checkbox, x65 y16 w50 h20 vOnOff4 Checked%OnOff4%, on/off 
+
+Gui, Add, Text, x115 y56 w20 h20, 4
+Gui, Add, Edit, x135 y56 w30 h20 vTime4 0x2000, %timer4%  
+Gui, Add, Checkbox, x165 y56 w50 h20 vOnOff4 Checked%OnOff4%, on/off
+
 Gui, Add, Button, x23 y134 w50 h20, Start
 Gui, Add, Button, x83 y134 w50 h20, Stop
-Gui, Add, Button, x142 y133 w50 h20, Exit
+Gui, Add, Button, x142 y134 w50 h20, Exit
 Gui, Add, Text, x80 y90 w64 h15, WindowTitle:
 Gui, Add, Edit, x67 y106 w95 h18 vGame, %Game%
 Gui, Add, Text, x81 y91 w64 h15, WindowTitle: 
 Gui, Show, w226 h161  x%xPoss% y%yPoss%, Universal AutoBuff
 Return
 
-!q:: 
-Gosub, ButtonExit
-
-GuiClose: 
-Gosub, ButtonExit
-
+!q::                ;Alt+Q = Quit/Exit
 ButtonExit:
+GuiClose: 
 WinGetPos, xPoss, yPoss
-IniWrite, %xPoss%, Settings.ini, GuiPoss, xPoss
-IniWrite, %yPoss%, Settings.ini, GuiPoss, yPoss
+IniWrite, %xPoss%, %A_ScriptName%, GuiPoss, xPoss
+IniWrite, %yPoss%, %A_ScriptName%, GuiPoss, yPoss
 
-IniWrite, %timer1%, Settings.ini, UserInput, timer1
-IniWrite, %timer2%, Settings.ini, UserInput, timer2
-IniWrite, %timer3%, Settings.ini, UserInput, timer3
-IniWrite, %timer4%, Settings.ini, UserInput, timer4
+IniWrite, %timer4%, %A_ScriptName%, UserInput, timer4
+IniWrite, %timer2%, %A_ScriptName%, UserInput, timer2
+IniWrite, %timer3%, %A_ScriptName%, UserInput, timer3
+IniWrite, %timer1%, %A_ScriptName%, UserInput, timer1
 
-IniWrite, %OnOff1%, Settings.ini, UserInput, OnOff1
-IniWrite, %OnOff2%, Settings.ini, UserInput, OnOff2
-IniWrite, %OnOff3%, Settings.ini, UserInput, OnOff3
-IniWrite, %OnOff4%, Settings.ini, UserInput, OnOff4
-IniWrite, %Game%, Settings.ini, UserInput, Game
+IniWrite, %OnOff4%, %A_ScriptName%, UserInput, OnOff4
+IniWrite, %OnOff2%, %A_ScriptName%, UserInput, OnOff2
+IniWrite, %OnOff3%, %A_ScriptName%, UserInput, OnOff3
+IniWrite, %OnOff1%, %A_ScriptName%, UserInput, OnOff1
+IniWrite, %Game%, %A_ScriptName%, UserInput, Game
 ExitApp
 
-!p::       
+!p::                ;Alt+P =Stop/Pause
 ButtonStop:
 Settimer, Buff1, Off
 Settimer, Buff2, Off
@@ -105,14 +100,15 @@ GuiControl, Text, Time3, %timer3%
 GuiControl, Text, Time4, %timer4%
 Return
 
+!s::                ;Alt+S = Start
 ButtonStart:
 WinActivate, %game% 
 Gui, submit, nohide        
 
-Timer1 = %Time1%          
+timer4 = %Time4%          
 Timer2 = %Time2%
 Timer3 = %Time3%
-Timer4 = %Time4%
+timer1 = %Time1%
 Stop1 = 0                 
 Stop2 = 0 
 Stop3 = 0 
@@ -122,7 +118,7 @@ Time2 := Time2 * 1000
 Time3 := Time3 * 1000
 Time4 := Time4 * 1000
  
-If (onoff1 = True) 
+If (OnOff1 = True) 
 {
      Settimer, Buff1, %Time1%     
      SetTimer, Show1, 1000        
@@ -157,7 +153,7 @@ Else
     Settimer, Buff3, Off
     SetTimer, Show3, Off
 }
-If (onoff4 = True) 
+If (OnOff4 = True) 
 {
      Settimer, Buff4, %Time4%
      SetTimer, Show4, 1000
@@ -188,9 +184,9 @@ return
 
 Show1:
 Stop1 += 1              
-Counter1 := Timer1-Stop1 
+Counter1 := timer1-Stop1 
 GuiControl, Text, Time1, %Counter1% 
-If Stop1 = %Timer1%                
+If Stop1 = %timer1%                
 {
 Stop1 = 0                          
 }
@@ -218,10 +214,29 @@ return
 
 Show4:
 Stop4 += 1 
-Counter4 := Timer4-Stop4
+Counter4 := timer4-Stop4
 GuiControl, Text, Time4, %Counter4% 
-If Stop4 = %Timer4% 
+If Stop4 = %timer4% 
 {
 Stop4 = 0
 }
 return
+;
+;--------------------------Script Variables--------------------------
+;--------------------------DO NOT DELETE--------------------------
+;
+/*
+[GuiPoss]
+xPoss=
+yPoss=
+[UserInput]
+timer4=
+timer2=
+timer3=
+timer1=
+OnOff4=
+OnOff2=
+OnOff3=
+OnOff1=
+Game=
+*/
