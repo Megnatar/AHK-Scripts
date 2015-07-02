@@ -14,7 +14,7 @@ IfExist %A_ScriptName%
 {
      If (xPoss = "")
      {
-          xPoss:=A_ScreenWidth/100*50-113                                                       ;xPoss:=A_ScreenWidth/2-113
+          xPoss:=A_ScreenWidth/100*50-113                   ;Or simpler with  xPoss:=A_ScreenWidth/2-113
      }
      else
      {
@@ -22,7 +22,7 @@ IfExist %A_ScriptName%
      }
      If (yPoss = "")
      {
-          yPoss:=A_ScreenHeight/100*50-80.5                                                 ;yPoss:=A_ScreenHeight/2-80.5 
+          yPoss:=A_ScreenHeight/100*50-80.5                 ;Or simpler with yPoss:=A_ScreenHeight/2-80.5 
      }
      else
      {
@@ -65,7 +65,7 @@ Gui, Add, Text, x81 y91 w64 h15, WindowTitle:
 Gui, Show, w226 h161  x%xPoss% y%yPoss%, Universal AutoBuff
 Return
 
-!q::                ;Alt+Q = Quit/Exit
+!q::                                                             ;Alt+Q = Quit/Exit
 ButtonExit:
 GuiClose: 
 WinGetPos, xPoss, yPoss
@@ -84,7 +84,7 @@ IniWrite, %OnOff1%, %A_ScriptName%, UserInput, OnOff1
 IniWrite, %Game%, %A_ScriptName%, UserInput, Game
 ExitApp
 
-!p::                ;Alt+P =Stop/Pause
+!p::                                                             ;Alt+P =Stop/Pause
 ButtonStop:
 Settimer, Buff1, Off
 Settimer, Buff2, Off
@@ -100,7 +100,7 @@ GuiControl, Text, Time3, %timer3%
 GuiControl, Text, Time4, %timer4%
 Return
 
-!s::                ;Alt+S = Start
+!s::                                                             ;Alt+S = Start
 ButtonStart:
 WinActivate, %game% 
 Gui, submit, nohide        
