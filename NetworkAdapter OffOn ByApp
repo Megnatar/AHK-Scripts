@@ -1,13 +1,10 @@
 #NoEnv  
 #Persistent
 #NoTrayIcon
-SetTitleMatchMode, 2
-SetTitleMatchMode, RegEx
+#SingleInstance force
 SetWorkingDir %A_ScriptDir% 
-DetectHiddenWindows, on
-DetectHiddenText, on
 SetBatchLines, -1
-SetWinDelay, 100
+SetWinDelay, -1
 ListLines, off
 
 IfnotExist, %A_ScriptDir%\NetAccess.acc
@@ -17,20 +14,14 @@ FileAppend, `nahk_exe iexplore.exe, %A_ScriptDir%\NetAccess.acc
 FileAppend, `nahk_exe chrome.exe, %A_ScriptDir%\NetAccess.acc
 FileAppend, `nahk_exe opera.exe, %A_ScriptDir%\NetAccess.acc
 }
-IfExist, %A_ScriptDir%\NetAccess.acc
-CheckRun = 1
 
 for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE PhysicalAdapter  = True")
 {
         if (objItem.PNPDeviceID != "ROOT\NET\0000" && objItem.PNPDeviceID != "ROOT\VMWARE\0000")
         {
             NicName := objItem.NetConnectionID[0]
-            Interface_ID := objItem.DeviceID
         }
-    NicToToggle = "%Nicname%"
 }
-
-AdapterActive: 
 Loop, read, %A_ScriptDir%\NetAccess.acc
 {
         Loop, parse, A_LoopReadLine, %A_Tab%
@@ -38,44 +29,25 @@ Loop, read, %A_ScriptDir%\NetAccess.acc
             GroupAdd, NetAccess, %A_LoopField%
         }
 }
-IfWinNotExist, ahk_Group NetAccess
+
+RunWait, *Runas %comspec% /c netsh.exe interface set interface name=%NicName% admin=disable, , min
+Gosub, EnableAdapter
+
+EnableAdapter:
+WinWaitActive, ahk_Group NetAccess
+IfWinExist, ahk_Group NetAccess
 {
-        if CheckRun = 1
-        {
-            Settimer, AdapterActive, off
-            objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
-            objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Disable")
-            CheckRun--
-        }
-        if  CheckRun = 0
-        { 
-            Settimer, AdapterNotActive, 400
-            gosub, AdapterNotActive
-        }
+        RunWait, *Runas %comspec% /c netsh.exe interface set interface name=%NicName% admin=enable, , min
+        Gosub, DisableAdapter
 }
 return
 
-AdapterNotActive:
-Loop, read, %A_ScriptDir%\NetAccess.acc
+DisableAdapter:
+WinGet, Process_ID, PID, ahk_Group NetAccess
+Process, WaitClose, %Process_ID%
+IfWinNotExist, ahk_Group NetAccess
 {
-        Loop, parse, A_LoopReadLine, %A_Tab%
-        {
-            GroupAdd, NetAccess, %A_LoopField%
-        }
-}
-IfWinExist, ahk_Group NetAccess
-{
-        if CheckRun = 0 
-        {
-            Settimer, AdapterNotActive, off
-            objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
-            objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Enable")
-            CheckRun++
-        }
-        if CheckRun = 1
-        {
-            Settimer, AdapterActive, 400
-            gosub, AdapterActive
-        }
+        RunWait,  *Runas %comspec% /c netsh.exe interface set interface name=%NicName% admin=disable, , min
+        GoSub, EnableAdapter
 }
 return
