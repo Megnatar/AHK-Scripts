@@ -1,19 +1,11 @@
 #NoEnv  
 #Persistent
-#NoTrayIcon
 #SingleInstance force
+#NoTrayIcon
 SetWorkingDir %A_ScriptDir% 
 SetBatchLines, -1
 SetWinDelay, -1
 ListLines, off
-
-IfnotExist, %A_ScriptDir%\NetAccess.acc
-{
-FileAppend, ahk_exe firefox.exe, %A_ScriptDir%\NetAccess.acc
-FileAppend, `nahk_exe iexplore.exe, %A_ScriptDir%\NetAccess.acc
-FileAppend, `nahk_exe chrome.exe, %A_ScriptDir%\NetAccess.acc
-FileAppend, `nahk_exe opera.exe, %A_ScriptDir%\NetAccess.acc
-}
 
 for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE PhysicalAdapter  = True")
 {
@@ -21,7 +13,16 @@ for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win
         {
             NicName := objItem.NetConnectionID[0]
         }
+Run, *Runas %comspec% /c netsh.exe interface set interface name=%NicName% admin=disable, , Hide
 }
+IfnotExist, %A_ScriptDir%\NetAccess.acc
+{
+        FileAppend, ahk_exe firefox.exe, %A_ScriptDir%\NetAccess.acc
+        FileAppend, `nahk_exe iexplore.exe, %A_ScriptDir%\NetAccess.acc
+        FileAppend, `nahk_exe chrome.exe, %A_ScriptDir%\NetAccess.acc
+        FileAppend, `nahk_exe opera.exe, %A_ScriptDir%\NetAccess.acc
+}
+EnableAdapter:
 Loop, read, %A_ScriptDir%\NetAccess.acc
 {
         Loop, parse, A_LoopReadLine, %A_Tab%
@@ -29,25 +30,20 @@ Loop, read, %A_ScriptDir%\NetAccess.acc
             GroupAdd, NetAccess, %A_LoopField%
         }
 }
-
-RunWait, *Runas %comspec% /c netsh.exe interface set interface name=%NicName% admin=disable, , min
-Gosub, EnableAdapter
-
-EnableAdapter:
 WinWaitActive, ahk_Group NetAccess
 IfWinExist, ahk_Group NetAccess
 {
-        RunWait, *Runas %comspec% /c netsh.exe interface set interface name=%NicName% admin=enable, , min
+        Run,  *Runas %comspec% /c netsh.exe interface set interface name=%NicName% admin=enable, , Hide
         Gosub, DisableAdapter
 }
-return
 
 DisableAdapter:
+sleep, 50
 WinGet, Process_ID, PID, ahk_Group NetAccess
 Process, WaitClose, %Process_ID%
 IfWinNotExist, ahk_Group NetAccess
 {
-        RunWait,  *Runas %comspec% /c netsh.exe interface set interface name=%NicName% admin=disable, , min
+        Run,  *Runas %comspec% /c netsh.exe interface set interface name=%NicName% admin=disable, , Hide
         GoSub, EnableAdapter
 }
 return
