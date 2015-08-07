@@ -2,6 +2,7 @@
 #Persistent
 #SingleInstance force
 #NoTrayIcon
+DetectHiddenWindows, on
 SetWorkingDir %A_ScriptDir% 
 SetBatchLines, -1
 SetWinDelay, -1
@@ -30,15 +31,13 @@ Loop, read, %A_ScriptDir%\NetAccess.acc
             GroupAdd, NetAccess, %A_LoopField%
         }
 }
-WinWaitActive, ahk_Group NetAccess
+WinWait, ahk_Group NetAccess
 IfWinExist, ahk_Group NetAccess
 {
         Run,  *Runas %comspec% /c netsh.exe interface set interface name=%NicName% admin=enable, , Hide
         Gosub, DisableAdapter
 }
-
 DisableAdapter:
-sleep, 50
 WinGet, Process_ID, PID, ahk_Group NetAccess
 Process, WaitClose, %Process_ID%
 IfWinNotExist, ahk_Group NetAccess
