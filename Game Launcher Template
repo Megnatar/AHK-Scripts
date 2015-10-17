@@ -1,127 +1,115 @@
-/* 
-Two scripts for launching a game or application. The first is using SetTimer for closing the script once the
-application quits. The Second script does the exect same thing but simply waits for the programe/process
-to close, thus it's much faster. Variables are blank and they need to be specified, but Process_ID will 
-be assigned by the script. Use SendEvent or SendPlay for sending key's. SetKeyDelay might need some adjustments
-when the key's are not triggerd by you're application. Timing is very important!
+/*
+[Variables]
+GameExe=
+GamePath=                                                         
+WinTitle=
+WinClass=
 */
-;////////////////////////Using settimer for terminating script when application closes////////////////////////
-
-;--------------------------AutoExecute Section--------------------------
+;--------------------------AutoExecute Section. Ends where first return is encountered--------------------------
 #NoEnv  
-#SingleInstance, force
-SetKeyDelay, 10, 10
-SetWorkingDir %A_ScriptDir% 
-SetBatchLines,-1 
-ListLines, off 
-detectHiddenWindows, on
+#NoTrayIcon
+#KeyHistory 0
+ListLines,off
+SetBatchLines,-1
+SetKeyDelay,10,10             ;Probably need some adjustment
+SetWorkingDir %A_ScriptDir%
 
-GameExe = 
-GamePath =
-Process_ID = ""
-WinTitle =
-
-GroupAdd, ForThisWinOnly, ahk_exe %GameExe%  ;The #IfWin directive doesn't support variable names. Workaround.
-
-IfWinExist, ahk_exe %GameExe%
-{   
-    WinActivate, %WinTitle%
-    WinGet, Process_ID, PID, ahk_exe %GameExe% 
-} 
-Else 
-If WinNotExist ahk_exe %GameExe%
+IfExist,%A_ScriptName%
 {
-    run,%GameExe%, %GamePath%,,Process_ID   
+    IniRead,GameExe,%A_ScriptName%,Variables,GameExe
+    IniRead,GamePath,%A_ScriptName%,Variables,GamePath
+    IniRead,WinTitle,%A_ScriptName%,Variables,WinTitle
+    IniRead,WinClass,%A_ScriptName%,Variables,WinClass
 }
-
-SetTimer ChkProcess, 5000                   ;5 second period for checking process to close.
-Return
-
-;--------------------------AutoExecute Section End--------------------------
-
-#IfWinActive, ahk_group ForThisWinOnly
+;--------------------------Asking For User Input when variables at the top of this script are blank--------------------------
+again:
+if (GamePath = "" || GameExe = "" ) 
 {
-                                            ;Actions will go here
-}
-                    
-ChkProcess:                                 ;Close script when process isn't active anymore.
-Process, Exist, %Process_ID%
-If ErrorLevel = 0
-Exitapp
-Return
-
-
-;////////////////////////Or Without the use of settimer////////////////////////
-
-;--------------------------AutoExecute Section--------------------------
-#NoEnv  
-#SingleInstance, force
-SetKeyDelay, 10, 10
-SetWorkingDir, %A_ScriptDir%
-SetBatchLines, -1
-detectHiddenWindows, on
-ListLines, off
-
-GameExe = 
-GamePath = 
-WinTitle = 
-Process_ID = ""
-bAutorun = 0
-
-GroupAdd, ForThisWinOnly, %WinTitle%
-GroupAdd, ForThisWinOnly, ahk_exe %GameExe%
-
-IfWinNotExist, ahk_exe %GameExe%
-{
-    run,%GameExe%, %GamePath%,,Process_ID
-    Process, WaitClose, %Process_ID%		;This thread keeps running and waits here for process to close.
-    ExitApp
-}
-else
-IfWinExist, ahk_exe %GameExe%
-{
-    WinActivate, %WinTitle%
-    WinGet, Process_ID, PID, ahk_exe %GameExe%
-    Process, WaitClose, %Process_ID%
-    ExitApp
-}
-#IfWinExist, ahk_group ForThisWinOnly
-#IfWinActive, ahk_group ForThisWinOnly
-{
-
-Xbutton1::                                      ;Togglekey. Autorun when eighter of the two thumb buttons are pressed once.
-Xbutton2::
-If (bAutorun = 0) {
-    SendEvent, {w down}
-    bAutorun++
-}Else{
-    SendEvent, {w up}
-    bAutorun--
-}
-Return
-
-~Lbutton::
-SendEvent, {w up}
-bAutorun = 0
-
-keywait, Lbutton, T0.25                         ;Left mouse click is down as long as the leftbutton is pressed.
-if errorlevel = 1 
-{
-    while GetKeyState("Lbutton", "P") 
+    If (GamePath = "" )
     {
-        SendEvent, {click down}
-        keywait, Lbutton
-        SendEvent, {click up}
-    } 
-return
+        	InputBox,GamePath,,Here you need to write the path to where the game executable is located. Exclude the executable,,700,130,,,,,
+    }
+    If (ErrorLevel = 1)
+    {
+        Exitapp
+    }
+    If (ErrorLevel = 0)
+    {  
+        If (GamePath = "")
+        {
+            MsgBox,,,Please tell me where to find the game,5
+            gosub,Again
+        }
+        Else
+        IniWrite,%GamePath%,%A_ScriptName%,Variables,GamePath
+    }
+    If (GameExe = "" )
+    {
+       InputBox,GameExe,,What is the name of the executable you want to start`, e.g "Game.exe".,,700,130,,,,,
+    }
+    If (ErrorLevel = 1)
+    {
+        Exitapp
+    }
+    If (ErrorLevel = 0)
+    {  
+        If (GameExe = "")
+        {
+            MsgBox,,,Please tell me the name of the executable you trying to launch,5
+            gosub,Again
+        }
+        Else
+        IniWrite,%GameExe%,%A_ScriptName%,Variables,GameExe
+    }
+}
+;--------------------------Starting the game getting WindowClass and title Tittle--------------------------
+IfWinNotExist,ahk_exe %GameExe%
+{
+    run,%GameExe%,%GamePath%,,Process_ID
+    WinWait ahk_pid %Process_ID%   
+    If (WinTitle = "")
+    {
+        Sleep,2000
+        WinGetActiveTitle,WinTitle
+        Sleep,2000
+        IniWrite,%WinTitle%,%A_ScriptName%,Variables,WinTitle
+    }
+    If (WinClass = "")
+    {
+        Sleep,2000
+        WinGetClass,WinClass
+        Sleep,2000
+        IniWrite,%WinClass%,%A_ScriptName%,Variables,WinClass
+    }
+    GroupAdd,GameWindow,ahk_class %WinClass%
+    Process,WaitClose,%Process_ID%
+    ExitApp
 }
 else
-keywait, Lbutton, D T0.25                    	;Shift is down when left button is clicked twice and then pressed down.
-if errorlevel = 0          
+IfWinExist,ahk_exe %GameExe%
 {
-    	SendEvent, {Shift down}
-	KeyWait, Lbutton
-	SendEvent, {Shift up}
-    return               
- }
+    WinActivate,%WinTitle%
+    WinGet,Process_ID,PID,ahk_exe %GameExe%
+    If (WinTitle = "")
+    {
+        Sleep,2000
+        WinGetActiveTitle,WinTitle
+        Sleep,2000
+        IniWrite,%WinTitle%,%A_ScriptName%,Variables,WinTitle
+    }
+    If (WinClass = "")
+    {
+        Sleep,2000
+        WinGetClass,WinClass
+        Sleep,2000
+        IniWrite,%WinClass%,%A_ScriptName%,Variables,WinClass
+    }
+    GroupAdd,GameWindow,ahk_class %WinClass%
+    Process,WaitClose,%Process_ID%
+    ExitApp
+}
+;--------------------------Hotkey/Window operation section--------------------------
+#IfWinActive,ahk_group GameWindow
+{
+;	Do whatever needs to be done here
 }
