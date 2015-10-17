@@ -4,6 +4,7 @@ if not A_IsAdmin
         ExitApp
 }
 #NoEnv  
+#Persistent
 #NoTrayIcon
 #SingleInstance off
 DetectHiddenWindows, on
@@ -11,19 +12,19 @@ SetWorkingDir %A_ScriptDir%
 SetBatchLines, -1
 SetWinDelay, -1
 ListLines, off
-
 for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE PhysicalAdapter  = True")
 {
         if (objItem.PNPDeviceID != "ROOT\NET\0000")
             {
                 Interface_ID := objItem.DeviceID
             }
+        objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
+        objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Disable")
 }
 IfnotExist, %A_ScriptDir%\NetAccess.acc
 {
         FileAppend, ahk_exe firefox.exe, %A_ScriptDir%\NetAccess.acc
 }
-
 Settimer, EnableAdapter, 500
 EnableAdapter:
 Loop, read, %A_ScriptDir%\NetAccess.acc
@@ -42,7 +43,6 @@ IfWinExist, ahk_Group NetAccess
 }
 else
 return
-
 DisableAdapter:
 WinGet, Process_ID, PID, ahk_Group NetAccess
 Process, WaitClose, %Process_ID%
