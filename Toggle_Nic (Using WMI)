@@ -16,7 +16,6 @@ for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win
 {
         if (objItem.PNPDeviceID != "ROOT\NET\0000")
             {
-                NicName := objItem.NetConnectionID[0]
                 Interface_ID := objItem.DeviceID
             }
 }
