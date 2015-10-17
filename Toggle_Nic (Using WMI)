@@ -1,0 +1,59 @@
+if not A_IsAdmin
+{
+        Run *RunAs "%A_ScriptFullPath%"
+        ExitApp
+}
+#NoEnv  
+#NoTrayIcon
+#SingleInstance off
+DetectHiddenWindows, on
+SetWorkingDir %A_ScriptDir% 
+SetBatchLines, -1
+SetWinDelay, -1
+ListLines, off
+
+for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE PhysicalAdapter  = True",,48)
+{
+        if (objItem.PNPDeviceID != "ROOT\NET\0000")
+            {
+                NicName := objItem.NetConnectionID[0]
+                Interface_ID := objItem.DeviceID
+            }
+}
+IfnotExist, %A_ScriptDir%\NetAccess.acc
+{
+        FileAppend, ahk_exe firefox.exe, %A_ScriptDir%\NetAccess.acc
+}
+
+Settimer, EnableAdapter, 500
+EnableAdapter:
+Loop, read, %A_ScriptDir%\NetAccess.acc
+{
+        Loop, parse, A_LoopReadLine, %A_Tab%
+        {
+            GroupAdd, NetAccess, %A_LoopField%
+        }
+}
+IfWinExist, ahk_Group NetAccess
+{
+        Settimer, EnableAdapter, off
+        objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
+        objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Enable")
+        Gosub, DisableAdapter
+}
+else
+return
+
+DisableAdapter:
+WinGet, Process_ID, PID, ahk_Group NetAccess
+Process, WaitClose, %Process_ID%
+IfWinExist, ahk_Group NetAccess
+        GoSub, DisableAdapter
+else
+IfWinNotExist, ahk_Group NetAccess
+{
+        objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
+        objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Disable")
+        Settimer, EnableAdapter, 500
+}
+return
