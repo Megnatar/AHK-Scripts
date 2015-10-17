@@ -62,7 +62,7 @@ if (GamePath = "" || GameExe = "" )
         IniWrite,%GameExe%,%A_ScriptName%,Variables,GameExe
     }
 }
-;--------------------------Starting the game getting WindowClass and title Tittle--------------------------
+;--------------------------Starting the game getting WindowClass and title--------------------------
 IfWinNotExist,ahk_exe %GameExe%
 {
     run,%GameExe%,%GamePath%,,Process_ID
