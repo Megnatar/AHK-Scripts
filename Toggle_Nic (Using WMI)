@@ -12,7 +12,7 @@ SetBatchLines, -1
 SetWinDelay, -1
 ListLines, off
 
-for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE PhysicalAdapter  = True",,48)
+for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win32_NetworkAdapter WHERE PhysicalAdapter  = True")
 {
         if (objItem.PNPDeviceID != "ROOT\NET\0000")
             {
