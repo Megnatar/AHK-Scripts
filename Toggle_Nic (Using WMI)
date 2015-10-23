@@ -17,19 +17,14 @@ for objItem in ComObjGet("winmgmts:\\.\root\CIMV2").ExecQuery("SELECT * FROM Win
         {
                 Interface_ID := objItem.DeviceID
         }
-        objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
-        objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Disable")
+        objWMIServiceDisable := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2").ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Disable")
         Menu, tray, Icon,
-       Menu, tray, Icon, c:\windows\system32\pnidui.dll,1
+        Menu, tray, Icon, %A_WinDir%\system32\pnidui.dll,1
 }
 IfnotExist, %A_ScriptDir%\NetAccess.acc
 {
         FileAppend, ahk_exe firefox.exe, %A_ScriptDir%\NetAccess.acc
-        FileAppend, `nahk_exe iexplore.exe, %A_ScriptDir%\NetAccess.acc
-        FileAppend, `nahk_exe chrome.exe, %A_ScriptDir%\NetAccess.acc
-        FileAppend, `nahk_exe opera.exe, %A_ScriptDir%\NetAccess.acc
 }
-
 Settimer, EnableAdapter, 500
 
 Menu, Tray, NoStandard
@@ -53,10 +48,9 @@ Loop, read, %A_ScriptDir%\NetAccess.acc
 IfWinExist, ahk_Group NetAccess
 {
         Settimer, EnableAdapter, off
-        objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
-        objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Enable")
+        objWMIServiceEnable := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2").ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Enable")
         Menu, tray, Icon,
-        Menu, tray, Icon, c:\windows\system32\pnidui.dll,13
+        Menu, tray, Icon, %A_WinDir%\system32\pnidui.dll,13
         Gosub, DisableAdapter
 }
 else
@@ -70,30 +64,27 @@ IfWinExist, ahk_Group NetAccess
 else
 IfWinNotExist, ahk_Group NetAccess
 {
-        objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
-        objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Disable")
+        objWMIServiceDisable := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2").ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Disable")
         Menu, tray, Icon
-        Menu, tray, Icon, c:\windows\system32\pnidui.dll,1
+        Menu, tray, Icon, %A_WinDir%\system32\pnidui.dll,1
         Settimer, EnableAdapter, 500
 }
 return
 
 TurnOn:
 Menu, tray, Icon
-Menu, tray, Icon, c:\windows\system32\pnidui.dll,13
-objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
-objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Enable")
+Menu, tray, Icon, %A_WinDir%\system32\pnidui.dll,13
+objWMIServiceEnable := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2").ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Enable")
 Return
 
 TurnOff:
 Menu, tray, Icon,
-Menu, tray, Icon, c:\windows\system32\pnidui.dll,1
-objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2")
-objStatToggle := objWMIService.ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Disable")
+Menu, tray, Icon,  %A_WinDir%\system32\pnidui.dll,1
+objWMIServiceDisable := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2").ExecMethod("Win32_NetworkAdapter.DeviceID='" Interface_ID "'","Disable")
 return
 
 Settings:
-Run, C:\Windows\explorer.exe shell:::{26EE0668-A00A-44D7-9371-BEB064C98683}\3\::{7007ACC7-3202-11D1-AAD2-00805FC1270E}
+Run, %A_WinDir%\explorer.exe shell:::{26EE0668-A00A-44D7-9371-BEB064C98683}\3\::{7007ACC7-3202-11D1-AAD2-00805FC1270E}
 return
 
 CloseScript:
