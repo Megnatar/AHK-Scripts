@@ -1,3 +1,32 @@
+;//////////////////////////A quicker way for single double & keydown click//////////////////////////
+
+Rbutton:: 
+keywait, Rbutton, T0.20  		;Wait 200ms for Rbuttton to be released. If its released errorlevel is set to 0
+If errorlevel = 0
+{
+	KeyWait,Rbutton, D T0.20 	;Waiting again to check if Rbutton is pushed down once more. True if errorlevel is set to 0 (must be a doubleclick then) 
+	If errorlevel = 0
+	{
+	send {Rbutton down}{Rbutton up} ;Do something here when the button is double clicked
+	send {Rbutton down}{Rbutton up}
+	Return
+	}
+	Else				;Here errorlevel was set to 1, no double click so this a single click.
+	send {Rbutton down}{Rbutton up}
+	return
+}
+Else
+if errorlevel = 1			;In the first check errorlevel was 0, the command timed out so the key was not released so it must still be down
+while GetKeyState("Rbutton", "P") 
+{
+	send {Rbutton down}		;Do something here as long as the key is pressed down.
+	Keywait, Rbutton		;Make the script wait here for Rbutton to be released, or else you flood window to where you be sending the key's to. It will likely crash.
+	send {Rbutton up}		;Once Rbutton is release you need to send the key's up again.
+}
+return
+
+
+
 ;//////////////////////////Toggle Key's//////////////////////////
 ;When the key you sending is already a toggle enabled key. Like shift down to hold possition.
 ;Dont try and use that key, change it in game to something like numpad0, because the game will likely 
