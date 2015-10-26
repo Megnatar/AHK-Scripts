@@ -22,7 +22,7 @@ if errorlevel = 1			;In the first check errorlevel was 0, the command timed out 
 while GetKeyState("Rbutton", "P") 
 {
 	send {Rbutton down}		;Do something here as long as the key is pressed down.
-	Keywait, Rbutton		;You need to make the script wait here for Rbutton to be released!, or else you flood window to where you be sending the key's to. It will likely crash.
+	Keywait, Rbutton		;You need to make the script wait here for Rbutton to be released!, or else you will flood window to where you're sending the key's to. It will likely crash.
 	send {Rbutton up}		;Once Rbutton is release you need to send the key's up again.
 	break
 }
