@@ -9,7 +9,6 @@ If errorlevel = 0
 	{
 		send {Rbutton down}{Rbutton up} ;Do something here when the button is double clicked
 		send {Rbutton down}{Rbutton up}
-	Return
 	}
 	Else				;Here errorlevel was set to 1, no double click so this a single click.
 	If errorlevel = 1
