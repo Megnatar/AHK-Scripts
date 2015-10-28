@@ -10,11 +10,11 @@ WinClass=
 #Persistent						;Script may not close until it recieves a ExitApp command.
 #KeyHistory 0						;Not needed when only running the script.
 ListLines, off						;Not needed when only running the script.
-SetTitleMatchMode, 3					    ;Must be a exact match to the window title.
+SetTitleMatchMode, 3				    ;Must be a exact match to the window title.
 SendMode, Input						;Send command uses the input method. Will ignore SetKeyDelay.
 SetKeyDelay, 50, 50					;Delay for sending keystrokes and press duration. For use with SendEvent.
 SetBatchLines, -1					;Never sleep script in between execution while its running. Full cpu speed.
-SetWorkingDir, %A_ScriptDir%			           ;Set the script to use it's full folder path as it's working directory. In A_ScriptDir the last backslash is excluded.
+SetWorkingDir, %A_ScriptDir%			        ;Set the script to use it's full folder path as it's working directory. In A_ScriptDir the last backslash is excluded.
 
 IfExist,%A_ScriptName%
 {
