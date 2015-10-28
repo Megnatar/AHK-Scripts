@@ -1,4 +1,27 @@
-;//////////////////////////A quicker way for single double & keydown click//////////////////////////
+
+Lbutton:: 
+KeyWait, Lbutton, D T0.20	;Here we make a single click as first action. This works best for Lbutton.
+If errorlevel = 0		;As soon as Lbutton is down Errorlevel is set to zero. Send is trigger the moment Lbutton is pressed down
+{
+    Send, {Lbutton down}
+    KeyWait, Lbutton		:And in this case we have here a click once and key down status.
+    Send, {Lbutton up}
+}
+Else
+KeyWait, Lbutton, T0.20		;When Lbutton is released from the first down status then here Errorlevel is set to zero
+If errorlevel = 0		;The lines below are triggerd/evaluated in a blink of a eye
+{
+    KeyWait,Lbutton, D T0.20	;When Lbutton is pushed down again we have once more Errorlevel = 0, and a double click
+    If errorlevel = 0
+    {
+        Send, {W down}		;When this would be used in a game, double click and holdind down the Lbutton
+        KeyWait, Lbutton	;would couse W to push down. Mostly this wil make the camera move foreward
+        Send, {w up}
+    }
+} 
+return
+
+;////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Rbutton:: 
 keywait, Rbutton, T0.20  		;Wait 200ms for Rbuttton to be released. If its released errorlevel is set to 0
@@ -27,8 +50,6 @@ while GetKeyState("Rbutton", "P")
 	break
 }
 return
-
-
 
 ;//////////////////////////Toggle Key's//////////////////////////
 ;When the key you sending is already a toggle enabled key. Like shift down to hold possition.
@@ -62,6 +83,15 @@ If (bNum0 = 0) {			;Declare it in the auto-execution section!
     bNum0--
 }
 Return
+
+/*
+///////////////////////////////// PLEASE PAY ATTENTION  /////////////////////////////////
+The examples below are not so good as the one's above. The below code is mostly bits and pieces from what
+I learned from other's. But most of them have some form of delay wich makes them slow. The code at the top
+is my own where I make use of Keywait and the fact that when ErrorLevel is set to zerro the code below is
+executed right away. So there is zero to none timeout.
+*/
+
 ;//////////////////////////Single, Double or Down key state //////////////////////////
 
 ~W::                    ;This will work best when single click is handled by the programe you use it on
