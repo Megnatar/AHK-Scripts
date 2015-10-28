@@ -6,8 +6,8 @@ WinTitle=
 WinClass=
 */
 ;--------------------------AutoExecute Section. Ends where first return is encountered--------------------------
-#NoEnv									;Empty variables will not be checkt if there environment variables.
-#Persistent								;Script may not close until it recieves a ExitApp command.
+#NoEnv								;Empty variables will not be checkt if there environment variables.
+#Persistent							;Script may not close until it recieves a ExitApp command.
 #KeyHistory 0							;Not needed when only running the script.
 ListLines, off							;Not needed when only running the script.
 SetTitleMatchMode, 3					;Must be a exact match to the window title.
