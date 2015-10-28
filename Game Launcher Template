@@ -6,13 +6,15 @@ WinTitle=
 WinClass=
 */
 ;--------------------------AutoExecute Section. Ends where first return is encountered--------------------------
-#NoEnv  
-#NoTrayIcon
-#KeyHistory 0
-ListLines,off
-SetBatchLines,-1
-SetKeyDelay,10,10             ;Probably need some adjustment
-SetWorkingDir %A_ScriptDir%
+#NoEnv									;Empty variables will not be checkt if there environment variables.
+#Persistent								;Script may not close until it recieves a ExitApp command.
+#KeyHistory 0							;Not needed when only running the script.
+ListLines, off							;Not needed when only running the script.
+SetTitleMatchMode, 3					;Must be a exact match to the window title.
+SendMode, Input							;Send command uses the input method. Will ignore SetKeyDelay.
+SetKeyDelay, 50, 50						;Delay for sending keystrokes and press duration. For use with SendEvent.
+SetBatchLines, -1						;Never sleep script in between execution while its running. Full cpu speed.
+SetWorkingDir, %A_ScriptDir%			;Set the script to use it's full folder path as it's working directory. In A_ScriptDir the last backslash is excluded.
 
 IfExist,%A_ScriptName%
 {
@@ -92,16 +94,16 @@ IfWinExist,ahk_exe %GameExe%
     WinGet,Process_ID,PID,ahk_exe %GameExe%
     If (WinTitle = "")
     {
-        Sleep,2000
+        Sleep,5000
         WinGetActiveTitle,WinTitle
-        Sleep,2000
+        Sleep,5000
         IniWrite,%WinTitle%,%A_ScriptName%,Variables,WinTitle
     }
     If (WinClass = "")
     {
-        Sleep,2000
+        Sleep,5000
         WinGetClass,WinClass
-        Sleep,2000
+        Sleep,5000
         IniWrite,%WinClass%,%A_ScriptName%,Variables,WinClass
     }
     GroupAdd,GameWindow,ahk_class %WinClass%
