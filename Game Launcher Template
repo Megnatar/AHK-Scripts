@@ -1,7 +1,7 @@
 /*
 [Variables]
-GameExe=
-GamePath=                                                         
+ExeFile=
+DirPath=                                                         
 WinTitle=
 WinClass=
 */
@@ -19,18 +19,18 @@ SetWorkingDir, %A_ScriptDir%			;Set the script to use it's full folder path as i
 
 IfExist,%A_ScriptName%
 {
-    IniRead,GameExe,%A_ScriptName%,Variables,GameExe
-    IniRead,GamePath,%A_ScriptName%,Variables,GamePath
-    IniRead,WinTitle,%A_ScriptName%,Variables,WinTitle
-    IniRead,WinClass,%A_ScriptName%,Variables,WinClass
+    IniRead, ExeFile, %A_ScriptName%, Variables,ExeFile
+    IniRead, DirPath, %A_ScriptName%, Variables,DirPath
+    IniRead, WinTitle, %A_ScriptName%, Variables,WinTitle
+    IniRead, WinClass ,%A_ScriptName%, Variables,WinClass
 }
 ;--------------------------Asking For User Input when variables at the top of this script are blank--------------------------
 again:
-if (GamePath = "" || GameExe = "" ) 
+if (DirPath = "" || ExeFile = "" ) 
 {
-    If (GamePath = "" )
+    If (DirPath = "" )
     {
-        	InputBox,GamePath,,Here you need to write the path to where the game executable is located. Exclude the executable,,700,130,,,,,
+        	InputBox, DirPath, , Here you need to write the path to where the game executable is located. Exclude the executable,,700,130,,,,,
     }
     If (ErrorLevel = 1)
     {
@@ -38,17 +38,18 @@ if (GamePath = "" || GameExe = "" )
     }
     If (ErrorLevel = 0)
     {  
-        If (GamePath = "")
+        If (DirPath = "")
         {
-            MsgBox,,,Please tell me where to find the game,5
+            MsgBox, , , Please tell me where to find the game, 5
             gosub,Again
         }
         Else
-        IniWrite,%GamePath%,%A_ScriptName%,Variables,GamePath
+        sleep, 10
+        IniWrite, %DirPath%, %A_ScriptName%, Variables, DirPath
     }
-    If (GameExe = "" )
+    If (ExeFile = "")
     {
-       InputBox,GameExe,,What is the name of the executable you want to start`, e.g "Game.exe".,,700,130,,,,,
+       InputBox, ExeFile, , What is the name of the executable you want to start`, e.g "Game.exe".,,700,130,,,,,
     }
     If (ErrorLevel = 1)
     {
@@ -56,63 +57,71 @@ if (GamePath = "" || GameExe = "" )
     }
     If (ErrorLevel = 0)
     {  
-        If (GameExe = "")
+        If (ExeFile = "")
         {
-            MsgBox,,,Please tell me the name of the executable you trying to launch,5
+            MsgBox, , , Please tell me the name of the executable you trying to launch,5
             gosub,Again
         }
         Else
-        IniWrite,%GameExe%,%A_ScriptName%,Variables,GameExe
+        sleep, 10
+        IniWrite, %ExeFile%, %A_ScriptName%, Variables,ExeFile
     }
 }
-;--------------------------Starting the game getting WindowClass and title--------------------------
-IfWinNotExist,ahk_exe %GameExe%
+sleep, 10
+Menu, tray, Icon,
+Menu, tray, Icon, %DirPath%\%ExeFile%
+;--------------------------Starting the game, getting WindowClass and title--------------------------
+IfWinNotExist, ahk_exe %ExeFile%
 {
-    run,%GameExe%,%GamePath%,,Process_ID
-    WinWait ahk_pid %Process_ID%   
+    run, %ExeFile%, %DirPath%, , Process_ID
+	sleep, 10
+    WinWait, ahk_pid %Process_ID%   
     If (WinTitle = "")
     {
-        Sleep,2000
-        WinGetActiveTitle,WinTitle
-        Sleep,2000
-        IniWrite,%WinTitle%,%A_ScriptName%,Variables,WinTitle
+        Sleep, 5000
+        WinGetActiveTitle, WinTitle
+		sleep, 10
+        IniWrite, %WinTitle%, %A_ScriptName%, Variables,WinTitle
     }
     If (WinClass = "")
     {
-        Sleep,2000
-        WinGetClass,WinClass
-        Sleep,2000
-        IniWrite,%WinClass%,%A_ScriptName%,Variables,WinClass
+        Sleep, 5000
+        WinGetClass, WinClass
+        Sleep, 10
+        IniWrite, %WinClass%, %A_ScriptName%, Variables, WinClass
     }
-    GroupAdd,GameWindow,ahk_class %WinClass%
-    Process,WaitClose,%Process_ID%
+    GroupAdd, GameWindow, ahk_class %WinClass%
+    Process, WaitClose, %Process_ID%
+	sleep, 10
     ExitApp
 }
 else
-IfWinExist,ahk_exe %GameExe%
+IfWinExist, ahk_exe %ExeFile%
 {
-    WinActivate,%WinTitle%
-    WinGet,Process_ID,PID,ahk_exe %GameExe%
+    WinActivate, %WinTitle%
+	sleep, 10
+    WinGet, Process_ID, PID, ahk_exe %ExeFile%
     If (WinTitle = "")
     {
-        Sleep,5000
+        Sleep, 5000
         WinGetActiveTitle,WinTitle
-        Sleep,5000
-        IniWrite,%WinTitle%,%A_ScriptName%,Variables,WinTitle
+        Sleep, 10
+        IniWrite, %WinTitle% ,%A_ScriptName%, Variables, WinTitle
     }
     If (WinClass = "")
     {
-        Sleep,5000
-        WinGetClass,WinClass
-        Sleep,5000
-        IniWrite,%WinClass%,%A_ScriptName%,Variables,WinClass
+        Sleep, 5000
+        WinGetClass, WinClass
+        Sleep, 10
+        IniWrite, %WinClass%, %A_ScriptName%, Variables, WinClass
     }
-    GroupAdd,GameWindow,ahk_class %WinClass%
-    Process,WaitClose,%Process_ID%
+    GroupAdd, GameWindow, ahk_class %WinClass%
+    Process, WaitClose, %Process_ID%
+	sleep, 10
     ExitApp
 }
 ;--------------------------Hotkey/Window operation section--------------------------
-#IfWinActive,ahk_group GameWindow
+#IfWinActive, ahk_group GameWindow
 {
-;	Do whatever needs to be done here
+;	Do whatever needs to be done here.
 }
