@@ -7,14 +7,14 @@ WinClass=
 */
 ;--------------------------AutoExecute Section. Ends where first return is encountered--------------------------
 ;.
-#NoEnv									;Empty variables will not be checkt if there environment variables.
-#Persistent								;Script may not close until it recieves a ExitApp command.
-#KeyHistory 0							;Not needed when only running the script.
-ListLines, off							;Not needed when only running the script.
-SetTitleMatchMode, 3					;Must be a exact match to the window title.
-SendMode, Input							;Send command uses the input method. Will ignore SetKeyDelay.
-SetKeyDelay, 100, 50					;Delay for sending keystrokes and press duration time. For use with SendEvent.
-SetBatchLines, -1						;Never sleep script in between execution, 'while its running'. Maximum cpu clock.
+#NoEnv													;Empty variables will not be checkt if there system environment variables.
+#Persistent												;Script may not close until it recieves a ExitApp command.
+#KeyHistory 0										;Not needed when only running the script.
+ListLines, off											;Not needed when only running the script.
+SetTitleMatchMode, 3							;Must be a exact match to the window title.
+SendMode, Input									;Send command uses the input method. Will ignore SetKeyDelay.
+SetKeyDelay, 100, 50							;Delay for sending keystrokes and press duration time. For use with SendEvent.
+SetBatchLines, -1									;Never sleep script in between execution, 'while its running'. Maximum cpu clock.
 SetWorkingDir, %A_ScriptDir%			;Set the script to use it's full folder path as it's working directory. In variable A_ScriptDir, the last backslash is excluded.
 
 IfExist,%A_ScriptName%
