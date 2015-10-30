@@ -26,9 +26,9 @@ IfExist,%A_ScriptName%
 }
 ;--------------------------Asking For User Input when variables at the top of this script are blank--------------------------
 again:
-if (DirPath = "" || ExeFile = "" ) 
+if (DirPath = "" || ExeFile = "") 
 {
-    If (DirPath = "" )
+    If (DirPath = "")
     {
         	InputBox, DirPath, , Here you need to write the path to where the game executable is located. Exclude the executable,,700,130,,,,,
     }
@@ -41,7 +41,7 @@ if (DirPath = "" || ExeFile = "" )
         If (DirPath = "")
         {
             MsgBox, , , Please tell me where to find the game, 5
-            gosub,Again
+            gosub, Again
         }
         Else
         sleep, 10
@@ -59,28 +59,28 @@ if (DirPath = "" || ExeFile = "" )
     {  
         If (ExeFile = "")
         {
-            MsgBox, , , Please tell me the name of the executable you trying to launch,5
+            MsgBox, , , Please tell me the name of the executable you trying to launch, 5
             gosub,Again
         }
         Else
         sleep, 10
-        IniWrite, %ExeFile%, %A_ScriptName%, Variables,ExeFile
+        IniWrite, %ExeFile%, %A_ScriptName%, Variables, ExeFile
     }
 }
 sleep, 10
-Menu, tray, Icon,
+Menu, tray, Icon
 Menu, tray, Icon, %DirPath%\%ExeFile%
 ;--------------------------Starting the game, getting WindowClass and title--------------------------
 IfWinNotExist, ahk_exe %ExeFile%
 {
     run, %ExeFile%, %DirPath%, , Process_ID
-	sleep, 10
+    sleep, 10
     WinWait, ahk_pid %Process_ID%   
     If (WinTitle = "")
     {
         Sleep, 5000
         WinGetActiveTitle, WinTitle
-		sleep, 10
+        sleep, 10
         IniWrite, %WinTitle%, %A_ScriptName%, Variables,WinTitle
     }
     If (WinClass = "")
@@ -92,21 +92,21 @@ IfWinNotExist, ahk_exe %ExeFile%
     }
     GroupAdd, GameWindow, ahk_class %WinClass%
     Process, WaitClose, %Process_ID%
-	sleep, 10
+    sleep, 10
     ExitApp
 }
 else
 IfWinExist, ahk_exe %ExeFile%
 {
     WinActivate, %WinTitle%
-	sleep, 10
+    sleep, 10
     WinGet, Process_ID, PID, ahk_exe %ExeFile%
     If (WinTitle = "")
     {
         Sleep, 5000
         WinGetActiveTitle,WinTitle
         Sleep, 10
-        IniWrite, %WinTitle% ,%A_ScriptName%, Variables, WinTitle
+        IniWrite, %WinTitle% , %A_ScriptName%, Variables, WinTitle
     }
     If (WinClass = "")
     {
@@ -117,7 +117,7 @@ IfWinExist, ahk_exe %ExeFile%
     }
     GroupAdd, GameWindow, ahk_class %WinClass%
     Process, WaitClose, %Process_ID%
-	sleep, 10
+    sleep, 10
     ExitApp
 }
 ;--------------------------Hotkey/Window operation section--------------------------
