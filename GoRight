@@ -1,0 +1,15 @@
+/*
+Windows10 TaskBarButton for scrolling virtual desktop to the right/Left. Haven't found the window message yet
+*/
+#NoEnv
+#NoTrayIcon
+#KeyHistory 0
+ListLines, off 
+SetBatchLines, -1 
+SetTitleMatchMode, 1
+DetectHiddenWindows, on
+
+#IfWinExist, ahk_class WorkerW, FolderView
+Send, {LCtrl down}{LWin down}{right down}{right up}{LCtrl up}{LWin up}
+;Send, {LCtrl down}{LWin down}{left down}{left up}{LCtrl up}{LWin up}
+exitapp
