@@ -1,5 +1,6 @@
 /*
-Windows10 TaskBarButton for scrolling virtual desktop to the right/Left. Haven't found the window message yet
+Windows10 TaskBarButton for scrolling virtual desktop to the right/Left. Haven't found the window message yet.
+And this script needs a update to use controlsend because it will work better that way.....
 */
 #NoEnv
 #NoTrayIcon
