@@ -74,13 +74,33 @@ send {w up}
 }
 Return
 
-Xbutton2::				;Using a variable and ++/-- operator. Variable bNum0 might not declare properlay underfly.
-If (bNum0 = 0) {			;Declare it in the auto-execution section!
-    Send {Numpad0 down}			;I prefer this toggle method since it's sollid.
-    bNum0++
+Xbutton2::				;Using a variable and ++/-- operator. Variable bAutorun might not declare properlay underfly.
+If (bAutorun = 0) {			;Declare it in the auto-execution section!
+    Send {W down}			;I prefer this toggle method since it's sollid.
+    bAutorun++
 }Else{
-    Send {Numpad0 up}
-    bNum0--
+    Send {w up}
+    bAutorun--
+}
+Return
+
+;/////////////////////////////////Loop trough key's with each press/////////////////////////////////
+;Mouse thumb button 1 Loops throught key's 1 2, and 3 with each press. Eatch click sends one key stroke.
+
+Key := 1
+
+XButton1::
+If(Key >= 3)			;If variable key equals or is greater then 3, do whatever comes below.
+{  
+    Send, %Key%
+    Key := Key-2
+    return
+}
+else
+If(Key := Key)			;If key is equal key, this will eveluate as true.
+{
+   Send, %Key%
+   Key++
 }
 Return
 
