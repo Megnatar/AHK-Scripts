@@ -6,6 +6,7 @@ WinTitle=
 WinClass=
 */
 ;--------------------------AutoExecute Section. Ends where first return is encountered--------------------------
+;This layout will look fine in SciTE.
 ;.
 #NoEnv													;Empty variables will not be checkt if there system environment variables.
 #Persistent												;Script may not close until it recieves a ExitApp command.
@@ -30,7 +31,7 @@ if (DirPath = "" || ExeFile = "")
 {
     If (DirPath = "")
     {
-        	InputBox, DirPath, , Here you need to write the path to where the game executable is located. Exclude the executable,,700,130,,,,,
+        	InputBox, DirPath, , Here you need to write the path to where the program executable is located. Exclude the executable,,700,130,,,,,
     }
     If (ErrorLevel = 1)
     {
@@ -70,7 +71,7 @@ if (DirPath = "" || ExeFile = "")
 sleep, 10
 Menu, tray, Icon
 Menu, tray, Icon, %DirPath%\%ExeFile%
-;--------------------------Starting the game, getting WindowClass and title--------------------------
+;--------------------------Starting the program, getting WindowClass and title--------------------------
 IfWinNotExist, ahk_exe %ExeFile%
 {
     run, %ExeFile%, %DirPath%, , Process_ID
@@ -81,7 +82,7 @@ IfWinNotExist, ahk_exe %ExeFile%
         Sleep, 5000
         WinGetActiveTitle, WinTitle
         sleep, 10
-        IniWrite, %WinTitle%, %A_ScriptName%, Variables,WinTitle
+        IniWrite, %WinTitle%, %A_ScriptName%, Variables, WinTitle
     }
     If (WinClass = "")
     {
@@ -104,9 +105,9 @@ IfWinExist, ahk_exe %ExeFile%
     If (WinTitle = "")
     {
         Sleep, 5000
-        WinGetActiveTitle,WinTitle
+        WinGetActiveTitle, WinTitle
         Sleep, 10
-        IniWrite, %WinTitle% , %A_ScriptName%, Variables, WinTitle
+        IniWrite, %WinTitle%, %A_ScriptName%, Variables, WinTitle
     }
     If (WinClass = "")
     {
