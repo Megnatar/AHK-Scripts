@@ -68,9 +68,6 @@ if (DirPath = "" || ExeFile = "")
         IniWrite, %ExeFile%, %A_ScriptName%, Variables, ExeFile
     }
 }
-sleep, 10
-Menu, tray, Icon
-Menu, tray, Icon, %DirPath%\%ExeFile%
 ;--------------------------Starting the program, getting WindowClass and title--------------------------
 IfWinNotExist, ahk_exe %ExeFile%
 {
@@ -91,7 +88,10 @@ IfWinNotExist, ahk_exe %ExeFile%
         Sleep, 10
         IniWrite, %WinClass%, %A_ScriptName%, Variables, WinClass
     }
-    GroupAdd, GameWindow, ahk_class %WinClass%
+    GroupAdd, WindowGroup, ahk_class %WinClass%
+    Menu, tray, Icon
+    Menu, tray, Icon, %DirPath%\%ExeFile%
+    
     Process, WaitClose, %Process_ID%
     sleep, 10
     ExitApp
@@ -116,13 +116,16 @@ IfWinExist, ahk_exe %ExeFile%
         Sleep, 10
         IniWrite, %WinClass%, %A_ScriptName%, Variables, WinClass
     }
-    GroupAdd, GameWindow, ahk_class %WinClass%
+    GroupAdd, WindowGroup, ahk_class %WinClass%
+    Menu, tray, Icon
+    Menu, tray, Icon, %DirPath%\%ExeFile%
+    
     Process, WaitClose, %Process_ID%
     sleep, 10
     ExitApp
 }
 ;--------------------------Hotkey/Window operation section--------------------------
-#IfWinActive, ahk_group GameWindow
+#IfWinActive, ahk_group WindowGroup
 {
 ;	Do whatever needs to be done here.
 }
