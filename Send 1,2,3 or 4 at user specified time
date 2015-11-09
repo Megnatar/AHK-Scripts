@@ -1,7 +1,6 @@
-#NoEnv  
-#SingleInstance force
+#NoEnv 
 #KeyHistory 0
-SetBatchLines, -1 
+SetBatchLines, -1
 ListLines, off 
 SetWorkingDir, %A_ScriptDir%
 
@@ -42,7 +41,7 @@ IfExist %A_ScriptName%
      sleep, 10
      IniRead, OnOff1, %A_ScriptName%, UserInput, OnOff1
      sleep, 10
-     IniRead, Game, %A_ScriptName%, UserInput, Game
+     IniRead, WinTitle, %A_ScriptName%, UserInput, WinTitle
 }
 Gui, Add, Edit, x21 y11 w20 h20 vKey1, %Key1%
 Gui, Add, Edit, x41 y11 w30 h20 vTime1 0x2000, %timer1%
@@ -60,12 +59,12 @@ Gui, Add, Button, x68 y129 w50 h20 , Start
 Gui, Add, Button, x128 y129 w50 h20 , Stop
 Gui, Add, Button, x187 y129 w50 h20 , Exit
 Gui, Add, Button, x14 y90 w32 h28 , Clear
-Gui, Add, Text, x110 y85 w64 h15 , WindowTitle:
-Gui, Add, Edit, x90 y100 w120 h18  vGame, %Game%
-Gui, Show, w300 h179  x%xPoss% y%yPoss%, Universal AutoBuff
+Gui, Add, Text, x110 y85 w64 h15 , WinTitle:
+Gui, Add, Edit, x90 y100 w120 h18  vWinTitle, %WinTitle%
+Gui, Show, w300 h179  x%xPoss% y%yPoss%, TriggerKey at Interval
 
-WinWait,Universal AutoBuff
-WinGetPos,,,wWide,hTall,Universal AutoBuff
+WinWait,TriggerKey at Interval
+WinGetPos,,,wWide,hTall,TriggerKey at Interval
 wWide:=wWide/2
 hTall:=hTall/2
 xPoss:=A_ScreenWidth/100*50
@@ -90,12 +89,12 @@ OnOff4=0
 OnOff2=0
 OnOff3=0
 OnOff1=0
-Game=
+WinTitle=
 Key1=1
 Key2=2
 Key3=A
 Key4=B
-GuiControl, Text, Game, %Game%
+GuiControl, Text, WinTitle, %WinTitle%
 GuiControl, Text, Key1, %Key1%
 GuiControl, Text, Key2, %Key2%
 GuiControl, Text, Key3, %Key3%
@@ -104,7 +103,7 @@ GuiControl, Text, Time1, %timer1%
 GuiControl, Text, Time2, %timer2%
 GuiControl, Text, Time3, %timer3%
 GuiControl, Text, Time4, %timer4%
-Gui, Show, w300 h179  x%xPoss% y%yPoss%, Universal AutoBuff
+Gui, Show, w300 h179  x%xPoss% y%yPoss%, TriggerKey at Interval
 return
 
 !q::                ;Alt+Q = Quit/Exit
@@ -156,7 +155,8 @@ IniWrite, %OnOff3%, %A_ScriptName%, UserInput, OnOff3
 sleep, 10
 IniWrite, %OnOff1%, %A_ScriptName%, UserInput, OnOff1
 sleep, 10
-IniWrite, %Game%, %A_ScriptName%, UserInput, Game
+IniWrite, %WinTitle%, %A_ScriptName%, UserInput, WinTitle
+sleep, 10
 ExitApp
 
 !p::                ;Alt+P =Stop/Pause
@@ -173,7 +173,7 @@ Return
 
 !s::                ;Alt+S = Start
 ButtonStart:
-WinActivate, %game% 
+WinActivate, %WinTitle% 
 Gui, submit, nohide        
 Key1 = %Key1%
 Key2 = %Key2%
@@ -264,8 +264,8 @@ return
 ;--------------------------DO NOT DELETE--------------------------
 /*
 [GuiPoss]
-xPoss=769
-yPoss=410
+xPoss=
+yPoss=
 [UserInput]
 timer4=
 timer2=
@@ -275,7 +275,7 @@ OnOff4=1
 OnOff2=1
 OnOff3=1
 OnOff1=1
-Game=
+WinTitle=
 Key1=1
 Key2=2
 Key3=A
