@@ -8,6 +8,7 @@ SetWorkingDir, %A_ScriptDir%
 IfExist %A_ScriptName%
 {
      IniRead, yPoss, %A_ScriptName%, GuiPoss, yPoss
+     sleep, 10
      IniRead, xPoss, %A_ScriptName%, GuiPoss, xPoss
      If (xPoss = "")
      {
@@ -18,17 +19,29 @@ IfExist %A_ScriptName%
           yPoss:=A_ScreenHeight/100*50-89.5                           ;Or yPoss:=A_ScreenHeight/2-80.5 
      }
      IniRead, timer4, %A_ScriptName%, UserInput, timer4
+     sleep, 10
      IniRead, timer2, %A_ScriptName%, UserInput, timer2
+     sleep, 10
      IniRead, timer3, %A_ScriptName%, UserInput, timer3
+     sleep, 10
      IniRead, timer1, %A_ScriptName%, UserInput, timer1
+     sleep, 10
      IniRead, Key1, %A_ScriptName%, UserInput, Key1
+     sleep, 10
      IniRead, Key2, %A_ScriptName%, UserInput, Key2
+     sleep, 10
      IniRead, Key3, %A_ScriptName%, UserInput, Key3
+     sleep, 10
      IniRead, Key4, %A_ScriptName%, UserInput, Key4
+     sleep, 10
      IniRead, OnOff4, %A_ScriptName%, UserInput, OnOff4
+     sleep, 10
      IniRead, OnOff2, %A_ScriptName%, UserInput, OnOff2
+     sleep, 10
      IniRead, OnOff3, %A_ScriptName%, UserInput, OnOff3
+     sleep, 10
      IniRead, OnOff1, %A_ScriptName%, UserInput, OnOff1
+     sleep, 10
      IniRead, Game, %A_ScriptName%, UserInput, Game
 }
 Gui, Add, Edit, x21 y11 w20 h20 vKey1, %Key1%
@@ -116,19 +129,33 @@ If (xPoss1 <> xPoss || yPoss1 <> yPoss )
      WinGetPos,xPoss,yPoss
 }
 IniWrite, %xPoss%, %A_ScriptName%, GuiPoss, xPoss
+sleep, 10
 IniWrite, %yPoss%, %A_ScriptName%, GuiPoss, yPoss
+sleep, 10
 IniWrite, %timer4%, %A_ScriptName%, UserInput, timer4
+sleep, 10
 IniWrite, %timer2%, %A_ScriptName%, UserInput, timer2
+sleep, 10
 IniWrite, %timer3%, %A_ScriptName%, UserInput, timer3
+sleep, 10
 IniWrite, %timer1%, %A_ScriptName%, UserInput, timer1
+sleep, 10
 IniWrite, %Key1%, %A_ScriptName%, UserInput, Key1
+sleep, 10
 IniWrite, %Key2%, %A_ScriptName%, UserInput, Key2
+sleep, 10
 IniWrite, %Key3%, %A_ScriptName%, UserInput, Key3
+sleep, 10
 IniWrite, %Key4%, %A_ScriptName%, UserInput, Key4
+sleep, 10
 IniWrite, %OnOff4%, %A_ScriptName%, UserInput, OnOff4
+sleep, 10
 IniWrite, %OnOff2%, %A_ScriptName%, UserInput, OnOff2
+sleep, 10
 IniWrite, %OnOff3%, %A_ScriptName%, UserInput, OnOff3
+sleep, 10
 IniWrite, %OnOff1%, %A_ScriptName%, UserInput, OnOff1
+sleep, 10
 IniWrite, %Game%, %A_ScriptName%, UserInput, Game
 ExitApp
 
@@ -237,8 +264,8 @@ return
 ;--------------------------DO NOT DELETE--------------------------
 /*
 [GuiPoss]
-xPoss=
-yPoss=
+xPoss=769
+yPoss=410
 [UserInput]
 timer4=
 timer2=
@@ -252,5 +279,5 @@ Game=
 Key1=1
 Key2=2
 Key3=A
-Key4=r
+Key4=B
 */
