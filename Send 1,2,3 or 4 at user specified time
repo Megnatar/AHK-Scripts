@@ -1,5 +1,6 @@
 #NoEnv 
 #KeyHistory 0
+SetTitleMatchMode, 3
 SetBatchLines, -1
 ListLines, off 
 SetWorkingDir, %A_ScriptDir%
@@ -19,9 +20,9 @@ IfExist %A_ScriptName%
      }
      IniRead, timer4, %A_ScriptName%, UserInput, timer4
      sleep, 10
-     IniRead, timer2, %A_ScriptName%, UserInput, timer2
-     sleep, 10
      IniRead, timer3, %A_ScriptName%, UserInput, timer3
+     sleep, 10
+     IniRead, timer2, %A_ScriptName%, UserInput, timer2
      sleep, 10
      IniRead, timer1, %A_ScriptName%, UserInput, timer1
      sleep, 10
@@ -42,6 +43,7 @@ IfExist %A_ScriptName%
      IniRead, OnOff1, %A_ScriptName%, UserInput, OnOff1
      sleep, 10
      IniRead, WinTitle, %A_ScriptName%, UserInput, WinTitle
+     sleep, 10
 }
 Gui, Add, Edit, x21 y11 w20 h20 vKey1, %Key1%
 Gui, Add, Edit, x41 y11 w30 h20 vTime1 0x2000, %timer1%
