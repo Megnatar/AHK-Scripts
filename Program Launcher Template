@@ -1,131 +1,232 @@
+;Include %A_ScriptDir%\lib\FullControl.ahk
 /*
 [Variables]
+AppToRun=
 ExeFile=
-DirPath=                                                         
 WinTitle=
 WinClass=
+SteamID=
+Admin=No
+[GuiPoss]
+xPoss=0
+yPoss=0
 */
-;--------------------------AutoExecute Section. Ends where first return is encountered--------------------------
-;This layout will look fine in SciTE.
-;.
-#NoEnv													;Empty variables will not be checkt if there system environment variables.
-#Persistent												;Script may not close until it recieves a ExitApp command.
-#KeyHistory 0										;Not needed when only running the script.
-ListLines, off											;Not needed when only running the script.
-SetTitleMatchMode, 3							;Must be a exact match to the window title.
-SendMode, Input									;Send command uses the input method. Will ignore SetKeyDelay.
-SetKeyDelay, 100, 50							;Delay for sending keystrokes and press duration time. For use with SendEvent.
-SetBatchLines, -1									;Never sleep script in between execution, 'while its running'. Maximum cpu clock.
+;--------------------------Auto Execute Section. Ends where first return is encountered--------------------------
+#NoEnv									;Empty variables will not be checked if there system environment variables.
+#Persistent								;Script may not close until it receives a ExitApp command.
+#NoTrayIcon                             ;Switching tray icon off until the application to work with is started.
+#KeyHistory 0							;Not needed when only running the script.
+ListLines, off							;Not needed when only running the script.
+SetTitleMatchMode, 3					;Variables for wintitle must be a exact match to the value in parameter window title. Whatever it's ahk_exe, ahk_class, ahk_id, etc it must exactly match!
+SendMode, Input							;Send command uses the input method.Will ignore SetKeyDelay.
+SetKeyDelay, 10, 50						;Delay for sending keystrokes and press duration time. For use with SendEvent.
+SetBatchLines, -1						;Never sleep script in between execution, 'while its running'. Maximum CPU clock.
 SetWorkingDir, %A_ScriptDir%			;Set the script to use it's full folder path as it's working directory. In variable A_ScriptDir, the last backslash is excluded.
-
-IfExist,%A_ScriptName%
+ 
+IfExist, %A_ScriptName%					;Reading variables at the top of this script and adding there value.
 {
-    IniRead, ExeFile, %A_ScriptName%, Variables,ExeFile
-    IniRead, DirPath, %A_ScriptName%, Variables,DirPath
-    IniRead, WinTitle, %A_ScriptName%, Variables,WinTitle
-    IniRead, WinClass ,%A_ScriptName%, Variables,WinClass
+    IniRead, AppToRun, %A_ScriptName%, Variables, AppToRun
+    IniRead, ExeFile, %A_ScriptName%, Variables, ExeFile
+    IniRead, WinTitle, %A_ScriptName%, Variables, WinTitle
+    IniRead, WinClass, %A_ScriptName%, Variables, WinClass
+    IniRead, SteamID, %A_ScriptName%, Variables, SteamID
+    IniRead, Admin, %A_ScriptName%, Variables, Admin
+ 
+    IniRead, xPoss, %A_ScriptName%, GuiPoss, xPoss
+    IniRead, yPoss, %A_ScriptName%, GuiPoss, yPoss
 }
-;--------------------------Asking For User Input when variables at the top of this script are blank--------------------------
+;--------------------------Asking for user input when variable AppToRun at the top of this script is blank--------------------------
 again:
-if (DirPath = "" || ExeFile = "") 
+If(AppToRun = "")		;Checking if AppToRun hold some value. If it is empty the code below will execute.
 {
-    If (DirPath = "")
+    InputBox, AppToRun, , Specify path and executable name of the program you want to start. Remove quotation marks!,,600,130,,,,,
+    If(ErrorLevel = 1)
     {
-        	InputBox, DirPath, , Here you need to write the path to where the program executable is located. Exclude the executable,,700,130,,,,,
+        Exitapp                         ;The user pressed cancel
     }
-    If (ErrorLevel = 1)
-    {
-        Exitapp
-    }
-    If (ErrorLevel = 0)
+    Else if(ErrorLevel = 0)
     {  
-        If (DirPath = "")
+        If(AppToRun = "")
         {
-            MsgBox, , , Please tell me where to find the game, 5
+            MsgBox, , , You pressed ok`, but nothing was specified!`nPlease try again, 5
             gosub, Again
+            return
         }
-        Else
-        sleep, 10
-        IniWrite, %DirPath%, %A_ScriptName%, Variables, DirPath
-    }
-    If (ExeFile = "")
-    {
-       InputBox, ExeFile, , What is the name of the executable you want to start`, e.g "Game.exe".,,700,130,,,,,
-    }
-    If (ErrorLevel = 1)
-    {
-        Exitapp
-    }
-    If (ErrorLevel = 0)
-    {  
-        If (ExeFile = "")
+        Else if(AppToRun != "")
         {
-            MsgBox, , , Please tell me the name of the executable you trying to launch, 5
-            gosub,Again
+            RegExMatch(AppToRun, "[\w]*[.][\w]*$", ExeFile)         ;Getting the executable name from path and placing it in variable ExeFile
+ 
+            IniWrite, %AppToRun%, %A_ScriptName%, Variables, AppToRun
+            sleep, 10												;All these 10 milliseconds sleep are needed to guarantee write success.
+            IniWrite, %ExeFile%, %A_ScriptName%, Variables, ExeFile
+            Sleep, 10
         }
-        Else
-        sleep, 10
-        IniWrite, %ExeFile%, %A_ScriptName%, Variables, ExeFile
     }
 }
+;--------------------------Creating tray menu and drawing the main window--------------------------
+Menu, tray, Icon   
+Menu, tray, Icon, %AppToRun%
+Menu, tray, add
+Menu, tray, add, Quit Script and %WinTitle%, GuiClose
+ 
+Gui +LastFound +owner
+Gui, Add, GroupBox, x2 y-4 w330 h114 
+Gui, Add, Text, x12 y16 w297 h28 vApp, Path and executable name:`n%AppToRun%
+Gui, Add, Text, x12 y61 w200 h28 vTitle, Window Title: `n%WinTitle%
+Gui, Add, Text, x142 y61 w100 h28 vWinClass, WindowClass:`n%WinClass%
+Gui, Add, Text, x242 y61 w80 h28 vScriptAdmin, Admin Enabled:`n%Admin%
+Gui, Add, GroupBox, x2 y111 w330 h50
+Gui, Add, Button, x7 y131 w80 h20, Start
+Gui, Add, Button, x87 y131 w80 h20, Set Admin
+Gui, Add, Button, x167 y131 w80 h20, Clear Variables
+Gui, Add, Button, x247 y131 w80 h20, ExitScript
+GUI_ID:=WinExist()
+Gui, Show, w334 h165 x%xPoss% y%yPoss%, Application Launcher
+return
 ;--------------------------Starting the program, getting WindowClass and title--------------------------
+ButtonStart:
 IfWinNotExist, ahk_exe %ExeFile%
 {
-    run, %ExeFile%, %DirPath%, , Process_ID
-    sleep, 10
-    WinWait, ahk_pid %Process_ID%   
-    If (WinTitle = "")
+    If(SteamID != "")                      ;This code will executed when the SteamID holds some value.
     {
-        Sleep, 5000
-        WinGetActiveTitle, WinTitle
-        sleep, 10
-        IniWrite, %WinTitle%, %A_ScriptName%, Variables, WinTitle
+        run, steam://rungameid/%SteamID%
+        WinWait, ahk_exe %ExeFile%
+        WinWaitActive, ahk_exe %ExeFile%
+        WinGet, Process_ID, PID, ahk_exe %ExeFile%
     }
-    If (WinClass = "")
+    Else if(SteamID = "")               	;Below code is executed when variable SteamID empty.
     {
-        Sleep, 5000
+        run, %AppToRun%, , , Process_ID
+        WinWait, ahk_pid %Process_ID%
+        WinWaitActive, ahk_pid %Process_ID%
+    } 
+    If(WinTitle = "")						;When variable WinTitle is empty, getting the window title and writing it back to the script for later use.
+    {
+        WinGetTitle, WinTitle, ahk_pid %Process_ID%, , Application Launcher
+        GuiControl, , Title, Window Title:`n%WinTitle%		;Displaying/writing the new content of variable WinTitle in the GUI
+        GuiControl, , WinClass, WindowClass:`n%WinClass%
+        sleep, 10
+        IniWrite, %WinTitle%, %A_ScriptName%, Variables, WinTitle  ;writing the new content of variable WinTitle back to the script for later use.
+        sleep, 10
+    }
+    If(WinClass = "")						;Again with a blank variable, getting the window class and writing it back to the GUI and script for later use.
+    {
         WinGetClass, WinClass
+        GuiControl, , WinClass, WindowClass:`n%WinClass%
         Sleep, 10
         IniWrite, %WinClass%, %A_ScriptName%, Variables, WinClass
+        sleep, 10
     }
-    GroupAdd, WindowGroup, ahk_class %WinClass%
-    Menu, tray, Icon
-    Menu, tray, Icon, %DirPath%\%ExeFile%
-    
-    Process, WaitClose, %Process_ID%
-    sleep, 10
-    ExitApp
+    GoSub, WaitQuit
 }
 else
-IfWinExist, ahk_exe %ExeFile%
+IfWinExist, ahk_exe %ExeFile%				;Activating the window if the program was already running.
 {
-    WinActivate, %WinTitle%
+    WinActivate, ahk_exe %ExeFile%
+    WinWaitActive, ahk_exe %ExeFile%
     sleep, 10
     WinGet, Process_ID, PID, ahk_exe %ExeFile%
-    If (WinTitle = "")
+    sleep, 10
+    If(WinTitle = "")
     {
-        Sleep, 5000
-        WinGetActiveTitle, WinTitle
-        Sleep, 10
+        WinGetTitle, WinTitle, ahk_pid %Process_ID%, , Application Launcher
+        GuiControl, , Title, Window Title:`n%WinTitle%
+        GuiControl, , WinClass, WindowClass:`n%WinClass%
+        sleep, 10
         IniWrite, %WinTitle%, %A_ScriptName%, Variables, WinTitle
+        sleep, 10
     }
-    If (WinClass = "")
+    If(WinClass = "")
     {
-        Sleep, 5000
         WinGetClass, WinClass
+        GuiControl, , WinClass, WindowClass:`n%WinClass%
         Sleep, 10
         IniWrite, %WinClass%, %A_ScriptName%, Variables, WinClass
+        sleep, 10
     }
-    GroupAdd, WindowGroup, ahk_class %WinClass%
-    Menu, tray, Icon
-    Menu, tray, Icon, %DirPath%\%ExeFile%
-    
-    Process, WaitClose, %Process_ID%
-    sleep, 10
-    ExitApp
+    GoSub, WaitQuit
 }
-;--------------------------Hotkey/Window operation section--------------------------
+WaitQuit:
+GroupAdd, WindowGroup, ahk_class %WinClass%     	;Creating a window group in case variables mismatch or left blank. Also the context sensitive directive #IfWinActive/exist doesn't allow variables names.
+GroupAdd, WindowGroup, ahk_exe %ExeFile%         	;With GroupAdd the parameter of the window title can be variable when using the #IfWin directive.
+ 
+Process, WaitClose, %Process_ID%
+GoSub, ButtonExitScript
+ 
+;--------------------------Section for the window you want to work on--------------------------
+;Operations will only execute on the window class or executable name. Opening some other window that happens hold/start with the same name as the window title will be ignored by the script.
 #IfWinActive, ahk_group WindowGroup
 {
-;	Do whatever needs to be done here.
+        ;Do something here, like sending keys, reading memory, getting controls, screen coordinates, color....etc etc
+        ;You need to create those you're self because that's beyond the scope of this script.
 }
+ 
+ButtonClearVariables:
+ExeFile=
+AppToRun=
+WinTitle=
+WinClass=
+SteamID=
+Admin=No
+ 
+File:=FileOpen(A_ScriptFullPath, "a")					;Function for reading and storing the file content
+File.Seek(Origin:=0)									;Searching for the very first character
+Replace:=";"											;Variable for hold the character to replace
+file.write(Replace)										;Writing changes back to the script
+file.Close()											;Closing file
+File:=													;Clearing variable.
+ 
+GuiControl, , Title, Window Title: `n%WinTitle%			;Writing the new content of all the variables to the GUI window.
+GuiControl, , WinClass, WindowClass:`n%WinClass%
+GuiControl, , App, Path and executable name:`n%AppToRun%
+GuiControl, , ScriptAdmin, Admin Enabled:`n%Admin%
+Return
+ 
+;--------------------------Creating a new library file that will enable administrative privileges.-------------------------- 
+;You should enable this if the game/application does not except input from the scrip.
+ButtonSetAdmin:
+Admin=yes
+File:=FileOpen(A_ScriptFullPath, "a")		;Telling the script to read it's content and replacing the very first character with the value in variable Replace.
+File.Seek(Origin:=0)
+Replace:="#"
+file.write(Replace)
+file.Close()
+ 
+IfnotExist %A_ScriptDir%\lib\FullControl.ahk    ;There is no need to create the library file if it already exists, so checking it here.
+{
+    vScriptFullPath:="%A_ScriptFullPath%"       ;Putting the name of build-in variable A_ScriptFullPath in new variable vScriptFullPath. FileAppend will otherwise write the content of A_ScriptFullPath to the library file.
+												;Doing this will allow a more flexible admin function because it does not contain a hard coded path.
+    FileCreateDir, lib
+    FileAppend, #SingleInstance off`nSetAdmin()`n{`n`tif not A_IsAdmin`n`t{`n`t`tRun`, *RunAs "%vScriptFullPath%" `n`t`tExitApp`n`t}`n}, %A_ScriptDir%\lib\FullControl.ahk  ;Creating library file and writing its content.
+}
+sleep, 10
+IniWrite, %admin%, %A_ScriptName%, Variables, admin
+sleep, 10
+Run, *RunAs %A_ScriptFullPath%			;Starting a new instance of this script with elevated privileges before closing the current running one.
+ExitApp									;Closing the current 'old' instance.
+return
+ 
+GuiClose:
+WinClose, ahk_pid %Process_ID%      				;Clicking the upper right X button will close the application and script.
+sleep, 10
+ButtonExitScript:									;Clicking the close script button leaves the application running and closing the script.
+WinGetPos, xPoss, yPoss, , , Application Launcher	;Getting GUI position so it appears/starts where you left it, the next time you run the script.
+sleep, 10
+IniWrite, %AppToRun%, %A_ScriptName%, Variables, AppToRun
+sleep, 10
+IniWrite, %ExeFile%, %A_ScriptName%, Variables, ExeFile
+sleep, 10
+IniWrite, %WinClass%, %A_ScriptName%, Variables, WinClass
+sleep, 10
+IniWrite, %WinTitle%, %A_ScriptName%, Variables, WinTitle
+sleep, 10
+IniWrite, %Admin%, %A_ScriptName%, Variables, Admin
+sleep, 10
+IniWrite, %SteamID%, %A_ScriptName%, Variables, SteamID
+sleep, 10
+IniWrite, %xPoss%,  %A_ScriptName%, GuiPoss , xPoss
+sleep, 10
+IniWrite, %yPoss%, %A_ScriptName%, GuiPoss , yPoss
+sleep, 10
+DllCall("AnimateWindow","UInt",GUI_ID,"Int",500,"UInt","0x90000") ;Fading window out.
+ExitApp
