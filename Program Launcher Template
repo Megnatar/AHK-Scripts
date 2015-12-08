@@ -2,6 +2,7 @@
 /*
 [Variables]
 AppToRun=
+Path=
 ExeFile=
 WinTitle=
 WinClass=
@@ -39,7 +40,7 @@ IfExist, %A_ScriptName%					;Reading variables at the top of this script and add
 again:
 If(AppToRun = "")		;Checking if AppToRun hold some value. If it is empty the code below will execute.
 {
-    InputBox, AppToRun, , Specify path and executable name of the program you want to start. Remove quotation marks!,,600,130,,,,,
+    InputBox, AppToRun, , Specify path and executable name of the program you want to start. e.g. "x:\folder\file.exe",,600,130,,,,,
     If(ErrorLevel = 1)
     {
         Exitapp                         ;The user pressed cancel
@@ -53,13 +54,15 @@ If(AppToRun = "")		;Checking if AppToRun hold some value. If it is empty the cod
             return
         }
         Else if(AppToRun != "")
-        {
-            RegExMatch(AppToRun, "[\w]*[.][\w]*$", ExeFile)         ;Getting the executable name from path and placing it in variable ExeFile
- 
+        { 
+            RegExMatch(AppToRun, "[\w](.*\\)", Path)
+            RegExMatch(AppToRun, "[\w\s]+[.][\w]*", ExeFile)
+            
+            AppToRun=%Path%%ExeFile%
+            
             IniWrite, %AppToRun%, %A_ScriptName%, Variables, AppToRun
-            sleep, 10												;All these 10 milliseconds sleep are needed to guarantee write success.
+            IniWrite, %Path%, %A_ScriptName%, Variables, Path
             IniWrite, %ExeFile%, %A_ScriptName%, Variables, ExeFile
-            Sleep, 10
         }
     }
 }
@@ -96,7 +99,7 @@ IfWinNotExist, ahk_exe %ExeFile%
     }
     Else if(SteamID = "")               	;Below code is executed when variable SteamID empty.
     {
-        run, %AppToRun%, , , Process_ID
+        run, "%ExeFile%", %Path%, , Process_ID
         WinWait, ahk_pid %Process_ID%
         WinWaitActive, ahk_pid %Process_ID%
     } 
