@@ -1,4 +1,4 @@
-PathToSplit="Z:\Some\Random\Direcory\Structure\HeyItWorks.oker"
+PathToSplit="Q:\Some\Random\Direcory\Structure\HeyItWorks.oker"
 
 RegExMatch(PathToSplit, "[a-zA-Z]+(.*\\)", PathWithoutTheFile)
 RegExMatch(PathToSplit, "[a-zA-Z]+[\w]*[.][\w]*", FileFromPath)
