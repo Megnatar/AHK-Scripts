@@ -1,11 +1,12 @@
-PathToSplit=Q:\Some\Random\Dos\Direcory\Structure\HeyItWorks.oke
+PathToSplit="Z:\Some\Random\Direcory\Structure\HeyItWorks.oker"
 
-RegExMatch(PathToSplit, "(.*\\)*", PathWithoutTheFile)
-RegExMatch(PathToSplit, "[\w]*[.][\w]*$", FileFromPath)
+RegExMatch(PathToSplit, "[a-zA-Z]+(.*\\)", PathWithoutTheFile)
+RegExMatch(PathToSplit, "[a-zA-Z]+[\w]*[.][\w]*", FileFromPath)
 RegExMatch(PathToSplit, "([a-zA-Z].\\)", RootDrive)
 
 MsgBox % "The path and file we want to split:" "`n"PathToSplit "`n`n"
 				. "Path without the file:" "`n" PathWithoutTheFile "`n`n"
 				. "File without the path:" "`n" FileFromPath "`n`n"
-				. "Disk where the file was stored:" "`n" RootDrive
+				. "Hardisk root:" "`n" RootDrive "`n`n"
+				. "waar" "`n" w "`n`n"
 ExitApp
