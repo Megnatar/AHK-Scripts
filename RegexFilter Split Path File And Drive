@@ -7,4 +7,5 @@ RegExMatch(PathToSplit, "([a-zA-Z].\\)", RootDrive)
 MsgBox % "The path and file we want to split:" "`n"PathToSplit "`n`n"
 				. "Path without the file:" "`n" PathWithoutTheFile "`n`n"
 				. "File without the path:" "`n" FileFromPath "`n`n"
-				. "Disk where the file was stored:" "`n" RootDrive "`n`n"
+				. "Disk where the file was stored:" "`n" RootDrive
+ExitApp
