@@ -56,7 +56,7 @@ If(AppToRun = "")		;Checking if AppToRun hold some value. If it is empty the cod
         Else if(AppToRun != "")
         { 
             RegExMatch(AppToRun, "[\w](.*\\)", Path)
-            RegExMatch(AppToRun, "[\w\s]+[.][\w]*", ExeFile)
+            RegExMatch(AppToRun, "[\s\w]+[.][\w]*", ExeFile)
             
             AppToRun=%Path%%ExeFile%
             
