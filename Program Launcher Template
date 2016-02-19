@@ -65,7 +65,7 @@ If(AppToRun = "")                   ;Checking if AppToRun is empty.
         {
             RegExMatch(AppToRun, "[\w](.*\\)", Path)                        ;RegEx filter for extracting the path to the application from variable 'AppToRun' and putting it in new variable 'Path'
             RegExMatch(AppToRun, "[\s\w]+[.][\w]*", ExeFile)                ;RegEx filter for extracting the filename and extension from variable 'AppToRun'. Placing it in new variable 'ExeFile'
-                                                                    		;This second filter is not depended on type of file, extension.
+                                                                    	;This second filter is not depended on type of file, extension.
                                                                                                                        
             IniWrite, %AppToRun%, %A_ScriptName%, Variables, AppToRun
             IniWrite, %Path%, %A_ScriptName%, Variables, Path
