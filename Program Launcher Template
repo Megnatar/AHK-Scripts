@@ -17,7 +17,7 @@ yPoss=0
 ;--------------------------Auto Execute Section. Ends where first return is encountered--------------------------
 #NoEnv                                      ;Empty variables will not be checked if there system environment variables.
 #Persistent                                 ;Script may not close until it receives a ExitApp command.
-#NoTrayIcon                                 ;Switching tray icon off until the application to work with is started.
+#NoTrayIcon                                 ;Switching AHK tray icon off.
 #KeyHistory 0                               ;Not needed when only running the script.
 #SingleInstance off                         ;The script is allowed to run multiple instances of itself
 ListLines, off                              ;Not needed when only running the script.
