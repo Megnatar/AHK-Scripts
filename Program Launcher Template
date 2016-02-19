@@ -71,7 +71,7 @@ If(AppToRun = "")                   ;Checking if AppToRun is empty.
             IniWrite, %Path%, %A_ScriptName%, Variables, Path
             IniWrite, %ExeFile%, %A_ScriptName%, Variables, ExeFile
            
-            IniRead, AppToRun, %A_ScriptName%, Variables, AppToRun     	;Getting the value for 'AppToRun' once more, otherwise the tray icon might fail at first run.
+            IniRead, AppToRun, %A_ScriptName%, Variables, AppToRun     	    ;Getting the value for 'AppToRun' once more, otherwise the tray icon might fail at first run.
         }
     }
 }
@@ -124,12 +124,12 @@ IfWinNotExist, ahk_exe %ExeFile%
     {
         WinGetTitle, WinTitle, ahk_pid %Process_ID%, , Application Launcher
        
-        GuiControl, , WinTitle, Window Title:`n%WinTitle%        		;Displaying/writing the new content of variable WinTitle in the GUI
+        GuiControl, , WinTitle, Window Title:`n%WinTitle%               ;Displaying/writing the new content of variable WinTitle in the GUI
         GuiControl, , WinClass, WindowClass:`n%WinClass%
         sleep, 10
-        IniWrite, %WinTitle%, %A_ScriptName%, Variables, WinTitle  	;writing the new content of variable WinTitle back to the script for later use.
+        IniWrite, %WinTitle%, %A_ScriptName%, Variables, WinTitle       ;writing the new content of variable WinTitle back to the script for later use.
     }
-    If(WinClass = "")                        												;Again with a blank variable, getting the window class and writing it back to the GUI and script for later use.
+    If(WinClass = "")                                                   ;Again with a blank variable, getting the window class and writing it back to the GUI and script for later use.
     {
         WinGetClass, WinClass
         GuiControl, , WinClass, WindowClass:`n%WinClass%
