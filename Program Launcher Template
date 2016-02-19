@@ -46,10 +46,10 @@ IfExist, %A_ScriptName%
 }
 ;--------------------------Asking for user input when variable 'AppToRun' at the top of this script is blank--------------------------
 again:
-If(AppToRun = "")                                   ;Checking if AppToRun is empty.
+If(AppToRun = "")                   ;Checking if AppToRun is empty.
 {
     InputBox, AppToRun, , Specify path and executable name of the program you want to start. e.g. "x:\folder\file.exe",,600,130,,,,,
-    If(ErrorLevel = 1)                           		;The user pressed cancel
+    If(ErrorLevel = 1)              ;The user pressed cancel
     {
         Exitapp
     }
@@ -63,8 +63,8 @@ If(AppToRun = "")                                   ;Checking if AppToRun is emp
         }
         Else if(AppToRun != "")
         {
-            RegExMatch(AppToRun, "[\w](.*\\)", Path)                		;RegEx filter for extracting the path to the application from variable 'AppToRun' and putting it in new variable 'Path'
-            RegExMatch(AppToRun, "[\s\w]+[.][\w]*", ExeFile)						;RegEx filter for extracting the filename and extension from variable 'AppToRun'. Placing it in new variable 'ExeFile'
+            RegExMatch(AppToRun, "[\w](.*\\)", Path)                        ;RegEx filter for extracting the path to the application from variable 'AppToRun' and putting it in new variable 'Path'
+            RegExMatch(AppToRun, "[\s\w]+[.][\w]*", ExeFile)                ;RegEx filter for extracting the filename and extension from variable 'AppToRun'. Placing it in new variable 'ExeFile'
                                                                     		;This second filter is not depended on type of file, extension.
                                                                                                                        
             IniWrite, %AppToRun%, %A_ScriptName%, Variables, AppToRun
