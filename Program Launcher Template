@@ -11,8 +11,8 @@ SteamID=
 Admin=No
 ScriptEnabled=No
 [GuiPoss]
-xPoss=749
-yPoss=308
+xPoss=0
+yPoss=0
 */
 ;--------------------------Auto Execute Section. Ends where first return is encountered--------------------------
 #NoEnv                                      ;Empty variables will not be checked if there system environment variables.
