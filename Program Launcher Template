@@ -167,7 +167,7 @@ IfWinExist, ahk_exe %ExeFile%                ;Activating the window if the progr
 }
 WaitQuit:
 GroupAdd, WindowGroup, ahk_class %WinClass%         ;Creating a window group in case variables mismatch or left blank. Also the context sensitive directive #IfWinActive/exist doesn't allow variables names.
-GroupAdd, WindowGroup, ahk_exe %ExeFile%             ;With GroupAdd the parameter of the window title can be variable when using the #IfWin directive.
+GroupAdd, WindowGroup, ahk_exe %ExeFile%            ;With GroupAdd the parameter of the window title can be variable when using the #IfWin directive.
  
 Process, WaitClose, %Process_ID%
 GoSub, ButtonExitScript
@@ -175,7 +175,7 @@ GoSub, ButtonExitScript
 ;Operations will only execute on the window class or executable name. Opening some other window that happens hold/start with the same name as the window title will be ignored by the script.
 #IfWinActive, ahk_group WindowGroup
 {
-   
+        /* Do something here like, sending key's ore getting some application related value. */   
 }
 Return
 ;--------------------------Stop the script from operating on the program to work with--------------------------
@@ -193,10 +193,10 @@ return
 ButtonExitApplication:
 WinClose, ahk_pid %Process_ID%
 sleep, 1000
-WinGet,  IsProcessClosed, PID, ahk_pid %Process_ID%
+WinGet, IsProcessClosed, PID, ahk_pid %Process_ID%
 If(IsProcessClosed=Process_ID)
 {
-    WinKill, ahk_pid %Process_ID%
+    WinKill, ahk_pid %Process_ID%           ;Forcing application to quit when if statement evaluated true.
 }
 Process_ID =
 WinGetPos, xPoss, yPoss, , , Application Launcher
@@ -219,12 +219,12 @@ SteamID =
 Admin = No
 Process_ID =
 
-File:=FileOpen(A_ScriptFullPath, "a")                    ;Function for reading and storing file content
+File:=FileOpen(A_ScriptFullPath, "a")                               ;Function for reading and storing file content
 File.Seek(Origin:=0)                                                ;Searching for the very first character
-Replace:=";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;`n;;;;;;;;;;;"    ;Variable for hold the characters to replace
-file.write(Replace)                                                    ;Writing changes back to the script
-file.Close()                                                                ;Closing file
-File:=                                                                        ;Clearing variable.
+Replace:=";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;`n;;;;;;;;;;;"   ;Variable for hold the characters to replace
+file.write(Replace)                                                 ;Writing changes back to the script
+file.Close()                                                        ;Closing file
+File:=                                                              ;Clearing variable.
 
 ;Writing new content to the GUI window.
 GuiControl, , WinTitle, Window Title: `n%WinTitle%
@@ -245,15 +245,15 @@ file.Close()
 IfnotExist %A_ScriptDir%\lib\FullControl.ahk    ;There is no need to create the library file if it already exists, so checking it here.
 {
     vScriptFullPath:="%A_ScriptFullPath%"       ;Putting the name of build-in variable A_ScriptFullPath in new variable vScriptFullPath. If  you don't, FileAppend will otherwise write the content of variable A_ScriptFullPath.
-                                                                            ;Doing this will allow a more flexible admin function because it does not contain a hard coded path.
+                                                ;Doing this will allow a more flexible admin function because it does not contain a hard coded path.
     FileCreateDir, lib
     FileAppend, #SingleInstance off`nSetAdmin()`n{`n`tif not A_IsAdmin`n`t{`n`t`tRun`, *RunAs "%vScriptFullPath%" `n`t`tExitApp`n`t}`n}, %A_ScriptDir%\lib\FullControl.ahk  ;Creating library file and writing its content.
 }
 sleep, 10
 IniWrite, %admin%, %A_ScriptName%, Variables, admin
 sleep, 10
-Run, *RunAs %A_ScriptFullPath%            ;Starting a new instance of this script with elevated privileges before closing the current running one.
-ExitApp                                                        ;Closing the current 'old' instance.
+Run, *RunAs %A_ScriptFullPath%          ;Starting a new instance of this script with elevated privileges before closing the current running one.
+ExitApp                                 ;Closing the current 'old' instance.
 return
 ;--------------------------Opens the installation directory of the program to opereta on--------------------------
 ButtonOpenFolder:
@@ -284,4 +284,4 @@ IniWrite, %yPoss%, %A_ScriptName%, GuiPoss , yPoss
 sleep, 10
 DllCall("AnimateWindow","UInt",Script_Gui,"Int",500,"UInt","0x90000")
 ExitApp
-Return________________________________________________
+Return
