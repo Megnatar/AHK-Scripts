@@ -2,17 +2,17 @@
 ;;;;;;;;;;;   
 /*
 [Variables]
-AppToRun=
-Path=
-ExeFile=
-WinTitle=
-WinClass=
+AppToRun=C:\Program Files\VideoLAN\VLC\vlc.exe
+Path=C:\Program Files\VideoLAN\VLC\
+ExeFile=vlc.exe
+WinTitle=Stargate Atlantis - S02E10 - VLC media player
+WinClass=QWidget
 SteamID=
 Admin=No
 ScriptEnabled=No
 [GuiPoss]
-xPoss=585
-yPoss=313
+xPoss=779
+yPoss=50
 */
 ;--------------------------Auto Execute Section. Ends where first return is encountered--------------------------
 #NoEnv                                      ;Empty variables will not be checked if there system environment variables.
@@ -136,7 +136,6 @@ IfWinNotExist, ahk_exe %ExeFile%
         Sleep, 10
         IniWrite, %WinClass%, %A_ScriptName%, Variables, WinClass
     }
-    GoSub, WaitQuit
 }
 else
 IfWinExist, ahk_exe %ExeFile%                ;Activating the window if the program was already running.
@@ -163,14 +162,10 @@ IfWinExist, ahk_exe %ExeFile%                ;Activating the window if the progr
         IniWrite, %WinClass%, %A_ScriptName%, Variables, WinClass
         sleep, 10
     }
-    GoSub, WaitQuit
 }
-WaitQuit:
 GroupAdd, WindowGroup, ahk_class %WinClass%         ;Creating a window group in case variables mismatch or left blank. Also the context sensitive directive #IfWinActive/exist doesn't allow variables names.
 GroupAdd, WindowGroup, ahk_exe %ExeFile%            ;With GroupAdd the parameter of the window title can be variable when using the #IfWin directive.
- 
-Process, WaitClose, %Process_ID%
-GoSub, ButtonExitScript
+
 ;--------------------------Section for the program you want the script to work/operate on--------------------------
 ;Operations will only execute on the window class or executable name. Opening some other window that happens hold/start with the same name as the window title will be ignored by the script.
 #IfWinActive, ahk_group WindowGroup
@@ -180,17 +175,6 @@ GoSub, ButtonExitScript
 */   
 }
 Return
-;--------------------------Stop the script from operating on the program to work with--------------------------
-ButtonStop:
-WinGetPos, xPoss, yPoss, , , Application Launcher
-sleep, 10
-IniWrite, %xPoss%,  %A_ScriptName%, GuiPoss , xPoss
-sleep, 10
-IniWrite, %yPoss%, %A_ScriptName%, GuiPoss , yPoss
-Gui, Submit, NoHide
-Run,  %A_ScriptFullPath%
-ExitApp
-return
 ;--------------------------Quit the program to work with--------------------------
 ButtonExitApplication:
 WinClose, ahk_pid %Process_ID%
@@ -201,6 +185,11 @@ If(IsProcessClosed=Process_ID)
     WinKill, ahk_pid %Process_ID%           ;Forcing application to quit when if statement evaluated true.
 }
 Process_ID =
+
+;skipping return here since the sctipt also need to stop execution it's program related functions.
+
+;--------------------------Stop the script from operating on the program to work with--------------------------
+ButtonStop:
 WinGetPos, xPoss, yPoss, , , Application Launcher
 sleep, 10
 IniWrite, %xPoss%,  %A_ScriptName%, GuiPoss , xPoss
