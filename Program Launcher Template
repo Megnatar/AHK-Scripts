@@ -24,8 +24,8 @@ ListLines, off                              ;Not needed when only running the sc
 SetTitleMatchMode, 3                        ;Variables for wintitle must be a exact match to the value in parameter window title. Whatever it's ahk_exe, ahk_class, ahk_id, etc it must exactly match!
 SendMode, Input                             ;Send command uses the input method. The SetKeyDelay is ignored by SendInput and send in this case.
 SetKeyDelay, 100, 50                        ;Delay for sending keystrokes and press duration time. For use with the SendEvent command.
-SetBatchLines, -1                        ;Never sleep script in between execution, 'while its running'. Maximum CPU clock.
-SetWorkingDir, %A_ScriptDir%            ;Set the script to use it's full folder path as it's working directory. In variable A_ScriptDir, the last backslash is excluded.
+SetBatchLines, -1                           ;Never sleep script in between execution, 'while its running'. Maximum CPU clock.
+SetWorkingDir, %A_ScriptDir%                ;Set the script to use it's full folder path as it's working directory. In variable A_ScriptDir, the last backslash is excluded.
 
 ;--------------------------Place global variables here--------------------------
 
