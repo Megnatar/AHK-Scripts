@@ -1,18 +1,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;   
+;;;;;;;;;;;
 /*
 [Variables]
-AppToRun=C:\Program Files\VideoLAN\VLC\vlc.exe
-Path=C:\Program Files\VideoLAN\VLC\
-ExeFile=vlc.exe
-WinTitle=Stargate Atlantis - S02E10 - VLC media player
-WinClass=QWidget
+AppToRun=
+Path=
+ExeFile=
+WinTitle=
+WinClass=
 SteamID=
 Admin=No
 ScriptEnabled=No
 [GuiPoss]
-xPoss=779
-yPoss=50
+xPoss=749
+yPoss=308
 */
 ;--------------------------Auto Execute Section. Ends where first return is encountered--------------------------
 #NoEnv                                      ;Empty variables will not be checked if there system environment variables.
@@ -101,10 +101,6 @@ Script_Gui:=WinExist()
 return
 ;--------------------------Starting the program, getting WindowClass and title--------------------------
 ButtonStart:
-ScriptEnabled=Yes
-GuiControl, , ScriptEnabled, Script is curently enabled:`n%ScriptEnabled%
-Gui, Submit, NoHide
-
 IfWinNotExist, ahk_exe %ExeFile%
 {
     If(SteamID != "")                      ;This code will executed when the SteamID holds some value.
@@ -166,12 +162,16 @@ IfWinExist, ahk_exe %ExeFile%                ;Activating the window if the progr
 GroupAdd, WindowGroup, ahk_class %WinClass%         ;Creating a window group in case variables mismatch or left blank. Also the context sensitive directive #IfWinActive/exist doesn't allow variables names.
 GroupAdd, WindowGroup, ahk_exe %ExeFile%            ;With GroupAdd the parameter of the window title can be variable when using the #IfWin directive.
 
+ScriptEnabled=Yes
+GuiControl, , ScriptEnabled, Script is curently enabled:`n%ScriptEnabled%
+Gui, Submit, NoHide
+
 ;--------------------------Section for the program you want the script to work/operate on--------------------------
 ;Operations will only execute on the window class or executable name. Opening some other window that happens hold/start with the same name as the window title will be ignored by the script.
 #IfWinActive, ahk_group WindowGroup
 {
 /*
-        Do something here like, sending key's ore getting some application related value. 
+        DO SOMETHING HERE, LIKE SENDING SOME INPUT, GETTING APPLICATION RELATED VALUE'S, ORE MINIPULATE MEMORY.
 */   
 }
 Return
@@ -185,7 +185,6 @@ If(IsProcessClosed=Process_ID)
     WinKill, ahk_pid %Process_ID%           ;Forcing application to quit when if statement evaluated true.
 }
 Process_ID =
-
 ;skipping return here since the sctipt also need to stop execution it's program related functions.
 
 ;--------------------------Stop the script from operating on the program to work with--------------------------
@@ -229,7 +228,7 @@ ButtonAdminControl:
 Admin=yes
 File:=FileOpen(A_ScriptFullPath, "a")
 File.Seek(Origin:=0)
-Replace:="#Include %A_ScriptDir%\lib\FullControl.ahk`nSetAdmin() "
+Replace:="#Include %A_ScriptDir%\lib\FullControl.ahk`nSetAdmin()"
 file.write(Replace)
 file.Close()
  
