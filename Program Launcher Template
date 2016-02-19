@@ -175,7 +175,9 @@ GoSub, ButtonExitScript
 ;Operations will only execute on the window class or executable name. Opening some other window that happens hold/start with the same name as the window title will be ignored by the script.
 #IfWinActive, ahk_group WindowGroup
 {
-        /* Do something here like, sending key's ore getting some application related value. */   
+/*
+        Do something here like, sending key's ore getting some application related value. 
+*/   
 }
 Return
 ;--------------------------Stop the script from operating on the program to work with--------------------------
