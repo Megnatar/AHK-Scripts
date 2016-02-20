@@ -1,5 +1,5 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;
+;;;;;;;;;;  
 /*
 [Variables]
 AppToRun=
@@ -11,13 +11,13 @@ SteamID=
 Admin=No
 ScriptEnabled=No
 [GuiPoss]
-xPoss=0
-yPoss=0
+xPoss=749
+yPoss=308
 */
 ;--------------------------Auto Execute Section. Ends where first return is encountered--------------------------
 #NoEnv                                      ;Empty variables will not be checked if there system environment variables.
 #Persistent                                 ;Script may not close until it receives a ExitApp command.
-#NoTrayIcon                                 ;Switching AHK tray icon off.
+#NoTrayIcon                                 ;Switching tray icon off until the application to work with is started.
 #KeyHistory 0                               ;Not needed when only running the script.
 #SingleInstance off                         ;The script is allowed to run multiple instances of itself
 ListLines, off                              ;Not needed when only running the script.
@@ -29,7 +29,7 @@ SetWorkingDir, %A_ScriptDir%                ;Set the script to use it's full fol
 
 ;--------------------------Place global variables here--------------------------
 
-;--------------------------Getting variables from the top of this script--------------------------
+;--------------------------Reading variables and adding there content--------------------------
 IfExist, %A_ScriptName%
 {
     IniRead, AppToRun, %A_ScriptName%, Variables, AppToRun
@@ -44,6 +44,7 @@ IfExist, %A_ScriptName%
     IniRead, xPoss, %A_ScriptName%, GuiPoss, xPoss
     IniRead, yPoss, %A_ScriptName%, GuiPoss, yPoss
 }
+
 ;--------------------------Asking for user input when variable 'AppToRun' at the top of this script is blank--------------------------
 again:
 If(AppToRun = "")                   ;Checking if AppToRun is empty.
@@ -88,6 +89,7 @@ Gui, Add, Text, x13 y56 w200 h30 vWinTitle, Window Title: `n%WinTitle%
 Gui, Add, Text, x13 y86 w200 h30 vWinClass, WindowClass:`n%WinClass%
 Gui, Add, Text, x13 y116 w200 h30 vScriptAdmin, Admin Enabled:`n%Admin%
 Gui, Add, Text, x13 y146 w200 h30 vScriptEnabled,  Script is curently enabled:`n%ScriptEnabled%
+
 Gui, Add, GroupBox, x4 y189 w328 h72
 Gui, Add, Button, x14 y198 w76 h28, Start
 Gui, Add, Button, x90 y198 w76 h28, Stop
@@ -175,6 +177,7 @@ Gui, Submit, NoHide
 */   
 }
 Return
+
 ;--------------------------Quit the program to work with--------------------------
 ButtonExitApplication:
 WinClose, ahk_pid %Process_ID%
@@ -198,6 +201,7 @@ Gui, Submit, NoHide
 Run,  %A_ScriptFullPath%
 ExitApp
 return
+
 ;--------------------------Clear all variables, resetting the script to its defaults--------------------------
 buttonResetGUI:
 AppToRun =
@@ -206,12 +210,28 @@ ExeFile =
 WinTitle =
 WinClass =
 SteamID =
-Admin = No
 Process_ID =
+Admin = No
+ScriptEnabled= No
+
+IniWrite, %AppToRun%, %A_ScriptName%, Variables, AppToRun
+sleep, 10
+IniWrite, %Path%, %A_ScriptName%, Variables, Path
+sleep, 10
+IniWrite, %ExeFile%, %A_ScriptName%, Variables, ExeFile
+sleep, 10
+IniWrite, %WinClass%, %A_ScriptName%, Variables, WinClass
+sleep, 10
+IniWrite, %WinTitle%, %A_ScriptName%, Variables, WinTitle
+sleep, 10
+IniWrite, %Admin%, %A_ScriptName%, Variables, Admin
+sleep, 10
+IniWrite, %SteamID%, %A_ScriptName%, Variables, SteamID
+sleep, 10
 
 File:=FileOpen(A_ScriptFullPath, "a")                               ;Function for reading and storing file content
 File.Seek(Origin:=0)                                                ;Searching for the very first character
-Replace:=";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;`n;;;;;;;;;;;"   ;Variable for hold the characters to replace
+Replace:=";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;`n;;;;;;;;;; "   ;Variable for hold the characters to replace
 file.write(Replace)                                                 ;Writing changes back to the script
 file.Close()                                                        ;Closing file
 File:=                                                              ;Clearing variable.
@@ -221,7 +241,9 @@ GuiControl, , WinTitle, Window Title: `n%WinTitle%
 GuiControl, , WinClass, WindowClass:`n%WinClass%
 GuiControl, , AppToRun, Path and executable name:`n%AppToRun%
 GuiControl, , ScriptAdmin, Admin Enabled:`n%Admin%
+GuiControl, , ScriptEnabled, Script is curently enabled:`n%ScriptEnabled%
 Return
+
 ;--------------------------Creating a new library file that will enable administrative privileges for the script--------------------------
 ;You should enable this if the game/application does not except input from the scrip.
 ButtonAdminControl:
@@ -245,10 +267,12 @@ sleep, 10
 Run, *RunAs %A_ScriptFullPath%          ;Starting a new instance of this script with elevated privileges before closing the current running one.
 ExitApp                                 ;Closing the current 'old' instance.
 return
+
 ;--------------------------Opens the installation directory of the program to opereta on--------------------------
 ButtonOpenFolder:
 Run, Explorer.exe "%Path%"
 Return
+
 ;--------------------------Writing variables. Exit script--------------------------
 GuiClose:
 ButtonExitScript:
