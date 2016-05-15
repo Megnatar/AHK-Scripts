@@ -7,10 +7,15 @@ And this script needs a update to use controlsend because it will work better th
 #KeyHistory 0
 ListLines, off 
 SetBatchLines, -1 
-SetTitleMatchMode, 1
-DetectHiddenWindows, on
+SetTitleMatchMode, 3
 
-#IfWinExist, ahk_class WorkerW, FolderView
-Send, {LCtrl down}{LWin down}{right down}{right up}{LCtrl up}{LWin up}
-;Send, {LCtrl down}{LWin down}{left down}{left up}{LCtrl up}{LWin up}
+#IfWinExist, Program Manager
+WinActivate, Program Manager
+SendInput, {LCtrl down}{LWin down}{left down}{left up}{LCtrl up}{LWin up}
+exitapp
+
+
+#IfWinExist, Program Manager
+WinActivate, Program Manager
+SendInput, {LCtrl down}{LWin down}{right down}{right up}{LCtrl up}{LWin up}
 exitapp
