@@ -1,0 +1,24 @@
+/*
+Place me in file %userprofile%\documents\autohotkey\lib\Autowalk.ahk
+Call me from any script with/using AutoWalk()
+*/
+
+#InstallKeybdHook
+#InstallMouseHook
+AutoWalk()
+{
+	If not W_VirtState:=GetKeyState("W") 			;Checks if the virtual keystatus of "W" is up.
+	{
+		SendEvent, {W down}
+		Loop
+		{
+			If(KeyState:=GetKeyState("Lbutton" , "P") or KeyState:=GetKeyState("Mbutton" , "P") or KeyState:=GetKeyState("W" , "P"))
+			{					
+				SendEvent, {W up}
+				break
+			}
+		}
+		sleep, 100
+		Return
+	}
+}
