@@ -1,5 +1,3 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;  
 /*
 [Variables]
 AppToRun=
@@ -8,17 +6,18 @@ ExeFile=
 WinTitle=
 WinClass=
 SteamID=
-Admin=No
+Admin=False
 ScriptEnabled=No
 [GuiPoss]
-xPoss=749
-yPoss=308
+xPoss=751
+yPoss=292
 */
 ;--------------------------Auto Execute Section. Ends where first return is encountered--------------------------
 #NoEnv                                      ;Empty variables will not be checked if there system environment variables.
 #Persistent                                 ;Script may not close until it receives a ExitApp command.
 #NoTrayIcon                                 ;Switching tray icon off until the application to work with is started.
 #KeyHistory 0                               ;Not needed when only running the script.
+#Warn, all, StdOut                      ;All known error to standard output
 #SingleInstance off                         ;The script is allowed to run multiple instances of itself
 ListLines, off                              ;Not needed when only running the script.
 SetTitleMatchMode, 3                        ;Variables for wintitle must be a exact match to the value in parameter window title. Whatever it's ahk_exe, ahk_class, ahk_id, etc it must exactly match!
@@ -38,11 +37,15 @@ IfExist, %A_ScriptName%
     IniRead, WinTitle, %A_ScriptName%, Variables, WinTitle
     IniRead, WinClass, %A_ScriptName%, Variables, WinClass
     IniRead, SteamID, %A_ScriptName%, Variables, SteamID
-    IniRead, Admin, %A_ScriptName%, Variables, Admin
     IniRead, ScriptEnabled, %A_ScriptName%, Variables, ScriptEnabled
  
     IniRead, xPoss, %A_ScriptName%, GuiPoss, xPoss
     IniRead, yPoss, %A_ScriptName%, GuiPoss, yPoss
+    
+    IniRead, Admin, %A_ScriptName%, Variables, Admin
+}
+If(Admin = "True"){
+    gosub, ButtonRunAsAdmin
 }
 
 ;--------------------------Asking for user input when variable 'AppToRun' at the top of this script is blank--------------------------
@@ -82,23 +85,27 @@ Menu, tray, Icon, %AppToRun%
 Menu, tray, add
 Menu, tray, add, Quit Script and %WinTitle%, GuiClose
 
-Gui +LastFound +owner
-Gui, Add, GroupBox, x4 y38 w328 h144
-Gui, Add, Text, x13 y1 w296 h30 vAppToRun, Path and executable name:`n%AppToRun%
-Gui, Add, Text, x13 y56 w200 h30 vWinTitle, Window Title: `n%WinTitle%
-Gui, Add, Text, x13 y86 w200 h30 vWinClass, WindowClass:`n%WinClass%
-Gui, Add, Text, x13 y116 w200 h30 vScriptAdmin, Admin Enabled:`n%Admin%
-Gui, Add, Text, x13 y146 w200 h30 vScriptEnabled,  Script is curently enabled:`n%ScriptEnabled%
+Gui +LastFound
+Gui, Add, GroupBox, x3 y40 w316 h216 , 
+Gui, Add, Text, x8 y5 w296 h36 vAppToRun, Path and executable name:`n%AppToRun%
+Gui, Add, Text, x8 y56 w296 h36 VWinTitle, Window Title: `n%WinTitle%
+Gui, Add, Text, x8 y108 w296 h36 VWinClass, WindowClass:`n%WinClass%
+Gui, Add, Text, x8 y159 w296 h36, Admin Enabled:`n%Admin%
+Gui, Add, Text, x8 y209 w296 h36 vScriptEnabled, Script is curently enabled:`n%ScriptEnabled%
 
-Gui, Add, GroupBox, x4 y189 w328 h72
-Gui, Add, Button, x14 y198 w76 h28, Start
-Gui, Add, Button, x90 y198 w76 h28, Stop
-Gui, Add, Button, x167 y198 w76 h28, Reset GUI
-Gui, Add, Button, x244 y198 w76 h28, Exit Script
-Gui, Add, Button, x14 y228 w76 h28 , Admin Control
-Gui, Add, Button, x90 y228 w76 h28 , Open Folder
-Gui, Add, Button, x244 y228 w76 h28 , Exit Application
-Gui, Show, w336 h265 x%xPoss% y%yPoss%, Application Launcher
+Gui, Add, GroupBox, x2 y256 w316 h76
+Gui, Add, Button, x8 y266 w76 h28, Start
+Gui, Add, Button, x84 y266 w76 h28, Stop
+Gui, Add, Button, x162 y266 w76 h28, Reset GUI
+Gui, Add, Button, x239 y266 w76 h28, Exit Script
+If(Admin != "True"){
+   Gui, Add, Button, x8 y298 w76 h28, RunAsAdmin
+}Else{
+   Gui, Add, Button, x8 y298 w76 h28, RunasUser
+}
+Gui, Add, Button, x84 y298 w76 h28 , Open Folder
+Gui, Add, Button, x239 y298 w76 h28 , Exit Application
+Gui, Show, ,Application Launcher
 Script_Gui:=WinExist()
 return
 ;--------------------------Starting the program, getting WindowClass and title--------------------------
@@ -114,7 +121,7 @@ IfWinNotExist, ahk_exe %ExeFile%
     }
     Else if(SteamID = "")                   ;Below code is executed when variable SteamID empty.
     {
-        run, %ExeFile%,%Path% , , Process_ID
+        run, %AppToRun%,%Path% , , Process_ID
         WinWait, ahk_pid %Process_ID%
         WinWaitActive, ahk_pid %Process_ID%
     }
@@ -165,19 +172,25 @@ GroupAdd, WindowGroup, ahk_class %WinClass%         ;Creating a window group in 
 GroupAdd, WindowGroup, ahk_exe %ExeFile%            ;With GroupAdd the parameter of the window title can be variable when using the #IfWin directive.
 
 ScriptEnabled=Yes
-GuiControl, , ScriptEnabled, Script is curently enabled:`n%ScriptEnabled%
+SLEEP, 10
+GuiControl, , ScriptEnabled, Script is curently enabled: `n%ScriptEnabled%
+SLEEP, 10
 Gui, Submit, NoHide
-
+SLEEP, 10
+Process, WaitClose, %Process_ID%
+ScriptEnabled=No
+GuiControl, , ScriptEnabled, Script is curently enabled: `n%ScriptEnabled%
+Gui, Submit, NoHide
+return
 ;--------------------------Section for the program you want the script to work/operate on--------------------------
 ;Operations will only execute on the window class or executable name. Opening some other window that happens hold/start with the same name as the window title will be ignored by the script.
 #IfWinActive, ahk_group WindowGroup
 {
 /*
         DO SOMETHING HERE, LIKE SENDING SOME INPUT, GETTING APPLICATION RELATED VALUE'S, ORE MINIPULATE MEMORY.
-*/   
+*/
 }
 Return
-
 ;--------------------------Quit the program to work with--------------------------
 ButtonExitApplication:
 WinClose, ahk_pid %Process_ID%
@@ -197,23 +210,23 @@ sleep, 10
 IniWrite, %xPoss%,  %A_ScriptName%, GuiPoss , xPoss
 sleep, 10
 IniWrite, %yPoss%, %A_ScriptName%, GuiPoss , yPoss
+ScriptEnabled=No
+GuiControl, , ScriptEnabled, Script is curently enabled:`n%ScriptEnabled%
 Gui, Submit, NoHide
 Run,  %A_ScriptFullPath%
 ExitApp
 return
-
 ;--------------------------Clear all variables, resetting the script to its defaults--------------------------
 buttonResetGUI:
-AppToRun =
-Path =
-ExeFile =
-WinTitle =
-WinClass =
-SteamID =
-Process_ID =
-Admin = No
-ScriptEnabled= No
-
+AppToRun=
+Path=
+ExeFile=
+WinTitle=
+WinClass=
+SteamID=
+Process_ID=
+Admin=False
+ScriptEnabled=No
 IniWrite, %AppToRun%, %A_ScriptName%, Variables, AppToRun
 sleep, 10
 IniWrite, %Path%, %A_ScriptName%, Variables, Path
@@ -228,14 +241,6 @@ IniWrite, %Admin%, %A_ScriptName%, Variables, Admin
 sleep, 10
 IniWrite, %SteamID%, %A_ScriptName%, Variables, SteamID
 sleep, 10
-
-File:=FileOpen(A_ScriptFullPath, "a")                               ;Function for reading and storing file content
-File.Seek(Origin:=0)                                                ;Searching for the very first character
-Replace:=";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;`n;;;;;;;;;; "   ;Variable for hold the characters to replace
-file.write(Replace)                                                 ;Writing changes back to the script
-file.Close()                                                        ;Closing file
-File:=                                                              ;Clearing variable.
-
 ;Writing new content to the GUI window.
 GuiControl, , WinTitle, Window Title: `n%WinTitle%
 GuiControl, , WinClass, WindowClass:`n%WinClass%
@@ -244,35 +249,32 @@ GuiControl, , ScriptAdmin, Admin Enabled:`n%Admin%
 GuiControl, , ScriptEnabled, Script is curently enabled:`n%ScriptEnabled%
 Return
 
-;--------------------------Creating a new library file that will enable administrative privileges for the script--------------------------
-;You should enable this if the game/application does not except input from the scrip.
-ButtonAdminControl:
-Admin=yes
-File:=FileOpen(A_ScriptFullPath, "a")
-File.Seek(Origin:=0)
-Replace:="#Include %A_ScriptDir%\lib\FullControl.ahk`nSetAdmin()"
-file.write(Replace)
-file.Close()
- 
-IfnotExist %A_ScriptDir%\lib\FullControl.ahk    ;There is no need to create the library file if it already exists, so checking it here.
+;--------------------------Run the script with administrative privileges --------------------------
+/* Because of security reasons You should only enable this if the game/application does 
+not except input from the scrip. I advice against running scripts as admin by default! 
+It's very easy to messup you're Operating system.
+*/
+ButtonRunAsAdmin:
+if not A_IsAdmin
 {
-    vScriptFullPath:="%A_ScriptFullPath%"       ;Putting the name of build-in variable A_ScriptFullPath in new variable vScriptFullPath. If  you don't, FileAppend will otherwise write the content of variable A_ScriptFullPath.
-                                                ;Doing this will allow a more flexible admin function because it does not contain a hard coded path.
-    FileCreateDir, lib
-    FileAppend, #SingleInstance off`nSetAdmin()`n{`n`tif not A_IsAdmin`n`t{`n`t`tRun`, *RunAs "%vScriptFullPath%" `n`t`tExitApp`n`t}`n}, %A_ScriptDir%\lib\FullControl.ahk  ;Creating library file and writing its content.
+    Admin = True
+   IniWrite, %Admin%, %A_ScriptName%, Variables, Admin
+    sleep, 10
+    Run *RunAs "%A_ScriptFullPath%"
+    ExitApp
 }
+Return
+ButtonRunAsUser:
+Admin = False
+IniWrite, %Admin%, %A_ScriptName%, Variables, Admin
 sleep, 10
-IniWrite, %admin%, %A_ScriptName%, Variables, admin
-sleep, 10
-Run, *RunAs %A_ScriptFullPath%          ;Starting a new instance of this script with elevated privileges before closing the current running one.
-ExitApp                                 ;Closing the current 'old' instance.
-return
-
+Run  "%A_ScriptFullPath%"
+ExitApp
+Return
 ;--------------------------Opens the installation directory of the program to opereta on--------------------------
 ButtonOpenFolder:
 Run, Explorer.exe "%Path%"
 Return
-
 ;--------------------------Writing variables. Exit script--------------------------
 GuiClose:
 ButtonExitScript:
@@ -298,4 +300,3 @@ IniWrite, %yPoss%, %A_ScriptName%, GuiPoss , yPoss
 sleep, 10
 DllCall("AnimateWindow","UInt",Script_Gui,"Int",500,"UInt","0x90000")
 ExitApp
-Return
