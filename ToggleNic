@@ -81,29 +81,50 @@ IfnotExist, %A_ScriptDir%\NetAccess.acc
 				Array.Obj[int] := A_LoopField
 			}
 		}
-		;Joining the variable name that holds the device name, and device name itself.  Adding them to new variable for use in dropdownlist.
-		DevName1:=Object3:=Array.Obj[3]  . " = " . Object4:=Array.Obj[4] "`n"
-		DevName2:=Object7:=Array.Obj[7]  . " = " . Object8:=Array.Obj[8] "`n"
-		DevName3:=Object11:=Array.Obj[11]  . " = " . Object12:=Array.Obj[12] "`n"
-		DevName4:=Object15:=Array.Obj[15]  . " = " . Object16:=Array.Obj[16] "`n"
+		;Adding found device names to variables for use in dropdownlist.
+		DevName1:=Array.Obj[4]
+		DevName2:=Array.Obj[8]
+		DevName3:=Array.Obj[12]
+		DevName4:=Array.Obj[16]
 	}
 	;Dropdownlist to choose the default device to be auto toggled by applications.
 	while(FirstRun = "")
 	{
-		Gui, Add, DropDownList, x12 y12 w345 h125 vDevID, %DevName1%||%DevName2%|%DevName3%|%Devname4%
+		Gui, Add, DropDownList, x12 y12 w345 h125 vSelect, Name = %DevName1%||Name = %DevName2%|Name = %DevName3%|Name = %Devname4%
 		Gui, Add, Button, x367 y12 w96 h19, Ok
 		Gui, Show, w478 h45,
 		pause, on
 	
 		ButtonOk:
 		Pause, off
-		GuiControl,+AltSubmit, DevID
+		GuiControl,+AltSubmit, Select
 		Gui, submit 
 		Gui, destroy
 		Break
 	}
+	If(Select = 1)
+	{
+		DevID:=Array.Obj[2]
+		Name:=Array.Obj[4]
+	}
+	Else If(Select = 2)
+	{
+		DevID:=Array.Obj[6]
+		Name:=Array.Obj[8]
+	}		
+	Else If(Select = 3)
+	{
+		DevID:=Array.Obj[10]
+		Name:=Array.Obj[12]
+	}
+	Else if(Select = 4)
+	{
+		DevID:=Array.Obj[14]
+		Name:=Array.Obj[16]
+	}
 	;Writing value's back to files.
 	IniWrite, %DevID%, %A_ScriptDir%\Settings.ini, DevToToggle, DevID
+	IniWrite, %Name%, %A_ScriptDir%\Settings.ini, DevToToggle, Name
 	IniWrite, %IconFile%, %A_ScriptDir%\Settings.ini, TrayIcon, IconFile
 	IniWrite, %IconEnabled%, %A_ScriptDir%\Settings.ini, TrayIcon, IconEnabled
 	IniWrite, %IconDisabled%, %A_ScriptDir%\Settings.ini, TrayIcon, IconDisabled
@@ -115,7 +136,7 @@ IfnotExist, %A_ScriptDir%\NetAccess.acc
 }
 ;--------------------------Ini read and traymenu section--------------------------
 IniRead, DevID, %A_ScriptDir%\Settings.ini, DevToToggle, DevID
-IniRead, Name, %A_ScriptDir%\Settings.ini, Devices, DeviceName%DevID%
+IniRead, Name, %A_ScriptDir%\Settings.ini, DevToToggle, Name
 IniRead, IconFile, %A_ScriptDir%\Settings.ini, TrayIcon, IconFile
 IniRead, IconEnabled, %A_ScriptDir%\Settings.ini, TrayIcon, IconEnabled
 IniRead, IconDisabled, %A_ScriptDir%\Settings.ini, TrayIcon, IconDisabled
@@ -137,7 +158,7 @@ Menu, tray, add, Restart script, Restart
 Menu, tray, add, Exit, CloseScript
 ;--------------------------Settimer section, to check if there is a allowd app running ore not--------------------------
 DisableAdapter:
-IfWinNotExist, ahk_Group NetAccess ;On startup the window group does not exist, yet, so the script will alway's continue here.
+IfWinNotExist, ahk_Group NetAccess ;On startup the window group does not exist, yet, so the script will alway's continue here.(True)
 {
 	Settimer, DisableAdapter, off
 	DisableNic(DevID) ;Function as devined above.
@@ -157,7 +178,7 @@ IfWinNotExist, ahk_Group NetAccess ;On startup the window group does not exist, 
 	.			"MACAddress = " MACAddress  "`n"
 	Menu, tray, Icon
 	Menu, tray, Icon, %IconFile%, %IconDisabled%
-	;Reading file that's holding alowed apps, and adds them to the windowgroup NetAccess. Turns timer to enable adapter to on.
+	;Reading file that's holding allowed apps, and adds them to the windowgroup NetAccess. Toggling the nic off/on will frefh the list. Removed apps will need a restart of the script.
 	Loop, read, %A_ScriptDir%\NetAccess.acc
 	{
 		Loop, parse, A_LoopReadLine, %A_Tab%
@@ -247,7 +268,7 @@ Menu, tray, Tip, % "Ipv4 Address = " ipv4 "`n"
 Menu, tray, Icon,
 Menu, tray, Icon, %IconFile%, %IconEnabled%
 return
-;Reloads the script. This is needed when the allowed application list needs a update.
+;Reloads the script. This is needed when the allowed application list needs a update. 
 Restart:
 Run *RunAs "%A_ScriptFullPath%"
 CloseScript:
