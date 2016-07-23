@@ -1,8 +1,10 @@
-if not A_IsAdmin ;The script needs elevated privileges to be able to use COM.
+;The script needs elevated privileges to be able to use the management interface.
+if not A_IsAdmin
 {
 	Run *RunAs "%A_ScriptFullPath%"
 	ExitApp
 }
+
 #NoEnv
 #Persistent
 #NoTrayIcon
@@ -11,55 +13,71 @@ DetectHiddenWindows, on
 SetWorkingDir %A_ScriptDir%
 SetBatchLines, -1
 SetWinDelay, -1
+
+;Declaring global variables. Better to have them all in once place than scatters throughout the script.
+global DevId
+Global ipv4 := 0
+Global subnet := 0
+Global mac := 0
+
 ;--------------------------Script Functions--------------------------
-;Function, COM method to disable the default networkdevice. The device is toggled on/off by it's ID_number stored in variable DevId.
+;COM method to disable the default network device. The device is toggled on/off by it's index number stored in variable DevId.
 DisableNic(DevId)
 {
 	objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2").ExecMethod("Win32_NetworkAdapter.DeviceID='" DevId "'","Disable")
 	return
 }
-;Function, COM method to enable the default networkdevice.
+
+;COM method to enable the default network device.
 EnableNic(DevId)
 {
 	objWMIService := ComObjGet("winmgmts:\\" & strComputer & "\root\CIMV2").ExecMethod("Win32_NetworkAdapter.DeviceID='" DevId "'","Enable")
 	return
 }
-;WMI query function to get network information.
-GetIpInfo()
+
+;WMI query to retrieve information about the default network device.
+GetNicInfo()
 {
-	objWMIService := ComObjGet("winmgmts:\\.\root\CIMV2")
-	Enum := objWMIService.ExecQuery("SELECT * FROM Win32_NetworkAdapterConfiguration")._NewEnum
-	while enum[value]{
-		IPAddress := value.IPAddress
-		global	ipv4 := IPAddress[0]
-		IPSubnet := value.IPSubnet
-		global Subnet := IPSubnet[0]
-		global	MACAddress := value.MACAddress
+	objItem := ComObjGet("winmgmts:\\.\root\CIMV2")
+	for  value in objItem.ExecQuery("SELECT * FROM Win32_NetworkAdapterConfiguration WHERE Index=" DevId)
+	{
+			ipv4 := value.IpAddress[0]
+			sleep, 10
+			subnet := value.IPSubnet[0]
+			sleep, 10
+			mac := value.MACAddress
+			sleep, 10
 	}
-return
+	return
 }
-;Funtion to get all onboard physical network apaters. It gets the name and index number then writs them back to .ini.
+
+;Function to get all installed physical network adapter. It retrieves the name and id number, then writes them back to Settings.ini.
 GetPhysicalAdapter()
 {
 	objWMIService := ComObjGet("winmgmts:\\.\root\CIMV2")
 	enum := objWMIService.ExecQuery("SELECT * FROM Win32_NetworkAdapter where PhysicalAdapter = true")._NewEnum
-	while enum[value]{
+	while enum[value]
+	{
 		DeviceID := value.DeviceID
 		Name := value.Name
+		
 		IniWrite, %DeviceID%, %A_ScriptDir%\Settings.ini, Devices, DeviceID%A_index%
+		sleep, 10
 		IniWrite, %Name%, %A_ScriptDir%\Settings.ini, Devices, DeviceName%A_index%
+		sleep, 10
 	}
-return
+	return
 }
-;--------------------------On First run ore deletion of NetAccess.acc--------------------------
-;Getting icons for systray and asking user te specify default network device (the one that's connected to the internet).
+
+;--------------------------On First run or deletion of file NetAccess.acc--------------------------
+;Checking OS version so the right icons are used. Asking user to specify the default network device (the one that's connected to the internet).
 IfnotExist, %A_ScriptDir%\NetAccess.acc
 {
 	FileDelete, %A_ScriptDir%\Settings.ini
 	GetPhysicalAdapter()
-	;Checking if operating system is windows10 ore not. Icons are only tested on win10 and 7.
-	OsVersion:=DllCall("GetVersion", "uint") & 0xffff
-	If(OsVersion = 10 ){
+   
+	;Checking if operating system is windows10 or not. Icons are only tested on win10 and 7.
+	If(A_OSVersion >= 10 ){
 		IconFile=pnidui.dll
 		IconEnabled:=13
 		IconDisabled:=1
@@ -68,33 +86,40 @@ IfnotExist, %A_ScriptDir%\NetAccess.acc
 		IconEnabled:=28
 		IconDisabled:=13
 	}
-	;Imporing name objects and variable value's in section [Devices] from ini.
+	/*
+	Importing name/key's objects and variable value's in section [Devices] from ini.
+	I wil probably change this in future release with a enum in GetPhysicalAdapter()
+	that writes [key, value] in one go.
+	*/ 
 	Array := Object()
 	Loop, read, %A_ScriptDir%\Settings.ini
 	{
 		If(A_LoopReadLine != "")
-		{
+		{	;Excluding section name from A_LoopReadLine. The resulting lines will be stored in StrRepl.
 			StrRepl := StrReplace(A_LoopReadLine, "[Devices]", "", All)
 			Loop, parse, StrRepl,  =,
 			{
 				int++
 				Array.Obj[int] := A_LoopField
+				sleep, 10
 			}
 		}
+      
 		;Adding found device names to variables for use in dropdownlist.
 		DevName1:=Array.Obj[4]
 		DevName2:=Array.Obj[8]
 		DevName3:=Array.Obj[12]
 		DevName4:=Array.Obj[16]
 	}
-	;Dropdownlist to choose the default device to be auto toggled by applications.
+   
+	;Drop down list to choose the default device that will be auto toggled by some application.
 	while(FirstRun = "")
 	{
 		Gui, Add, DropDownList, x12 y12 w345 h125 vSelect, Name = %DevName1%||Name = %DevName2%|Name = %DevName3%|Name = %Devname4%
 		Gui, Add, Button, x367 y12 w96 h19, Ok
 		Gui, Show, w478 h45,
 		pause, on
-	
+ 
 		ButtonOk:
 		Pause, off
 		GuiControl,+AltSubmit, Select
@@ -103,7 +128,7 @@ IfnotExist, %A_ScriptDir%\NetAccess.acc
 		Break
 	}
 	If(Select = 1)
-	{
+	{	;The value found in the second object in the array will be stored in DevID. For name that will be the fourth..etc.
 		DevID:=Array.Obj[2]
 		Name:=Array.Obj[4]
 	}
@@ -122,30 +147,38 @@ IfnotExist, %A_ScriptDir%\NetAccess.acc
 		DevID:=Array.Obj[14]
 		Name:=Array.Obj[16]
 	}
+   
 	;Writing value's back to files.
 	IniWrite, %DevID%, %A_ScriptDir%\Settings.ini, DevToToggle, DevID
+	sleep, 10
 	IniWrite, %Name%, %A_ScriptDir%\Settings.ini, DevToToggle, Name
+	sleep, 10
 	IniWrite, %IconFile%, %A_ScriptDir%\Settings.ini, TrayIcon, IconFile
+	sleep, 10
 	IniWrite, %IconEnabled%, %A_ScriptDir%\Settings.ini, TrayIcon, IconEnabled
+	sleep, 10
 	IniWrite, %IconDisabled%, %A_ScriptDir%\Settings.ini, TrayIcon, IconDisabled
-	
+	sleep, 10
+
+	;Creating file (NetAccess.acc) this file holds the list with applications that need network access.
 	FileAppend, ahk_exe firefox.exe, %A_ScriptDir%\NetAccess.acc
 	FileAppend, `nahk_exe iexplore.exe, %A_ScriptDir%\NetAccess.acc
 	FileAppend, `nahk_exe chrome.exe, %A_ScriptDir%\NetAccess.acc
 	FileAppend, `nahk_exe opera.exe, %A_ScriptDir%\NetAccess.acc
 }
+
 ;--------------------------Ini read and traymenu section--------------------------
 IniRead, DevID, %A_ScriptDir%\Settings.ini, DevToToggle, DevID
 IniRead, Name, %A_ScriptDir%\Settings.ini, DevToToggle, Name
 IniRead, IconFile, %A_ScriptDir%\Settings.ini, TrayIcon, IconFile
 IniRead, IconEnabled, %A_ScriptDir%\Settings.ini, TrayIcon, IconEnabled
 IniRead, IconDisabled, %A_ScriptDir%\Settings.ini, TrayIcon, IconDisabled
-
+ 
 Menu, tray, Icon
 Menu, tray, Icon, %IconFile%, %IconDisabled%
-Menu, tray, Tip, % "Ipv4 Address = " ipv4  "`n"
-.				"Subnetmask = " Subnet "`n"
-.				"MACAddress = " MACAddress "`n"
+Menu, tray, Tip, % 	"IpAddress = " ipv4 "`n"
+.				"SubnetMask = " subnet "`n"
+.				"MACAddress = " mac "`n"
 Menu, Tray, NoStandard
 Menu, tray, add, Network Connections, Connections
 Menu, tray, add, Windows Firewall, Firewall
@@ -156,29 +189,34 @@ Menu, tray, add, Disable %Name%, TurnOff
 Menu, tray, add
 Menu, tray, add, Restart script, Restart
 Menu, tray, add, Exit, CloseScript
-;--------------------------Settimer section, to check if there is a allowd app running ore not--------------------------
+
+;--------------------------Settimer section, to check if there is a allowed app running or not--------------------------
 DisableAdapter:
-IfWinNotExist, ahk_Group NetAccess ;On startup the window group does not exist, yet, so the script will alway's continue here.(True)
+;On startup the window group does not exist, yet, so the script will always continue here and disables you're device
+IfWinNotExist, ahk_Group NetAccess
 {
 	Settimer, DisableAdapter, off
-	DisableNic(DevID) ;Function as devined above.
-	;The script waits here untill the variable ipv4 is empty. This will ensure the tray icon display's the true state of the device.
-	while(ipv4 != "")
+	DisableNic(DevID)
+	;Looping while the value in ipv4 is equal or greater then 1. This will ensure the tray icon display's the true state of the device.
+	while(ipv4 >= 1)
 	{
-		GetIpInfo() ;Function as devined above.
-		sleep, 50
-		if(ipv4 = "") ;Breaking free from the while loop as soon as ipv4 variable is empty
+		GetNicInfo()
+		;Breaking free from the while loop when the value in ipv4 variable becomes zero
+		if(ipv4 = 0)
 		{
+			mac := 0
 			break
 		}
 	}
-	;Adapting mouse over tooltip to new value's.
-	Menu, tray, Tip, % "Ipv4 Address = " ipv4  "`n"
-	.			"Subnetmask = " Subnet  "`n"
-	.			"MACAddress = " MACAddress  "`n"
+	
+	;Adapting mouse over tooltip to new value's and changing tray icon to new status.
+	Menu, tray, Tip, %	"IpAddress = " ipv4 "`n"
+	.				"SubnetMask = " subnet "`n"
+	.				"MACAddress = " mac "`n"
 	Menu, tray, Icon
 	Menu, tray, Icon, %IconFile%, %IconDisabled%
-	;Reading file that's holding allowed apps, and adds them to the windowgroup NetAccess. Toggling the nic off/on will frefh the list. Removed apps will need a restart of the script.
+	
+	;Reading file that is holding allowed apps, and adds them to the windowgroup NetAccess.
 	Loop, read, %A_ScriptDir%\NetAccess.acc
 	{
 		Loop, parse, A_LoopReadLine, %A_Tab%
@@ -189,24 +227,24 @@ IfWinNotExist, ahk_Group NetAccess ;On startup the window group does not exist, 
 	Settimer, EnableAdapter, 1000
 }
 return
-
+ 
 EnableAdapter:
-IfWinExist, ahk_Group NetAccess ;When a allowed application is started this will evaluate as true.
+;When one of the applications in the list NetAccess.acc is running, this will evaluate as true.
+IfWinExist, ahk_Group NetAccess
 {
 	Settimer, EnableAdapter, off
 	EnableNic(DevID)
-	while(ipv4 = "")
+	while(ipv4 = 0 || ipv4 = "")
 	{
-		GetIpInfo()
-		sleep, 50
-		if(ipv4 != "")
+		GetNicInfo()
+		if(ipv4 >= 1)
 		{
 			break
 		}
 	}
-	Menu, tray, Tip, % "Ipv4 Address = " ipv4 "`n"
-	.			"Subnetmask = " Subnet "`n"
-	.			"MACAddress = " MACAddress "`n"
+	Menu, tray, Tip, %	"IpAddress = " ipv4 "`n"
+	.				"SubnetMask = " subnet "`n"
+	.				"MACAddress = " mac "`n"
 	Menu, tray, Icon,
 	Menu, tray, Icon, %IconFile%, %IconEnabled%
 	Loop, read, %A_ScriptDir%\NetAccess.acc
@@ -219,57 +257,88 @@ IfWinExist, ahk_Group NetAccess ;When a allowed application is started this will
 	Settimer, DisableAdapter, 1000
 }
 return
+
 ;--------------------------Button section--------------------------
 ;Opens Control Panel\Network and Internet\Network Connections.
 Connections:
 Run, %A_WinDir%\explorer.exe shell:::{26EE0668-A00A-44D7-9371-BEB064C98683}\3\::{7007ACC7-3202-11D1-AAD2-00805FC1270E}
 return
+   
 ;Opens Windows firewall with advanced security.
 Firewall:
 Run, "C:\WINDOWS\system32\mmc.exe" "C:\WINDOWS\system32\wf.msc"
 return
+
 ;Opens notepad with the allowed application list.
 allowed:
 Run, notepad %A_ScriptDir%\NetAccess.acc
 return
+
 ;Manualy turn off the network device.
 TurnOff:
 DisableNic(DevID)
-while(ipv4 != "")
+while(ipv4 >= 1)
 {
-	GetIpInfo()
-	sleep, 50
-	if(ipv4 = "")
+	GetNicInfo()
+	if(ipv4 = 0)
 	{
+		mac := 0
 		break
 	}
 }
-Menu, tray, Tip, % "Ipv4 Address = " ipv4  "`n"
-.   "Subnetmask = " Subnet  "`n"
-.   "MACAddress = " MACAddress  "`n"
-Menu, tray, Icon
+Menu, tray, Tip, %	"IpAddress = " ipv4 "`n"
+.				"SubnetMask = " subnet "`n"
+.				"MACAddress = " mac "`n"
+Menu, tray, Icon,
 Menu, tray, Icon, %IconFile%, %IconDisabled%
+Loop, read, %A_ScriptDir%\NetAccess.acc
+{
+	Loop, parse, A_LoopReadLine, %A_Tab%
+	{
+		GroupAdd, NetAccess, %A_LoopField%
+	}
+}
 Return
+
 ;Manualy turn on the network device.
 TurnOn:
 EnableNic(DevID)
-while(ipv4 = "")
+while(ipv4 = 0)
 {
-	GetIpInfo()
-	sleep, 50
-	if(ipv4 != "")
+	GetNicInfo()
+	if(ipv4 >= 1)
 	{
 		break
 	}
 }
-Menu, tray, Tip, % "Ipv4 Address = " ipv4 "`n"
-.   "Subnetmask = " Subnet "`n"
-.   "MACAddress = " MACAddress "`n"
+Menu, tray, Tip, %	"IpAddress = " ipv4 "`n"
+.				"SubnetMask = " subnet "`n"
+.				"MACAddress = " mac "`n"
 Menu, tray, Icon,
 Menu, tray, Icon, %IconFile%, %IconEnabled%
+Loop, read, %A_ScriptDir%\NetAccess.acc
+{
+	Loop, parse, A_LoopReadLine, %A_Tab%
+	{
+		GroupAdd, NetAccess, %A_LoopField%
+	}
+}
 return
-;Reloads the script. This is needed when the allowed application list needs a update. 
+/*
+Reloads the script. This is only needed when a application is removed from allowed application list.
+Since autohotkey does not support Group, remove, SomeWinGroup, Application.exe.
+This option can also be used when a new application is added to the window group. 
+But manually toggling the device on/off will also update the window group. Thus making the app 
+known to the script.
+*/
 Restart:
 Run *RunAs "%A_ScriptFullPath%"
 CloseScript:
+ExitApp
+Return
+
+;Default action for when the x button in clicked in the dropdownlist.
+GuiClose:
+IfExist, Settings.ini
+FileDelete, %A_ScriptDir%\Settings.ini
 ExitApp
