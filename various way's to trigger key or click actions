@@ -9,13 +9,16 @@
 
 +Lbutton::                  						       	; Shift+Lbutton
 Lbutton::                                                                      	; Unless specified something else. A key label will start with key the being down.
-State := GetKeyState((HotKey := RegExMatch(A_ThisHotkey, "i)[~!+^#]")), "P")   	; Store that state of the hotkey incase 20 ms are lost on the lines below. Also strip modifier keys from A_ThisHotkey and stores the result in variable hotkey.
+State := GetKeyState((HotKey := RegExMatch(A_ThisHotkey, "i)[~!+^#]")), "P")   	; Store the current state - which is down - of the hotkey, incase 30+ms are lost on the first 3 lines. 
+										;  It will also strip all modifier keys from A_ThisHotkey and store the result in variable hotkey.
+
 BlOld := A_BatchLines                                                          	; Store current BatchLines setting.
-SetBatchLines -1                                                               	; Set max reading speed for the script. Default is 10.
+SetBatchLines -1                                                               	; Set maximum reading speed for the script. Default is 10.
 
-While(GetKeyState(HotKey, "P")) {                                              	; As long as the key is being pressed .....
-
-   Send {Lbutton down}                                                        	; Send the a simulated lbutton down.
+While(GetKeyState(HotKey, "P")||State) {                                     	; As long as our hotkey is being pressed .....
+										; Do some extra stuff here. MIGHT NOT BE WISE IF USING LBUTTON!
+										
+   Send {Lbutton down}                                                        	; Send the simulated lbutton down.
    KeyWait, HotKey                                                            	; And wait until our hotKey is released.
 
    If (!GetKeyState(HotKey, "P")) {                                           	; See if our key is indeed in a up state.
@@ -23,23 +26,26 @@ While(GetKeyState(HotKey, "P")) {                                              	
        break                                                                  	; Break free from the while loop.
 } }
 if (!GetKeyState(HotKey, "P")) {                                               	; So the key is not pressed now.
-   KeyWait, Lbutton, D T0.20                                                  	; Wait 200Ms for it to be pressed down again.
-   If (ErrorLevel = 0) {                                                      	; Timeout will skip as soon the key is down. ErrorLevel is set to zero.
+   KeyWait, HotKey, D T0.20                                                  	; Wait 200Ms for it to be pressed down again. T0.30 may allow for a more easy double click.
+   If (ErrorLevel = 0) {                                                      	; Timeout will skip as soon the hotkey is down! ErrorLevel is then set to zero.
        While (GetKeyState(HotKey, "P")) {                                     	; This is a double click, the key was pressed down once more.
            Send {x down}{x up}                                                	; Do some extra stuff here.....
 
            while GetKeyState(HotKey, "P") {                                   	; While the HotKey was double clicked/tabbed and still is held down.
-               KeyWait, HotKey                                                	; Wait for it, until it's released.
+               									; Do some extra stuff here while the hotkey is down.
+	       
+	       KeyWait, HotKey                                                	; Wait for it until it is released.
                send, {Lbutton up}                                             	; Send the simulated lbutton up again.
-               Break                              
+               Break								; Break free from the inner while loop.
            }
-           KeyWait, HotKey                                                    	; And wait for the key to be released.
-           break                                                              	; Break free from the while loop. Not really needed although, "while" will evaluate one time less.
-   } } else if (ErrorLevel = 1) {                                             	; If the key was not pushed down a second time. ErrorLel is set to 1, once the timeout period is over.
+           KeyWait, HotKey                                                    	; And wait for the hotkey to be released. Seems odd since the above but sometimes needed.
+           break                                                              	; Break free from the outer while loop. Not really needed although, "while" will evaluate one time less.
+   } } else if (ErrorLevel = 1) {                                             	; If the key was not pushed down a second time! Once the timeout period is over, ErrorLel is set to 1. "Error timeout!". .
                                                                               	; Do some extra stuff here. But it will always come with a delay of 200ms after a single click.
 }}
 SetBatchLines % BlOld								; Restore previous value.
 Return
+
 
 
 
