@@ -1,3 +1,49 @@
+/* 
+	This lbutton simulation is the most fast.
+	It can be useful when, for instance a application has some feature mapped to a single click.
+	But a "double click" or "double click down" does nothing. This can override the left click function of some
+	programme and add extra features using "double click" or "double click down".
+
+.
+*/
+
++Lbutton::                  						       	; Shift+Lbutton
+Lbutton::                                                                      	; Unless specified something else. A key label will start with key the being down.
+State := GetKeyState((HotKey := RegExMatch(A_ThisHotkey, "i)[~!+^#]")), "P")   	; Store that state of the hotkey incase 20 ms are lost on the lines below. Also strip modifier keys from A_ThisHotkey and stores the result in variable hotkey.
+BlOld := A_BatchLines                                                          	; Store current BatchLines setting.
+SetBatchLines -1                                                               	; Set max reading speed for the script. Default is 10.
+
+While(GetKeyState(HotKey, "P")) {                                              	; As long as the key is being pressed .....
+
+   Send {Lbutton down}                                                        	; Send the a simulated lbutton down.
+   KeyWait, HotKey                                                            	; And wait until our hotKey is released.
+
+   If (!GetKeyState(HotKey, "P")) {                                           	; See if our key is indeed in a up state.
+       Send {Lbutton up}                                                      	; Then also send Lbutton up.
+       break                                                                  	; Break free from the while loop.
+} }
+if (!GetKeyState(HotKey, "P")) {                                               	; So the key is not pressed now.
+   KeyWait, Lbutton, D T0.20                                                  	; Wait 200Ms for it to be pressed down again.
+   If (ErrorLevel = 0) {                                                      	; Timeout will skip as soon the key is down. ErrorLevel is set to zero.
+       While (GetKeyState(HotKey, "P")) {                                     	; This is a double click, the key was pressed down once more.
+           Send {x down}{x up}                                                	; Do some extra stuff here.....
+
+           while GetKeyState(HotKey, "P") {                                   	; While the HotKey was double clicked/tabbed and still is held down.
+               KeyWait, HotKey                                                	; Wait for it, until it's released.
+               send, {Lbutton up}                                             	; Send the simulated lbutton up again.
+               Break                              
+           }
+           KeyWait, HotKey                                                    	; And wait for the key to be released.
+           break                                                              	; Break free from the while loop. Not really needed although, "while" will evaluate one time less.
+   } } else if (ErrorLevel = 1) {                                             	; If the key was not pushed down a second time. ErrorLel is set to 1, once the timeout period is over.
+                                                                              	; Do some extra stuff here. But it will always come with a delay of 200ms after a single click.
+}}
+SetBatchLines % BlOld								; Restore previous value.
+Return
+
+
+
+; Older verion of Lbutton simulation. This one is slower because single click has a fixed delay of 200 ms
 
 Lbutton:: 
 KeyWait, Lbutton, D T0.20	;Here we make a single click as first action. This works best for Lbutton.
