@@ -3,14 +3,18 @@
 	It can be useful when, for instance a application has some feature mapped to a single click.
 	But a "double click" or "double click down" does nothing. This can override the left click function of some
 	programme and add extra features using "double click" or "double click down".
+	
+	Below this code is a short version
 
 .
 */
 
 +Lbutton::                  						       	; Shift+Lbutton
 Lbutton::                                                                      	; Unless specified something else. A key label will start with key the being down.
-State := GetKeyState((HotKey := RegExMatch(A_ThisHotkey, "i)[~!+^#]")), "P")   	; Store the current state - which is down - of the hotkey, incase 30+ms are lost on the first 3 lines. 
-										;  It will also strip all modifier keys from A_ThisHotkey and store the result in variable hotkey.
+
+State := GetKeyState((HotKey := RegExMatch(A_ThisHotkey, "[~!+^#]") = 1 ? SubStr(A_ThisHotkey, 2) : A_ThisHotkey), "P")	; Store the current state - which is down or 1 - of the hotkey, incase 30+ms are lost on the first 3 lines. 
+															; It will also strip - if needed - all modifier keys from A_ThisHotkey and store the result in variable hotkey.
+															; Keys with modifiers take precedence over single keys.
 
 BlOld := A_BatchLines                                                          	; Store current BatchLines setting.
 SetBatchLines -1                                                               	; Set maximum reading speed for the script. Default is 10.
@@ -28,24 +32,67 @@ While(GetKeyState(HotKey, "P")||State) {                                     	; 
 if (!GetKeyState(HotKey, "P")) {                                               	; So the key is not pressed now.
    KeyWait, % HotKey, D T0.20                                                  	; Wait 200Ms for it to be pressed down again. T0.30 may allow for a more easy double click.
    If (ErrorLevel = 0) {                                                      	; Timeout will skip as soon the hotkey is down! ErrorLevel is then set to zero.
+       send, {Lbutton down}
        While (GetKeyState(HotKey, "P")) {                                     	; This is a double click, the key was pressed down once more.
            Send {x down}{x up}                                                	; Do some extra stuff here.....
-
-           while GetKeyState(HotKey, "P") {                                   	; While the HotKey was double clicked/tabbed and still is held down.
+           KeyWait, % HotKey, T0.10						; Wait 100Ms for the hotkey to be released.
+           if (ErrorLevel = 1) {						; Hotkey is still down
+           	while GetKeyState(HotKey, "P") {                                ; While the HotKey was double clicked/tabbed and still is held down.
                									; Do some extra stuff here while the hotkey is down.
 	       
 	       KeyWait, % HotKey                                                ; Wait for it until it is released.
-               send, {Lbutton up}                                             	; Send the simulated lbutton up again.
                Break								; Break free from the inner while loop.
-           }
+           } }
            KeyWait, % HotKey                                           		; And wait for the hotkey to be released. Seems odd since the above but sometimes needed.
            break                                                              	; Break free from the outer while loop. Not really needed although, "while" will evaluate one time less.
-   } } else if (ErrorLevel = 1) {                                             	; If the key was not pushed down a second time! Once the timeout period is over, ErrorLel is set to 1. "Error timeout!". .
+   } 
+   send, {Lbutton up}                                             		; Send the simulated lbutton up again.
+   } else if (ErrorLevel = 1) {                                             	; If the key was not pushed down a second time! Once the timeout period is over, ErrorLel is set to 1. "Error timeout!". .
                                                                               	; Do some extra stuff here. But it will always come with a delay of 200ms after a single click.
 }}
 SetBatchLines % BlOld								; Restore previous value.
 Return
 
+/*
+	Short version of the above.
+	When this code is run whithout a specific windows to send "listen" to. It will
+	completly take over the left mouse button function. 
+	A double click will send x.
+	A double click down will send x. Then the script will wait for relase and kills it self.
+*/
+
++Lbutton::
+Lbutton::
+State := GetKeyState((HotKey := RegExMatch(A_ThisHotkey, "[~!+^#]") = 1 ? SubStr(A_ThisHotkey, 2) : A_ThisHotkey), "P"), BlOld := A_BatchLines
+SetBatchLines -1
+While(GetKeyState(HotKey, "P")|| State) {
+   Send {Lbutton down}
+   KeyWait, % HotKey
+   If (!GetKeyState(HotKey, "P")) {
+       Send {Lbutton up}
+       break
+} } if (!GetKeyState(HotKey, "P")) {
+   KeyWait, % HotKey, D T0.20
+   If (ErrorLevel = 0) {
+       send, {Lbutton down}
+       While (GetKeyState(HotKey, "P")) {
+           Send {x down}{x up}
+           KeyWait, % HotKey, T0.10
+           if (ErrorLevel = 1) {
+               while GetKeyState(HotKey, "P") {
+                    KeyWait, % HotKey
+                    ExitApp
+                    send, {Lbutton up}
+                    Break
+           } }
+           KeyWait, % HotKey
+           break
+   } 
+   send, {Lbutton up}
+   } else if (ErrorLevel = 1) {
+}}
+SetBatchLines % BlOld								                         
+Return
 
 
 
