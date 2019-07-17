@@ -1,4 +1,20 @@
 PathToSplit="z:\Some\Random\Dos Direcory\And It Works.nix"
+/*
+	These 3 work a little better
+	
+	--------------------------------------------------------------------------------------------------------------
+	Match quoted file path:
+	("[a-zA-Z]:\\(?).*\w")
+
+	--------------------------------------------------------------------------------------------------------------
+	Match UNquoted file path:
+	[a-zA-Z]:\\(?).*\w      Ore     i)[a-z]:\\(?).*\w
+	
+	--------------------------------------------------------------------------------------------------------------
+	Match file path but exlude a file:
+	([a-zA-Z]:\\(?).*\w\\)  Ore i)[a-z]:\\(?).*\w\\
+	
+*/
 
 RegExMatch(PathToSplit, "[\w](.*\\)", PathWithoutTheFile)
 RegExMatch(PathToSplit, "[\s\w]+[.][\w]*", FileFromPath)
@@ -9,3 +25,17 @@ MsgBox % "The path and file we want to split:" "`n"PathToSplit "`n`n"
 				. "File without the path:" "`n" FileFromPath "`n`n"
 				. "Hardisk root:" "`n" RootDrive "`n`n"
 ExitApp
+
+--------------------------------------------------------------------------------------------------------------
+Match quoted file path:
+("[a-zA-Z]:\\(?).*\w")
+
+--------------------------------------------------------------------------------------------------------------
+Match UNquoted file path:
+[a-zA-Z]:\\(?).*\w          Ore          i)[a-z]:\\(?).*\w
+
+
+--------------------------------------------------------------------------------------------------------------
+Match file path but exlude a file:
+([a-zA-Z]:\\(?).*\w\\)  Ore not grouped i)[a-z]:\\(?).*\w\\
+
