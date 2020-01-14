@@ -1,11 +1,10 @@
-﻿/*
+﻿/* THIS VERSION IS NOT 100% CORRECT!!!!!!!!
 //
-// limits.ahk
+//  limits.ahk
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+//  The C Standard Library <limits.h> header.
 //
-//      Copyright (c) Microsoft Corporation. All rights reserved.
-//
-// The C Standard Library <limits.h> header.
-//
+// THIS VERSION IS NOT 100% CORRECT!!!!!!!!
 */
 
 CHAR_BIT        := 8                                                    ;  number of bits in a char
