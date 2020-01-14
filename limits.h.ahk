@@ -35,22 +35,22 @@ LLONG_MIN       := -9223372036854775808                                 ; maximu
 LLONG_MAX       := 9223372036854775807                                  ; minimum signed long long int value
 ULLONG_MAX      := 18446744073709551615                                 ; maximum unsigned long long int value  0xffffffffffffffff
 
-_I8_MIN		    := -127i8 - 1                                           ; minimum signed 8 bit value
-_I8_MAX 	    := 127i8                                                ; maximum signed 8 bit value
-_UI8_MAX 	    := 0xffui8                                              ; maximum unsigned 8 bit value
+_I8_MIN         := -127i8 - 1                                           ; minimum signed 8 bit value
+_I8_MAX         := 127i8                                                ; maximum signed 8 bit value
+_UI8_MAX        := 0xffui8                                              ; maximum unsigned 8 bit value
 
-_I16_MIN 	    := -32767i16 - 1                                        ; minimum signed 16 bit value
-_I16_MAX	    := 32767i16                                             ; maximum signed 16 bit value
-_UI16_MAX 	    := 0xffffui16                                           ; maximum unsigned 16 bit value
+_I16_MIN        := -32767i16 - 1                                        ; minimum signed 16 bit value
+_I16_MAX        := 32767i16                                             ; maximum signed 16 bit value
+_UI16_MAX       := 0xffffui16                                           ; maximum unsigned 16 bit value
 
-_I32_MIN 	    := -2147483647i32 - 1                                   ; minimum signed 32 bit value
-_I32_MAX 	    := 2147483647i32                                        ; maximum signed 32 bit value
-_UI32_MAX 	    := 0xffffffffui32                                       ; aximum unsigned 32 bit value
+_I32_MIN        := -2147483647i32 - 1                                   ; minimum signed 32 bit value
+_I32_MAX        := 2147483647i32                                        ; maximum signed 32 bit value
+_UI32_MAX       := 0xffffffffui32                                       ; aximum unsigned 32 bit value
 
-_I64_MIN 	    := -9223372036854775807i64 - 1                          ; minimum signed 64 bit value
-_I64_MAX 	    := 9223372036854775807i64                               ; maximum signed 64 bit value
+_I64_MIN        := -9223372036854775807i64 - 1                          ; minimum signed 64 bit value
+_I64_MAX        := 9223372036854775807i64                               ; maximum signed 64 bit value
 
-_UI64_MAX	    := 0xffffffffffffffffui64                               ; maximum unsigned 64 bit value
+_UI64_MAX       := 0xffffffffffffffffui64                               ; maximum unsigned 64 bit value
 
 if (_INTEGRAL_MAX_BITS >= 128) {
     _I128_MIN   := -170141183460469231731687303715884105727i128 - 1     ; minimum signed 128 bit value
