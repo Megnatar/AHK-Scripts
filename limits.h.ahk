@@ -21,7 +21,7 @@ if (_CHAR_UNSIGNED) {
     CHAR_MAX    := UCHAR_MAX
 }
 
-MB_LEN_MAX      := 5								                    ; max. # bytes in multibyte char
+MB_LEN_MAX      := 5                                                    ; max. # bytes in multibyte char
 SHRT_MIN        := -32768                                               ; minimum (signed) short value
 SHRT_MAX        := 32767i16                                             ; maximum (signed) short value
 USHRT_MAX       := 65535                                                ; maximum unsigned short value          0xffff
