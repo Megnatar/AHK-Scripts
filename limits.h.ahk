@@ -23,12 +23,12 @@ if (_CHAR_UNSIGNED) {
 
 MB_LEN_MAX      := 5                                                    ; max. # bytes in multibyte char
 SHRT_MIN        := -32768                                               ; minimum (signed) short value
-SHRT_MAX        := 32767i16                                             ; maximum (signed) short value
+SHRT_MAX        := 32767                                                ; maximum (signed) short value
 USHRT_MAX       := 65535                                                ; maximum unsigned short value          0xffff
-INT_MIN         := -2147483648                                          ; minimum (signed) int value
-INT_MAX         := 2147483647i32                                        ; maximum (signed) int value
+INT_MIN         := -2147483648 - 1                                      ; minimum (signed) int value
+INT_MAX         := 2147483647                                           ; maximum (signed) int value
 UINT_MAX        := 4294967295                                           ; maximum unsigned int value            0xffffffff
-LONG_MIN        := -9223372036854775808                                 ; minimum (signed) long value
+LONG_MIN        := -9223372036854775808 - 1                             ; minimum (signed) long value
 LONG_MAX        := 9223372036854775807                                  ; maximum (signed) long value
 ULONG_MAX       := 18446744073709551615                                 ; maximum unsigned long value           0xffffffff
 LLONG_MIN       := -9223372036854775808                                 ; maximum signed long long int value
