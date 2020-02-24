@@ -29,14 +29,12 @@ RightKey    :=  "Right"
 If (!FileExist(ConfigFile))
     IniWrite Xbutton1, %ConfigFile%, Settings, Hkey
 
-
 ReadIni(ConfigFile)
 
 if (Admin = 1 && !A_IsAdmin) {
     Run *RunAs "%A_ScriptFullPath%"
     ExitApp
 }
-
 
 Gui Add, GroupBox, x8 y0 w344 h171
 Gui Add, GroupBox, x16 y8 w327 h64 +Center, Drop you're game executable here.
@@ -55,7 +53,6 @@ Gui Add, Edit, x232 y104 w49 h21 +Disabled vLeftKey, %LeftKey%
 Gui Add, Edit, x288 y104 w49 h21 +Disabled vRightKey, %RightKey%
 Gui Show, w359 h179, AutoWalk
 
-
 if (IsoCam = 1) {
     GuiControl, Disable, Hkey
     GuiControl, Enable, TurnCamera
@@ -70,7 +67,6 @@ Hotkey, ~%Hkey%, UserHotKey, on
 
 OnMessage(Wm_MouseMove, "MouseMessages"), OnMessage(Wm_LbuttonDown, "MouseMessages")
 Return
-
 
 OpenFolder:
     Run, Explorer.exe "%Path%"
@@ -160,7 +156,7 @@ GuiEscape:
 GuiClose:
 ExitApp
 
-;______________________________________________________________________________________________________
+;_______________________________________ Script Functions _______________________________________
 
 ToggleKey(H := 0, S := 0, SndUp := 0) {
     static KeyState, sKey, hKey
@@ -313,6 +309,8 @@ AutoTurnCamera(K, rL, rR) {
         }
     }
 }
+
+;_______________________________________ Game Specific Hotkeys _______________________________________
 
 #IfWinActive, ahk_group ClientGroup
 UserHotKey:
