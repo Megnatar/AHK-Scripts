@@ -165,13 +165,6 @@ KeyWait(K := "", O := "", ErrLvL := "") {
     Return ErrLvL = 1 ? ErrorLevel : Key
 }
 
-; GuiControl is made a function.
-GuiControl(ControlID, P:="", cmd:="") {
-    InStr(CtrlIdCurrent, "Tmr")
-        GuiControl, %cmd%, %ControlID%, %P%
-    return % ""
-}
-
 MouseMessages(wParam, lParam, msg, hWnd) {
     Static ClsNNPrevious, ClsNNCurrent, ;, BelowMouse, BelowMouseOld
     
