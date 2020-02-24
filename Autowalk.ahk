@@ -1,6 +1,6 @@
 ; Written by Megnatar.
 ;
-; Autowalk v0.0.1.
+; Autowalk v0.0.1. For all none isometric games.
 ; Everyone is free to use, add code and redistribute this script.
 ; But you MUST allway's credit ME Megnatar for creating the scource!
 ; 
@@ -17,7 +17,7 @@ SendMode, Event
 SetKeyDelay, 5, 1
 SetWorkingDir, %A_ScriptDir%
 
-Global Wm_LbuttonDown:=0x201, Wm_Mousemove :=0x200, GettingKey := 0, ctrlTxt, CtrlIdCurrent, CtrlIdPrev, ConfigFile
+Global Wm_LbuttonDown:=0x201, Wm_Mousemove :=0x200, GettingKey := 0, BelowMouseOld, BelowMouse, ctrlTxt, CtrlIdCurrent, CtrlIdPrev, ConfigFile
 
 ConfigFile  := "Settings.ini"
 Ss_Icon     := 0x03
@@ -29,6 +29,7 @@ RightKey    :=  "Right"
 If (!FileExist(ConfigFile))
     IniWrite Xbutton1, %ConfigFile%, Settings, Hkey
 
+
 ReadIni(ConfigFile)
 
 if (Admin = 1 && !A_IsAdmin) {
@@ -36,13 +37,16 @@ if (Admin = 1 && !A_IsAdmin) {
     ExitApp
 }
 
+
 Gui Add, GroupBox, x8 y0 w344 h171
 Gui Add, GroupBox, x16 y8 w327 h64 +Center, Drop you're game executable here.
 Gui Add, Picture, x24 y16 w48 h48 vPic +%Ss_Icon% +AltSubmit +BackgroundTrans, %FullPath%
 Gui Add, Text, x72 y32 w265 h23 +0x200 vTitle, %Title%
+
 Gui Add, Button, x16 y136 w80 h23 gRunGame, &Start Game
 Gui Add, Button, x104 y136 w80 h23 gOpenFolder, Open folder
-Gui Add, Button, x262 y136 w80 h23 gGuiClose, Exit
+Gui Add, Button, x256 y136 w80 h23 gGuiClose, Exit
+
 Gui Add, GroupBox, x16 y72 w326 h59
 Gui Add, Text, x24 y88 w44 h23, Hotkey:
 Gui Add, Edit, x64 y88 w63 h21 Limit1 vHkey, %Hkey%
@@ -51,14 +55,22 @@ Gui Add, CheckBox, x136 y104 w83 h23 +Disabled, TurnCamera
 Gui Add, CheckBox, x232 y80 w93 h23 Checked%Admin% vAdmin gAdmin, Run as admin
 Gui Add, Edit, x232 y104 w49 h21 +Disabled vLeftKey, %LeftKey%
 Gui Add, Edit, x288 y104 w49 h21 +Disabled vRightKey, %RightKey%
+
+
+
+
 Gui Show, w359 h179, AutoWalk
+
+
+
 
 if (IsoCam = 1) 
     GuiControl, Disable, Hkey
     
 Hotkey, ~%Hkey%, UserHotKey, on
 
-OnMessage(Wm_MouseMove, "MouseMessages"), OnMessage(Wm_LbuttonDown, "MouseMessages")
+OnMessage(Wm_MouseMove, "MouseMessages")
+OnMessage(Wm_LbuttonDown, "MouseMessages")
 Return
 
 OpenFolder:
@@ -89,6 +101,7 @@ Admin:
 Return
 
 GuiDropFiles:
+    MsgBox,,,1
     Loop, parse, A_GuiEvent, `n, `r
         FullPath := A_LoopField, Path := SubStr(A_LoopField, 1, InStr(A_LoopField, "\", ,-1)-1), ExeFile := SubStr(A_LoopField, InStr(A_LoopField, "\", ,-1)+1)
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
@@ -135,7 +148,7 @@ GuiEscape:
 GuiClose:
 ExitApp
 
-;_____________________________________ Script Functions _____________________________________
+;______________________________________________________________________________________________________
 
 ToggleKey(H := 0, S := 0, SndUp := 0) {
     static KeyState, sKey, hKey
@@ -165,6 +178,13 @@ KeyWait(K := "", O := "", ErrLvL := "") {
     Return ErrLvL = 1 ? ErrorLevel : Key
 }
 
+; GuiControl is made a function.
+GuiControl(ControlID, P:="", cmd:="") {
+    InStr(CtrlIdCurrent, "Tmr")
+        GuiControl, %cmd%, %ControlID%, %P%
+    return % ""
+}
+
 MouseMessages(wParam, lParam, msg, hWnd) {
     Static ClsNNPrevious, ClsNNCurrent, ;, BelowMouse, BelowMouseOld
     
@@ -179,13 +199,14 @@ MouseMessages(wParam, lParam, msg, hWnd) {
     }
     
     if (msg = Wm_LbuttonDown) {
-        If (CtrlIdCurrent = "Hkey" && GettingKey = 0) {
+        If (BelowMouse = "Edit1" && GettingKey = 0) {
             ControlFocus, %BelowMouse%
             ControlGetText, ctrlTxt, %BelowMouse%
             GuiControl +gEditGetKey, %CtrlIdCurrent%
             Send, ^a{bs}
             GuiControl -gEditGetKey, %CtrlIdCurrent%
-  
+            
+            
         }
     }
 }
@@ -259,7 +280,7 @@ ReadIni(InputFile, LoadSection=0, ExcludeSection*) {
     }                                                              
 }
 
-AutoTurnCamera(K, rL, rR) {
+AutoTurncamera(K, Rl, Rr) {
     WinGetActiveStats, Title, Width, Height, X, Y
     Rad := 180 / 3.1415926
     
@@ -271,18 +292,16 @@ AutoTurnCamera(K, rL, rR) {
             continue
 
         if (xpos > 0) {
-            Send {%rR% down}
+            Send {%Rr% down}
             Sleep, 10
-            Send {%rR% up}
+            Send {%Rr% up}
         } else {
-            Send {%rL% down}
+            Send {%Rl% down}
             Sleep, 10
-            Send {%rL% up}
+            Send {%Rl% up}
         }
     }
 }
-
-;_____________________________________ Game Specific Hotkeys _____________________________________
 
 #IfWinActive, ahk_group ClientGroup
 
