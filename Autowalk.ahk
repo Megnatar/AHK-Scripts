@@ -29,14 +29,12 @@ RightKey    :=  "Right"
 If (!FileExist(ConfigFile))
     IniWrite Xbutton1, %ConfigFile%, Settings, Hkey
 
-
 ReadIni(ConfigFile)
 
 if (Admin = 1 && !A_IsAdmin) {
     Run *RunAs "%A_ScriptFullPath%"
     ExitApp
 }
-
 
 Gui Add, GroupBox, x8 y0 w344 h171
 Gui Add, GroupBox, x16 y8 w327 h64 +Center, Drop you're game executable here.
@@ -54,7 +52,6 @@ Gui Add, CheckBox, x232 y80 w93 h23 Checked%Admin% vAdmin gAdmin, Run as admin
 Gui Add, Edit, x232 y104 w49 h21 +Disabled vLeftKey, %LeftKey%
 Gui Add, Edit, x288 y104 w49 h21 +Disabled vRightKey, %RightKey%
 Gui Show, w359 h179, AutoWalk
-
 
 if (IsoCam = 1) 
     GuiControl, Disable, Hkey
@@ -93,7 +90,6 @@ Admin:
 Return
 
 GuiDropFiles:
-    MsgBox,,,1
     Loop, parse, A_GuiEvent, `n, `r
         FullPath := A_LoopField, Path := SubStr(A_LoopField, 1, InStr(A_LoopField, "\", ,-1)-1), ExeFile := SubStr(A_LoopField, InStr(A_LoopField, "\", ,-1)+1)
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
@@ -140,7 +136,7 @@ GuiEscape:
 GuiClose:
 ExitApp
 
-;______________________________________________________________________________________________________
+;_____________________________________ Script Functions _____________________________________
 
 ToggleKey(H := 0, S := 0, SndUp := 0) {
     static KeyState, sKey, hKey
@@ -293,6 +289,8 @@ AutoTurncamera(K, Rl, Rr) {
         }
     }
 }
+
+;_____________________________________ Game Specific hotkeys _____________________________________
 
 #IfWinActive, ahk_group ClientGroup
 
