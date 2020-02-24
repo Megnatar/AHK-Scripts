@@ -259,7 +259,7 @@ ReadIni(InputFile, LoadSection=0, ExcludeSection*) {
     }                                                              
 }
 
-AutoTurncamera(K, Rl, Rr) {
+AutoTurnCamera(K, rL, rR) {
     WinGetActiveStats, Title, Width, Height, X, Y
     Rad := 180 / 3.1415926
     
@@ -271,18 +271,18 @@ AutoTurncamera(K, Rl, Rr) {
             continue
 
         if (xpos > 0) {
-            Send {%Rr% down}
+            Send {%rR% down}
             Sleep, 10
-            Send {%Rr% up}
+            Send {%rR% up}
         } else {
-            Send {%Rl% down}
+            Send {%rL% down}
             Sleep, 10
-            Send {%Rl% up}
+            Send {%rL% up}
         }
     }
 }
 
-;_____________________________________ Game Specific hotkeys _____________________________________
+;_____________________________________ Game Specific Hotkeys _____________________________________
 
 #IfWinActive, ahk_group ClientGroup
 
