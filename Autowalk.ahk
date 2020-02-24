@@ -86,7 +86,9 @@ GuiDropFiles:
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
     IniWrite %Path%, %ConfigFile%, Settings, Path
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
+    
     Title := ""
+    GuiControl, , Title, %Title%
     IniWrite %Title%, %ConfigFile%, Settings, Title
     Reload
 Return
@@ -96,19 +98,16 @@ GuiClose:
 ExitApp
 
 RunGame:
-    IfWinNotExist, ahk_exe %ExeFile%
-    {
+    If (!WinExist("ahk_exe " ExeFile)) {
         Run, %FullPath%, %Path%, , ProcessID
         WinWait, ahk_exe %ExeFile%, , , AutoWalk
         WinGet, HwndClient, ID, ahk_exe %ExeFile%
         ;Run "C:\Program Files\Cheat Engine 7.0\Cheat Engine.exe"
-    }
-    else IfWinExist, ahk_exe %ExeFile%
-    {
+    } else {
         WinGet, hWndClient, ID, ahk_exe %ExeFile%, , AutoWalk
         WinGet, ProcessID, PID, ahk_exe %ExeFile%, , AutoWalk
         WinRestore, ahk_id %hWndClient%
-        WinActivate, ahk_id %hWndClient%, ,AutoWalk
+        WinActivate, ahk_id %hWndClient%, , AutoWalk
     }
 
     ; Checks for any popup window and wait for it to close.
@@ -121,54 +120,13 @@ RunGame:
     GroupAdd, ClientGroup, ahk_id %hWndClient%
     GroupAdd, ClientGroup, ahk_class %ClientGuiClass%
     
-    If (!Title){
+    If (!Title) {
         WinGetTitle, Title, ahk_exe %ExeFile%
         IniWrite %Title%, %ConfigFile%, Settings, Title
         GuiControl, , Title, %Title%
     }
     
 Return
-
-#IfWinActive, ahk_group ClientGroup
-
-UserHotKey:
-    If (IsoCam = 1) {
-    
-        If (KeyWait("Lbutton", "T0.200", 1) = 0) {
-            If (KeyWait("Lbutton", "D T0.200", 1) = 0) {
-                keywait("Lbutton")
-                KeyState := KeyState != "down" ? "down" : "up"
-                Send, {Lbutton %KeyState%}
-            } else {
-                Send, {Lbutton up}
-                KeyState = up
-            }
-        } else {
-            ; ....
-        }
-        Return
-    }
-
-    State := ToggleKey(RegExReplace(A_ThisHotkey, "[\*\$~]"), "w")
-
-    if (State = "Down") {
-        Hotkey, W, InterruptDownState, ON
-        Hotkey, Lbutton, InterruptDownState, ON
-    } else if (State = "Up") {
-        Hotkey, w, InterruptDownState, OFF
-        Hotkey, Lbutton, InterruptDownState, OFF
-    }
-Return
-
-InterruptDownState:
-    if (A_ThisHotkey = "w")
-        KeyWait("w")
-
-    State := ToggleKey(,,"1")
-
-    Hotkey, W, InterruptDownState, OFF
-    Hotkey, Lbutton, InterruptDownState, OFF
-return
 
 ;______________________________________________________________________________________________________
 
@@ -324,3 +282,43 @@ AutoTurncamera(K, Rl, Rr) {
         }
     }
 }
+
+#IfWinActive, ahk_group ClientGroup
+
+UserHotKey:
+    If (IsoCam = 1) {
+        If (KeyWait("Lbutton", "T0.200", 1) = 0) {
+            If (KeyWait("Lbutton", "D T0.200", 1) = 0) {
+                keywait("Lbutton")
+                KeyState := KeyState != "down" ? "down" : "up"
+                Send, {Lbutton %KeyState%}
+            } else {
+                Send, {Lbutton up}
+                KeyState = up
+            }
+        } else {
+            ; ....
+        }
+        Return
+    }
+
+    State := ToggleKey(RegExReplace(A_ThisHotkey, "[\*\$~]"), "w")
+
+    if (State = "Down") {
+        Hotkey, W, InterruptDownState, ON
+        Hotkey, Lbutton, InterruptDownState, ON
+    } else if (State = "Up") {
+        Hotkey, w, InterruptDownState, OFF
+        Hotkey, Lbutton, InterruptDownState, OFF
+    }
+Return
+
+InterruptDownState:
+    if (A_ThisHotkey = "w")
+        KeyWait("w")
+
+    State := ToggleKey(,,"1")
+
+    Hotkey, W, InterruptDownState, OFF
+    Hotkey, Lbutton, InterruptDownState, OFF
+return
