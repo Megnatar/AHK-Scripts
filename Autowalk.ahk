@@ -46,8 +46,6 @@ Gui Add, Picture, x40 y40 w32 h32 vPic +%Ss_Icon% +AltSubmit +BackgroundTrans, %
 Gui Add, Button, x112 y128 w80 h23 gGuiClose, Exit
 Gui Add, Text, x24 y96 w44 h23, Hotkey:
 Gui Add, Edit, x72 y96 w120 h21 Limit1 vHkey, %Hkey%
-
-
 Gui Add, Text, x88 y48 w241 h23 +0x200 vTitle, %Title%
 Gui Add, CheckBox, x208 y128 w120 h23 Checked%IsoCam% vIsoCam gIsoCam, Isomatric
 Gui Add, CheckBox, x208 y96 w120 h23 Checked%Admin% vAdmin gAdmin, Run as admin
