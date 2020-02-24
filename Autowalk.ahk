@@ -58,8 +58,7 @@ if (IsoCam = 1)
     
 Hotkey, ~%Hkey%, UserHotKey, on
 
-OnMessage(Wm_MouseMove, "MouseMessages")
-OnMessage(Wm_LbuttonDown, "MouseMessages")
+OnMessage(Wm_MouseMove, "MouseMessages"), OnMessage(Wm_LbuttonDown, "MouseMessages")
 Return
 
 OpenFolder:
