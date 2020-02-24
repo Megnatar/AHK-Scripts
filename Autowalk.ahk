@@ -1,6 +1,6 @@
 ; Written by Megnatar.
 ;
-; Autowalk v0.0.1. For all none isometric games.
+; Autowalk v0.0.1.
 ; Everyone is free to use, add code and redistribute this script.
 ; But you MUST allway's credit ME Megnatar for creating the scource!
 ; 
