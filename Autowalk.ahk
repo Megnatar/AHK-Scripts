@@ -5,7 +5,7 @@
 ; But you MUST allway's credit ME Megnatar for creating the scource!
 ; 
 ; The scource code for this script can be found on my Github reposity:
-;  https://github.com/Megnatar/AHK-Scripts
+;  https://github.com/Megnatar/AHK-Scripts/blob/master/Autowalk.ahk
 
 #NoEnv
 #Persistent
