@@ -1,6 +1,6 @@
 ; Written by Megnatar.
 ;
-; Autowalk v0.0.1. For all none isometric games.
+; Autowalk v0.0.1.
 ; Everyone is free to use, add code and redistribute this script.
 ; But you MUST allway's credit ME Megnatar for creating the scource!
 ; 
@@ -22,6 +22,7 @@ Global Wm_LbuttonDown:=0x201, Wm_Mousemove :=0x200, GettingKey := 0, BelowMouseO
 ConfigFile  := "Settings.ini"
 IsoCam      := 0
 Admin       := 0
+TurnCamera  := 0
 LeftKey     :=  "Left"
 RightKey    :=  "Right"
 
@@ -48,24 +49,33 @@ Gui Add, GroupBox, x16 y72 w326 h59
 Gui Add, Text, x24 y88 w44 h23, Hotkey:
 Gui Add, Edit, x64 y88 w63 h21 Limit1 vHkey, %Hkey%
 Gui Add, CheckBox, x136 y80 w89 h23 Checked%IsoCam% vIsoCam gIsoCam, Isomatric (rpg)
-Gui Add, CheckBox, x136 y104 w83 h23 +Disabled, TurnCamera
+Gui Add, CheckBox, x136 y104 w83 h23 +Disabled Checked%TurnCamera% vTurnCamera gTurnCamera, TurnCamera
 Gui Add, CheckBox, x232 y80 w93 h23 Checked%Admin% vAdmin gAdmin, Run as admin
 Gui Add, Edit, x232 y104 w49 h21 +Disabled vLeftKey, %LeftKey%
 Gui Add, Edit, x288 y104 w49 h21 +Disabled vRightKey, %RightKey%
 Gui Show, w359 h179, AutoWalk
 
 
-if (IsoCam = 1) 
+if (IsoCam = 1) {
     GuiControl, Disable, Hkey
-    
+    GuiControl, Enable, LeftKey
+    GuiControl, Enable, RightKey
+    GuiControl, Enable, TurnCamera
+}
+  
 Hotkey, ~%Hkey%, UserHotKey, on
 
-OnMessage(Wm_MouseMove, "MouseMessages")
-OnMessage(Wm_LbuttonDown, "MouseMessages")
+OnMessage(Wm_MouseMove, "MouseMessages"), OnMessage(Wm_LbuttonDown, "MouseMessages")
 Return
+
 
 OpenFolder:
     Run, Explorer.exe "%Path%"
+Return
+
+TurnCamera:
+    GUI, submit, nohide
+    IniWrite, %TurnCamera%, %ConfigFile%, Settings, TurnCamera
 Return
 
 IsoCam:
@@ -73,10 +83,16 @@ IsoCam:
     if (IsoCam = 1) {
         GuiControl, , Hkey, Lbutton
         GuiControl, Disable, Hkey
+        GuiControl, Enable, LeftKey
+        GuiControl, Enable, RightKey
+        GuiControl, Enable, TurnCamera
         Hkey := "Lbutton"
         IniWrite, %Hkey%, %ConfigFile%, Settings, Hkey
     } else {
         GuiControl, enable, Hkey
+        GuiControl, Disable, LeftKey
+        GuiControl, Disable, RightKey
+        GuiControl, Disable, TurnCamera
     }
     IniWrite, %IsoCam%, %ConfigFile%, Settings, IsoCam
 Return
@@ -192,10 +208,10 @@ MouseMessages(wParam, lParam, msg, hWnd) {
         If (CtrlIdCurrent = "Hkey" && GettingKey = 0) {
             ControlFocus, %BelowMouse%
             ControlGetText, ctrlTxt, %BelowMouse%
+            
             GuiControl +gEditGetKey, %CtrlIdCurrent%
             Send, ^a{bs}
             GuiControl -gEditGetKey, %CtrlIdCurrent%
- 
         }
     }
 }
@@ -203,7 +219,7 @@ MouseMessages(wParam, lParam, msg, hWnd) {
 ; Writes back the name of any keyboard, mouse or joystic button to a edit control.
 EditGetKey() {
     static InputKeys := ["LButton", "RButton", "MButton", "XButton1", "XButton2", "Numpad0", "Numpad1", "Numpad2", "Numpad3", "Numpad4", "Numpad5", "Numpad6", "Numpad7", "Numpad8", "Numpad9","Numpad10","NumpadEnter", "NumpadAdd", "NumpadSub","NumpadMult", "NumpadDev", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "Left", "Right", "Up", "Down", "Home","End", "PgUp", "PgDn", "Del", "Ins", "Capslock", "Numlock", "PrintScreen", "Pause", "LControl", "RControl", "LAlt", "RAlt", "LShift","RShift", "LWin", "RWin", "AppsKey", "BackSpace", "space", "Tab", "Esc", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N","O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ",", ".", "/", "[", "]", "\", "'", ";", "` ","Joy1", "Joy2", "Joy3", "Joy4", "Joy5", "Joy6", "Joy7", "Joy8", "Joy9", "Joy10", "Joy11", "Joy12", "Joy13", "Joy14", "Joy15", "Joy16", "Joy17","Joy18", "Joy19", "Joy20", "Joy21", "Joy22", "Joy23", "Joy24", "Joy25", "Joy26", "Joy27", "Joy28", "Joy29", "Joy30","Joy31", "Joy32"]
-    GuiControl -gEditGetKey, %CtrlIdCurrent%
+    ;GuiControl -gEditGetKey, %CtrlIdCurrent%
     
     KeyWait("Lbutton")
     GettingKey := 1
@@ -269,11 +285,11 @@ ReadIni(InputFile, LoadSection=0, ExcludeSection*) {
     }                                                              
 }
 
-AutoTurncamera(K, rL, rR) {
+AutoTurnCamera(K, rL, rR) {
     WinGetActiveStats, Title, Width, Height, X, Y
     Rad := 180 / 3.1415926
-    
-    While(GetKeyState(K, "P")) {
+
+    While(GetKeyState(K)) {
         MouseGetPos, xpos, ypos
         xpos := xpos - Width/2, ypos := Height/2 - ypos
 
@@ -293,7 +309,6 @@ AutoTurncamera(K, rL, rR) {
 }
 
 #IfWinActive, ahk_group ClientGroup
-
 UserHotKey:
     If (IsoCam = 1) {
         If (KeyWait("Lbutton", "T0.200", 1) = 0) {
@@ -301,6 +316,10 @@ UserHotKey:
                 keywait("Lbutton")
                 KeyState := KeyState != "down" ? "down" : "up"
                 Send, {Lbutton %KeyState%}
+
+                If (TurnCamera = 1 && KeyState = "Down")
+                    AutoTurnCamera("LButton", LeftKey, RightKey)
+
             } else {
                 Send, {Lbutton up}
                 KeyState = up
