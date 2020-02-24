@@ -58,9 +58,12 @@ Gui Show, w359 h179, AutoWalk
 
 if (IsoCam = 1) {
     GuiControl, Disable, Hkey
-    GuiControl, Enable, LeftKey
-    GuiControl, Enable, RightKey
     GuiControl, Enable, TurnCamera
+    
+    if (TurnCamera = 1) {
+        GuiControl, Enable, LeftKey
+        GuiControl, Enable, RightKey    
+    }    
 }
   
 Hotkey, ~%Hkey%, UserHotKey, on
@@ -73,28 +76,31 @@ OpenFolder:
     Run, Explorer.exe "%Path%"
 Return
 
-TurnCamera:
-    GUI, submit, nohide
-    IniWrite, %TurnCamera%, %ConfigFile%, Settings, TurnCamera
-Return
-
 IsoCam:
     GUI, submit, nohide
     if (IsoCam = 1) {
         GuiControl, , Hkey, Lbutton
         GuiControl, Disable, Hkey
-        GuiControl, Enable, LeftKey
-        GuiControl, Enable, RightKey
         GuiControl, Enable, TurnCamera
         Hkey := "Lbutton"
         IniWrite, %Hkey%, %ConfigFile%, Settings, Hkey
     } else {
         GuiControl, enable, Hkey
-        GuiControl, Disable, LeftKey
-        GuiControl, Disable, RightKey
         GuiControl, Disable, TurnCamera
     }
     IniWrite, %IsoCam%, %ConfigFile%, Settings, IsoCam
+Return
+
+TurnCamera:
+    GUI, submit, nohide
+    if (TurnCamera = 1) {
+        GuiControl, Enable, LeftKey
+        GuiControl, Enable, RightKey
+    } else {
+        GuiControl, Disable, LeftKey
+        GuiControl, Disable, RightKey    
+    }
+    IniWrite, %TurnCamera%, %ConfigFile%, Settings, TurnCamera
 Return
 
 Admin:
