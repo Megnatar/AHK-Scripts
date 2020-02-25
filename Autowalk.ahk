@@ -26,6 +26,7 @@
     
     If the game does not accept input. Then enable admin mode and try again!
     
+    
 */
 #NoEnv
 #Persistent
@@ -312,7 +313,7 @@ EditGetKey() {
     return
 }
 
-; read variables from a ini file and create variables.
+; Read ini file and create variables. Referenced variables are not local to functions.
 ReadIni(InputFile) {
     Loop, parse, % FileOpen(InputFile, 0).read(), `n, `r
     {
@@ -344,6 +345,7 @@ AutoTurnCamera(K, rL, rR) {
             Sleep, 10
             Send {%rL% up}
         }
+        sleep 10
     }
 }
 
@@ -384,7 +386,7 @@ UserHotKey:
         Return
     }
 
-    State := ToggleKey(RegExReplace(A_ThisHotkey, "[\*\$~]"), "w")
+    State := ToggleKey(RegExReplace(A_ThisHotkey, "[~\*\$]"), "w")
 
     if (State = "Down") {
         Hotkey, W, InterruptDownState, ON
