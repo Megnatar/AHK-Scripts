@@ -31,7 +31,7 @@
 #Persistent
 #SingleInstance ignore
 #KeyHistory 0
-;ListLines off
+ListLines off
 SetBatchLines -1
 SetTitleMatchMode 3
 SetKeyDelay 5, 1
