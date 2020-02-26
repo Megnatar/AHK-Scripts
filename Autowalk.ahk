@@ -334,7 +334,6 @@ AutoTurnCamera(Key, RotateL, RotateR, KeyPressDuration = 100, DeadZone = 22.5) {
     While(GetKeyState(Key)) {
         MouseGetPos, mX, mY
         mX := mX - gW/2, mY := gH/2 - mY
-        ToolTip % "MouseX: " mX "`nMouseY: " mY "`n" Abs(ATan(mX / mY) * Rad)
         
         ; Do nothing when the mouse is inside a 45 degree triangulated dead zone.
         ; The deadzone starts at the center of the screen and ends at the top, 22.5 dagrees on each side.
