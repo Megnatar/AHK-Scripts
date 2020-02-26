@@ -330,8 +330,8 @@ AutoTurnCamera(Key, RotateL, RotateR, KeyPressDuration = 100, DeadZone = 22.5) {
     Static Rad := 180 / 3.1415926
     WinGetPos, , ,gW, gH, A
 
-    ; Loop while the key is in a physical downstate. For physical status use While(GetKeyState(Key, "P"))
-    While(GetKeyState(Key, "P")) {
+    ; Loop while the key is in a logical downstate. For physical status use While(GetKeyState(Key, "P"))
+    While(GetKeyState(Key)) {
         MouseGetPos, mX, mY
         mX := mX - gW/2, mY := gH/2 - mY
         ToolTip % "MouseX: " mX "`nMouseY: " mY "`n" Abs(ATan(mX / mY) * Rad)
