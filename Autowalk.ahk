@@ -327,23 +327,23 @@ ReadIni(InputFile) {
 
 ; Turn the ingame camera to follow the player.
 AutoTurnCamera(K, rL, rR) {
-    WinGetPos, , ,Width, Height, A
+    WinGetPos, , ,gW, gH, A
     Rad := 180 / 3.1415926
 
     While(GetKeyState(K)) {
-        MouseGetPos, xpos, ypos
-        xpos := xpos - Width/2, ypos := Height/2 - ypos
+        MouseGetPos, mX, mY
+        mX := mX - gW/2, mY := gH/2 - mY
 
-        if ((xpos*xpos + ypos*ypos < 10000) || ((ypos > 0) && (Abs(ATan(xpos / ypos)) * Rad < 20)))
+        if ((mX*mX + mY*mY < 10000) || ((mY > 0) && (Abs(ATan(mX / mY)) * Rad < 20)))
             continue
 
-        if (xpos > 0) {
+        if (mX > 0) {
             Send {%rR% down}
-            Sleep, 10
+            Sleep, 50
             Send {%rR% up}
         } else {
             Send {%rL% down}
-            Sleep, 10
+            Sleep, 50
             Send {%rL% up}
         }
         sleep 10
