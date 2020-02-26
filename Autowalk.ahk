@@ -145,6 +145,7 @@ Return
 GuiDropFiles:
     Loop, parse, A_GuiEvent, `n, `r
         FullPath := A_LoopField, Path := SubStr(A_LoopField, 1, InStr(A_LoopField, "\", ,-1)-1), ExeFile := SubStr(A_LoopField, InStr(A_LoopField, "\", ,-1)+1)
+    
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
     IniWrite %Path%, %ConfigFile%, Settings, Path
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
@@ -287,7 +288,7 @@ EditGetKey() {
                 Key := KeyWait(ThisKey)
                 Break
             }
-            
+            ; When CtrlClassMouseCurrent does not contain the word "Edit". Then the mouse moved away from the control.
             If (!InStr(CtrlClassMouseCurrent, "Edit")) {
                 GuiControl, , %CtrlClassMousePreviouse%, %ctrlTxt%
                 Key := 1
@@ -299,7 +300,7 @@ EditGetKey() {
     }
     ControlFocus, &Start Game
     
-    ; Write new values, if the for loop didn't break because the mouse moved outside the controll
+    ; Write new values, if the for loop didn't break because the mouse moved outside the control.
     If (Key != 1)  
         IniWrite, %ThisKey%, %ConfigFile%, Settings, %A_GuiControl%
         
@@ -324,9 +325,9 @@ ReadIni(InputFile) {
     }                                                              
 }
 
-; Turns the ingame camera to follow the player.
+; Turn the ingame camera to follow the player.
 AutoTurnCamera(K, rL, rR) {
-    WinGetActiveStats, Title, Width, Height, X, Y
+    WinGetPos, , ,Width, Height, A
     Rad := 180 / 3.1415926
 
     While(GetKeyState(K)) {
