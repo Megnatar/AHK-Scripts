@@ -321,7 +321,7 @@ EditGetKey() {
     loop {
         ; Getting the key here, there stored in array Inputkeys.
         For k, ThisKey in InputKeys {
-            if GetKeyState(ThisKey, "P") {
+            if (GetKeyState(ThisKey, "P")) {
                 GuiControl(ControlBelowMouse, "", ThisKey)
                 ExitLoop := KeyWait(ThisKey)
                 Break
@@ -374,7 +374,7 @@ AutoTurnCamera(Key, RotateL, RotateR, KeyPressDuration = 50, DeadZone = 45) {
 
         ; Do nothing when the mouse is inside a triangulated dead zone.
         ; The dead zone starts at the center of the screen and ends at the top, 30 dagrees on each side.
-        if ((((mX*mX+mY*mY < 5000) || (mY > 0)) & (Abs(ATan(mX/mY)) * Rad < DeadZone)))
+        if (((((mX*mX)+(mY*mY) < 5000) || (mY > 0)) & (Abs(ATan(mX/mY)) * Rad < DeadZone)))
             continue
 
         ; Turn right when the x position of the mouse is positive and left when negative.
@@ -400,13 +400,13 @@ AutoTurnCamera(Key, RotateL, RotateR, KeyPressDuration = 50, DeadZone = 45) {
 
     UserHotKey:
         If (IsoCam = 1) {
-            If (KeyWait("Lbutton", "T0.200", 1) = 0) {
-                If (KeyWait("Lbutton", "D T0.200", 1) = 0) {
+            If (KeyWait("Lbutton", "T0.2", 1) = 0) {
+                If (KeyWait("Lbutton", "D T0.2", 1) = 0) {
                     keywait("Lbutton")
                     KeyState := KeyState != "down" ? "down" : "up"
                     Send, {Lbutton %KeyState%}
 
-                    If (TurnCamera = 1 && KeyState = "Down")
+                    If ((TurnCamera = 1) & (KeyState = "Down"))
                         AutoTurnCamera("LButton", LeftKey, RightKey)
                 } else {
                     Send, {Lbutton up}
