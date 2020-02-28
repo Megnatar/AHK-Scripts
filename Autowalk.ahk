@@ -1,22 +1,28 @@
 /*
-    Written by Megnatar.
-    Autowalk v0.9.0.
+    Autowalk v1.0.0. Written by Megnatar.
+
     Everyone is free to use, add code and redistribute this script.
     But you MUST always credit ME Megnatar for creating the source!
     The source code for this script can be found on my Github repository:
     https://github.com/Megnatar/AHK-Scripts
+
     Usage:
     To add a new game, just drop the executable on the gui.
     IMPORTANT: This will NOT work when the script is started in admin mode.
+    And else use the browse button.
+
     Click in a edit box to set a new hotkey. Any key will do, the script will write
     the name of the key eg Xbutton2, if you pressed it, back to the edit control.
     This key will be the hotkey that will enable autowalking.
+
     Enable the checkbox "RPG Games" for games with a isometric camera (Top down view).
     Lbutton will be automatically send down when you double click the left mouse button.
     Click again to stop.
+
     When the camera does not automatically follow the player enable "Turn camera" and
     set the two keys used by the game to rotate the camera left or right.
     A double click will now also enable auto rotation of the camera.
+
     If the game does not accept input. Then enable admin mode and try again!
 */
 #NoEnv
