@@ -139,15 +139,23 @@ GuiDropFiles:
     Loop, parse, A_GuiEvent, `n, `r
         FullPath := A_LoopField, Path := SubStr(A_LoopField, 1, InStr(A_LoopField, "\", ,-1)-1), ExeFile := SubStr(A_LoopField, InStr(A_LoopField, "\", ,-1)+1)
 
+    IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
+    IniWrite %Path%, %ConfigFile%, Settings, Path
+    IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
+    IniWrite %Title%, %ConfigFile%, Settings, Title
+    Reload
+Return
+
 ButtonBrowse:
-    if (!FullPath) {
-        FileSelectFile, FullPath, M3, , ,*.exe
-        Loop, parse, % FullPath, `n, `r
-            A_Index <= 1 ? Path := A_LoopField : ExeFile := A_LoopField
-        if (ErrorLevel)
-            Exit
-        FullPath := Path "\" ExeFile, Title := ""
-    }
+    FileSelectFile, FullPath, M3, , ,*.exe
+
+    Loop, parse, % FullPath, `n, `r
+        A_Index <= 1 ? Path := A_LoopField : ExeFile := A_LoopField
+    if (ErrorLevel)
+        Exit
+
+    FullPath := Path "\" ExeFile, Title := ""
+
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
     IniWrite %Path%, %ConfigFile%, Settings, Path
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
