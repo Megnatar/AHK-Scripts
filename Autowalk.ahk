@@ -1,6 +1,6 @@
 /*
     Written by Megnatar.
-    Autowalk v0.9.0.
+    Autowalk v1.0.0.
     Everyone is free to use, add code and redistribute this script.
     But you MUST always credit ME Megnatar for creating the source!
     The source code for this script can be found on my Github repository:
