@@ -11,7 +11,7 @@
     IMPORTANT: Drop files will NOT work when the script is running in admin mode.
 
     Click in a edit box to set a new hotkey. Any posible key will do. The script will write
-    the name of the key to the edit control. For example pressing numpad1 after a click insede a edit
+    the name of the key to the edit control. For example pressing numpad1 after a click inside a edit
     control will write numpad1 to it, not 1. Game controllers are supported.
 
     Enable the checkbox "RPG Games" for games with a isometric camera (Top down view).
