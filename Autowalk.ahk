@@ -1,6 +1,6 @@
 /*
     Written by Megnatar.
-    Autowalk v1.0.0.
+    Autowalk v0.9.0.
     Everyone is free to use, add code and redistribute this script.
     But you MUST always credit ME Megnatar for creating the source!
     The source code for this script can be found on my Github repository:
@@ -83,6 +83,7 @@ Gui Add, Edit, x224 y120 w60 h21 +Disabled Limit1 T1 vLeftKey, %LeftKey%
 Gui Add, Edit, x288 y120 w60 h21 +Disabled Limit1 T1 vRightKey, %RightKey%
 Gui Show, w378 h201, AutoWalk
 
+
 if (IsoCam = 1) {
     GuiControl([["Disable", "Hkey"], ["Enable", "TurnCamera"]])
     if (TurnCamera = 1) {
@@ -91,7 +92,6 @@ if (IsoCam = 1) {
 }
 
 Hotkey, ~%Hkey%, UserHotKey, on
-
 OnMessage(Wm_MouseMove, "WM_Mouse")
 OnMessage(Wm_LbuttonDown, "WM_Mouse")
 Return
@@ -100,12 +100,10 @@ IsoCam:
     GUI, submit, nohide
     if (IsoCam = 1) {
         Hkey := "Lbutton"
-
         GuiControl([[ , "Hkey", "Lbutton"], ["Disable", "Hkey"], ["Enable", "TurnCamera"]])
         IniWrite, %Hkey%, %ConfigFile%, Settings, Hkey
     } else {
         TurnCamera := 0
-
         GuiControl([["enable", "Hkey"], ["Disable", "TurnCamera"], ["Disable", "LeftKey"], ["Disable", "RightKey"], [ , "TurnCamera", "0"]])
         IniWrite, %TurnCamera%, %ConfigFile%, Settings, TurnCamera
     }
@@ -136,31 +134,19 @@ GuiDropFiles:
     Loop, parse, A_GuiEvent, `n, `r
         FullPath := A_LoopField, Path := SubStr(A_LoopField, 1, InStr(A_LoopField, "\", ,-1)-1), ExeFile := SubStr(A_LoopField, InStr(A_LoopField, "\", ,-1)+1)
 
-    IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
-    IniWrite %Path%, %ConfigFile%, Settings, Path
-    IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
-
-    Title := ""
-    GuiControl("Title", "", Title)
-    IniWrite %Title%, %ConfigFile%, Settings, Title
-    Reload
-Return
-
 ButtonBrowse:
-    FileSelectFile, FullPath, M3, , ,*.exe
-
-    Loop, parse, % FullPath, `n, `r
-        A_Index <= 1 ? Path := A_LoopField : ExeFile := A_LoopField
-    if (ErrorLevel)
-        Exit
-
-    FullPath := Path "\" ExeFile, Title := ""
-
+    if (!FullPath) {
+        FileSelectFile, FullPath, M3, , ,*.exe
+        Loop, parse, % FullPath, `n, `r
+            A_Index <= 1 ? Path := A_LoopField : ExeFile := A_LoopField
+        if (ErrorLevel)
+            Exit
+        FullPath := Path "\" ExeFile, Title := ""
+    }
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
     IniWrite %Path%, %ConfigFile%, Settings, Path
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
     IniWrite %Title%, %ConfigFile%, Settings, Title
-
     Reload
 Return
 
@@ -179,7 +165,6 @@ RunGame:
         else
             WinActivate, ahk_id %hWndClient%, , AutoWalk
     }
-
     WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
 
     ; Checks for any popup window and wait for it to close.
@@ -194,7 +179,6 @@ RunGame:
         GroupAdd, ClientGroup, ahk_id %hWndClient%
         GroupAdd, ClientGroup, ahk_class %ClientGuiClass%
     }
-
     If (!Title) {
         WinGetTitle, Title, ahk_exe %ExeFile%
         IniWrite %Title%, %ConfigFile%, Settings, Title
@@ -220,7 +204,6 @@ ToggleKey(hKey := 0, sKey := 0, SndUp := 0) {
         Send, {%SendThisKey% %KeyState%}
         return KeyState := "Up"
     }
-
     If (!ThisHotKey)
         SendThisKey := sKey, ThisHotKey := hKey
 
@@ -361,7 +344,6 @@ ReadIni(InputFile) {
     {
         if (((InStr(A_LoopField, "[")) = 1 ? 1) || ((InStr(A_LoopField, "`;")) = 1 ? 1) || !A_LoopField)
             Continue
-
         VarRef := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1), %VarRef% := SubStr(A_LoopField, InStr(A_LoopField, "=")+1)
     }
 }
@@ -395,18 +377,6 @@ AutoTurnCamera(Key, RotateL, RotateR, KeyPressDuration = 50, DeadZone = 45) {
     }
 }
 
-; Return the first two bytes in a 32 bit integer. The first of the two bytes is the Most Significant byte (MSB)
-HIWORD(Dword,Hex=0){
-    BITS:=0x10,WORD:=0xFFFF
-    return (!Hex)?((Dword>>BITS)&WORD):Format("{1:#x}",((Dword>>BITS)&WORD))
-}
-
-; Return the second two bytes in a 32bit Integer. The last of the two bytes is the Least Significant byte (LSB)
-LOWORD(Dword,Hex=0){
-    WORD:=0xFFFF
-    Return (!Hex)?(Dword&WORD):Format("{1:#x}",(Dword&WORD))
-}
-
 ;_______________________________________ Game Specific Hotkeys _______________________________________
 
 #IfWinActive, ahk_group ClientGroup
@@ -425,7 +395,6 @@ LOWORD(Dword,Hex=0){
 
                     If (TurnCamera = 1 && KeyState = "Down")
                         AutoTurnCamera("LButton", LeftKey, RightKey)
-
                 } else {
                     Send, {Lbutton up}
                     KeyState = up
@@ -456,3 +425,4 @@ LOWORD(Dword,Hex=0){
         Hotkey, Lbutton, InterruptDownState, OFF
     return
 }
+return
