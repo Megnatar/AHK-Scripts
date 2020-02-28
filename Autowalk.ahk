@@ -4,7 +4,7 @@
     Everyone is free to use, add code and redistribute this script.
     But you MUST always credit ME Megnatar for creating the source!
     The source code for this script can be found on my Github repository:
-    https://github.com/Megnatar/AHK-Scripts
+     https://github.com/Megnatar/AHK-Scripts/blob/master/Autowalk.ahk
 
     Usage:
     To add a new game, just drop the executable on the gui or use the browse button.
