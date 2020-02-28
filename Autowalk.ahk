@@ -7,17 +7,16 @@
     https://github.com/Megnatar/AHK-Scripts
 
     Usage:
-    To add a new game, just drop the executable on the gui.
-    IMPORTANT: This will NOT work when the script is started in admin mode.
-    And else use the browse button.
+    To add a new game, just drop the executable on the gui or use the browse button.
+    IMPORTANT: Drop files will NOT work when the script is running in admin mode.
 
-    Click in a edit box to set a new hotkey. Any key will do, the script will write
-    the name of the key eg Xbutton2, if you pressed it, back to the edit control.
-    This key will be the hotkey that will enable autowalking.
+    Click in a edit box to set a new hotkey. Any posible key will do. The script will write
+    the name of the key to the edit control. For example pressing numpad1 after a click insede a edit
+    control will write numpad1 to it, not 1. Game controllers are supported.
 
     Enable the checkbox "RPG Games" for games with a isometric camera (Top down view).
-    Lbutton will be automatically send down when you double click the left mouse button.
-    Click again to stop.
+    All these games use left mouse button down to move around. Thus, double click the left
+    mouse button to send Lbutton down. Click again , once or twice, to stop.
 
     When the camera does not automatically follow the player enable "Turn camera" and
     set the two keys used by the game to rotate the camera left or right.
@@ -77,13 +76,13 @@ Gui Font
 Gui Add, Picture, x20 y18 w50 h50 0x6 0x3 +AltSubmit +BackgroundTrans vPic, %FullPath%
 Gui Add, Button, x309 y16 w50 h18, &Browse
 Gui Add, Button, x16 y160 w80 h23 vRunGame gRunGame, &Start Game
-Gui Add, Button, x104 y160 w80 h23 gOpenFolder, Open folder
+Gui Add, Button, x104 y160 w80 h23 gOpenFolder, Open Folder
 Gui Add, Button, x280 y160 w80 h23 gGuiClose, Exit
 Gui Add, GroupBox, x16 y72 w345 h83
 Gui Add, Text, x24 y88 w44 h23, Hotkey:
 Gui Add, Edit, x64 y88 w63 h21 Limit1 vHkey, %Hkey%
 Gui Add, CheckBox, x136 y88 w80 h23 Checked%IsoCam% vIsoCam gIsoCam, RPG Games
-Gui Add, CheckBox, x136 y120 w79 h17 +Disabled Checked%TurnCamera% vTurnCamera gTurnCamera, TurnCamera
+Gui Add, CheckBox, x136 y120 w79 h17 +Disabled Checked%TurnCamera% vTurnCamera gTurnCamera, Turn Camera
 Gui Add, CheckBox, x224 y88 w83 h23 Checked%Admin% vAdmin gAdmin, Run as admin
 Gui Add, Edit, x224 y120 w60 h21 +Disabled Limit1 T1 vLeftKey, %LeftKey%
 Gui Add, Edit, x288 y120 w60 h21 +Disabled Limit1 T1 vRightKey, %RightKey%
@@ -170,9 +169,10 @@ RunGame:
         WinGet, HwndClient, ID, ahk_exe %ExeFile%
     } else {
         WinGet, WinStat, MinMax, ahk_exe %ExeFile%, , AutoWalk
-        WinGet, hWndClient, ID, ahk_exe %ExeFile%, , AutoWalk
-        WinGet, ProcessID, PID, ahk_exe %ExeFile%, , AutoWalk
-
+        if (!ClientExist) {
+            WinGet, hWndClient, ID, ahk_exe %ExeFile%, , AutoWalk
+            WinGet, ProcessID, PID, ahk_exe %ExeFile%, , AutoWalk
+        }
         if (WinStat = -1)
             WinRestore, ahk_id %hWndClient%, , AutoWalk
         else
@@ -186,7 +186,7 @@ RunGame:
         WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
         WinGet, HwndClient, ID, ahk_exe %ExeFile%
     }
-    ;Create the ClientGroup only once.
+    ; Create the ClientGroup only once.
     if (!ClientExist) {
         ClientExist := 1
         GroupAdd, ClientGroup, ahk_id %hWndClient%
@@ -209,7 +209,7 @@ ExitApp
 
 ;_______________________________________ Script Functions _______________________________________
 
-; Toggle some key down or up. Only one key can be used by the function
+; Toggle some key down or up. Only one key can be used by the function.
 ToggleKey(hKey := 0, sKey := 0, SndUp := 0) {
     static KeyState, SendThisKey, ThisHotKey
 
@@ -233,7 +233,7 @@ ToggleKey(hKey := 0, sKey := 0, SndUp := 0) {
 }
 
 ; Send some key on a singe or double press of a button.
-; the hotkey is optional, and when emptry Keywait() will return the last hokey used.
+; The hotkey is optional, and when emptry Keywait() will return the last hokey used.
 ButtonDoubleSingle(KeySingle, KeyDouble, DetectDownDelay := "0.1", A_hotKey = 0) {
     A_hotKey := A_hotKey ? keywait(A_hotKey) : keywait()
 
@@ -244,8 +244,8 @@ ButtonDoubleSingle(KeySingle, KeyDouble, DetectDownDelay := "0.1", A_hotKey = 0)
     }
 }
 
-; KeyWait as a function for more flexible usage. When no parameters are used keywait will use
-; the value in A_ThisHotkey as the key to wait for.
+; KeyWait as a function for more flexible usage.
+; When no parameters are used keywait will use the value in A_ThisHotkey as the key to wait for.
 KeyWait(Key = 0, Options = 0, ErrLvL = 0) {
     keywait, % ThisKey := Key ? Key : RegExReplace(A_ThisHotkey, "[~\*\$]"), % Options
     Return ErrLvL = 1 ? ErrorLevel : ThisKey
@@ -284,8 +284,54 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
     }
 }
 
-; GuiControl function. Parameter ControlID can be a liniar array.
-; If you want to use the GuiControl command 3 times, the array should look like:
+; Write back the name of any keyboard, mouse or joystick button to a edit control.
+EditGetKey() {
+    static InputKeys := ["LButton", "RButton", "MButton", "XButton1", "XButton2", "Numpad0", "Numpad1", "Numpad2", "Numpad3", "Numpad4", "Numpad5", "Numpad6", "Numpad7", "Numpad8", "Numpad9","Numpad10","NumpadEnter", "NumpadAdd", "NumpadSub","NumpadMult", "NumpadDev", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "Left", "Right", "Up", "Down", "Home","End", "PgUp", "PgDn", "Del", "Ins", "Capslock", "Numlock", "PrintScreen", "Pause", "LControl", "RControl", "LAlt", "RAlt", "LShift","RShift", "LWin", "RWin", "AppsKey", "BackSpace", "space", "Tab", "Esc", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N","O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ",", ".", "/", "[", "]", "\", "'", ";", "` ","Joy1", "Joy2", "Joy3", "Joy4", "Joy5", "Joy6", "Joy7", "Joy8", "Joy9", "Joy10", "Joy11", "Joy12", "Joy13", "Joy14", "Joy15", "Joy16", "Joy17","Joy18", "Joy19", "Joy20", "Joy21", "Joy22", "Joy23", "Joy24", "Joy25", "Joy26", "Joy27", "Joy28", "Joy29", "Joy30","Joy31", "Joy32"]
+
+    KeyWait("Lbutton")
+
+    ; prevent right click from showing a context menu.
+    Hotkey, IfWinExist, AutoWalk
+    Hotkey, Rbutton Up, RbttnUp, On
+
+    ; loop untill the user pressed some button or as long as the mouse is over some edit box.
+    Critical
+    loop {
+        ; Getting user input from array Inputkeys, are
+        For k, ThisKey in InputKeys {
+            if (GetKeyState(ThisKey, "P")) {
+                GuiControl(ControlBelowMouse, "", ThisKey)
+                ExitLoop := KeyWait(ThisKey)
+                Break
+            }
+            ; When ControlBelowMouse does not contain the word "Edit". Then the mouse moved away from the control.
+            If (!InStr(ControlBelowMouse, "Edit")) {
+                GuiControl(ControlOldBelowMouse, "", ctrlTxt)
+                ControlFocus, %ControlBelowMouse%
+                ExitLoop := 1
+                Break
+            }
+        }
+        If (ExitLoop)
+            break
+    }
+    Critical Off
+    ControlFocus, Button2
+
+    ; Save the new values, if the for loop didn't break because the mouse moved outside the control.
+    If (ExitLoop != 1)
+        IniWrite, %ThisKey%, %ConfigFile%, Settings, %A_GuiControl%
+
+    RbttnUp:
+        Hotkey, IfWinExist, AutoWalk
+        Hotkey, Rbutton Up, RbttnUp, Off
+
+    InputActive := 0
+    exit
+}
+
+; Parameter ControlID can be a liniar array. For example, if you want to use the GuiControl command 3 times in a row.
+; Then the array should look like:
 ;  ControlID := [[SubCommand, ControlID, Value], [SubCommand, ControlID, Value], [SubCommand, ControlID, Value]]
 GuiControl(ControlID, SubCommand = 0, Value = 0) {
     Static Commands := ["Text", "Move", "MoveDraw", "Focus", "Disable", "Enable", "Hide", "Show", "Delete", "Choose", "ChooseString", "Font", "Options"]
@@ -305,50 +351,6 @@ GuiControl(ControlID, SubCommand = 0, Value = 0) {
         }
     }
     Return ErrorLevel
-}
-
-; Write back the name of any keyboard, mouse or joystick button to a edit control.
-EditGetKey() {
-    static InputKeys := ["LButton", "RButton", "MButton", "XButton1", "XButton2", "Numpad0", "Numpad1", "Numpad2", "Numpad3", "Numpad4", "Numpad5", "Numpad6", "Numpad7", "Numpad8", "Numpad9","Numpad10","NumpadEnter", "NumpadAdd", "NumpadSub","NumpadMult", "NumpadDev", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "Left", "Right", "Up", "Down", "Home","End", "PgUp", "PgDn", "Del", "Ins", "Capslock", "Numlock", "PrintScreen", "Pause", "LControl", "RControl", "LAlt", "RAlt", "LShift","RShift", "LWin", "RWin", "AppsKey", "BackSpace", "space", "Tab", "Esc", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N","O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ",", ".", "/", "[", "]", "\", "'", ";", "` ","Joy1", "Joy2", "Joy3", "Joy4", "Joy5", "Joy6", "Joy7", "Joy8", "Joy9", "Joy10", "Joy11", "Joy12", "Joy13", "Joy14", "Joy15", "Joy16", "Joy17","Joy18", "Joy19", "Joy20", "Joy21", "Joy22", "Joy23", "Joy24", "Joy25", "Joy26", "Joy27", "Joy28", "Joy29", "Joy30","Joy31", "Joy32"]
-
-    KeyWait("Lbutton")
-
-    ; prevent right click from showing a context menu.
-    Hotkey, IfWinExist, AutoWalk
-    Hotkey, Rbutton Up, RbttnUp, On
-
-    ; loop untill the user pressed some button and as long as the mouse is over some edit box.
-    loop {
-        ; Getting the key here, there stored in array Inputkeys.
-        For k, ThisKey in InputKeys {
-            if (GetKeyState(ThisKey, "P")) {
-                GuiControl(ControlBelowMouse, "", ThisKey)
-                ExitLoop := KeyWait(ThisKey)
-                Break
-            }
-            ; When ControlBelowMouse does not contain the word "Edit". Then the mouse moved away from the control.
-            If (!InStr(ControlBelowMouse, "Edit")) {
-                GuiControl(ControlOldBelowMouse, "", ctrlTxt)
-                ControlFocus, %ControlBelowMouse%
-                ExitLoop := 1
-                Break
-            }
-        }
-        If (ExitLoop)
-            break
-    }
-    ControlFocus, Button1
-
-    ; Save the new values, if the for loop didn't break because the mouse moved outside the control.
-    If (ExitLoop != 1)
-        IniWrite, %ThisKey%, %ConfigFile%, Settings, %A_GuiControl%
-
-    RbttnUp:
-        Hotkey, IfWinExist, AutoWalk
-        Hotkey, Rbutton Up, RbttnUp, Off
-
-    InputActive := 0
-    exit
 }
 
 ; Read ini file and create variables. Referenced variables are not local to functions.
