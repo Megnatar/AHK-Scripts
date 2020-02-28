@@ -83,7 +83,6 @@ Gui Add, Edit, x224 y120 w60 h21 +Disabled Limit1 T1 vLeftKey, %LeftKey%
 Gui Add, Edit, x288 y120 w60 h21 +Disabled Limit1 T1 vRightKey, %RightKey%
 Gui Show, w378 h201, AutoWalk
 
-
 if (IsoCam = 1) {
     GuiControl([["Disable", "Hkey"], ["Enable", "TurnCamera"]])
     if (TurnCamera = 1) {
