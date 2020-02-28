@@ -71,9 +71,9 @@ if (Admin = 1 && !A_IsAdmin) {
 Gui Add, GroupBox, x8 y0 w362 h194
 Gui Add, GroupBox, x16 y8 w345 h64 +Center, Drop you're game executable here.
 Gui Font, s10 Bold
-Gui Add, Text, x24 y32 w329 h23 +Center +0x200 vTitle, %Title%
+Gui Add, Text, x24 y32 w329 h23 +Center +Transparent +0x200 vTitle, %Title%
 Gui Font
-Gui Add, Picture, x20 y18 w50 h50 0x6 0x3 +AltSubmit +BackgroundTrans vPic, %FullPath%
+Gui Add, Picture, x20 y18 w50 h50 0x6 0x3 +BackgroundTrans vPic, %FullPath%
 Gui Add, Button, x309 y16 w50 h18, &Browse
 Gui Add, Button, x16 y160 w80 h23 vRunGame gRunGame, &Start Game
 Gui Add, Button, x104 y160 w80 h23 gOpenFolder, Open Folder
@@ -138,6 +138,7 @@ GuiDropFiles:
     Loop, parse, A_GuiEvent, `n, `r
         FullPath := A_LoopField, Path := SubStr(A_LoopField, 1, InStr(A_LoopField, "\", ,-1)-1), ExeFile := SubStr(A_LoopField, InStr(A_LoopField, "\", ,-1)+1)
 
+    Title := "Ready to start you're game"
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
     IniWrite %Path%, %ConfigFile%, Settings, Path
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
@@ -153,7 +154,7 @@ ButtonBrowse:
     if (ErrorLevel)
         Exit
 
-    FullPath := Path "\" ExeFile, Title := ""
+    FullPath := Path "\" ExeFile, Title := "Ready to start you're game"
 
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
     IniWrite %Path%, %ConfigFile%, Settings, Path
@@ -181,7 +182,7 @@ RunGame:
     WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
 
     ; Checks for any popup window and wait for it to close.
-    if InStr(ClientGuiClass, "Splash"){
+    if InStr(ClientGuiClass, "Splash") {
         WinWaitClose, ahk_class %ClientGuiClass%, , , AutoWalk
         WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
         WinGet, HwndClient, ID, ahk_exe %ExeFile%
@@ -192,10 +193,10 @@ RunGame:
         GroupAdd, ClientGroup, ahk_id %hWndClient%
         GroupAdd, ClientGroup, ahk_class %ClientGuiClass%
     }
-    If (!Title) {
+    If (InStr(Title, "Ready to start you're game")) {
         WinGetTitle, Title, ahk_exe %ExeFile%
         IniWrite %Title%, %ConfigFile%, Settings, Title
-        GuiControl, , Title, %Title%
+        GuiControl([[ , "Title", Title], ["MoveDraw", "Pic"]])
     }
 Return
 
