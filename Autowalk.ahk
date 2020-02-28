@@ -256,7 +256,7 @@ KeyWait(K := "", O := "", ErrLvL := "") {
 ; Keep track of mouse movement and left click inside the gui.
 WM_Mouse(wParam, lParam, msg, hWnd) {
     Static ClsNNPrevious, ClsNNCurrent, X, Y
-    Listlines off
+
     ;X := HIWORD(LPARAM), Y := LOWORD(LPARAM)
     
     GuiControlGet, focused_control, Focus
@@ -292,7 +292,7 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
 }
 
 
-; Writes back the name of any keyboard, mouse or joystick button to a edit control.
+; Write back the name of any keyboard, mouse or joystick button to a edit control.
 EditGetKey() {
     static InputKeys := ["LButton", "RButton", "MButton", "XButton1", "XButton2", "Numpad0", "Numpad1", "Numpad2", "Numpad3", "Numpad4", "Numpad5", "Numpad6", "Numpad7", "Numpad8", "Numpad9","Numpad10","NumpadEnter", "NumpadAdd", "NumpadSub","NumpadMult", "NumpadDev", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "Left", "Right", "Up", "Down", "Home","End", "PgUp", "PgDn", "Del", "Ins", "Capslock", "Numlock", "PrintScreen", "Pause", "LControl", "RControl", "LAlt", "RAlt", "LShift","RShift", "LWin", "RWin", "AppsKey", "BackSpace", "space", "Tab", "Esc", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N","O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ",", ".", "/", "[", "]", "\", "'", ";", "` ","Joy1", "Joy2", "Joy3", "Joy4", "Joy5", "Joy6", "Joy7", "Joy8", "Joy9", "Joy10", "Joy11", "Joy12", "Joy13", "Joy14", "Joy15", "Joy16", "Joy17","Joy18", "Joy19", "Joy20", "Joy21", "Joy22", "Joy23", "Joy24", "Joy25", "Joy26", "Joy27", "Joy28", "Joy29", "Joy30","Joy31", "Joy32"]
 
@@ -348,24 +348,22 @@ ReadIni(InputFile) {
         if (((InStr(A_LoopField, "[")) = 1 ? 1) || ((InStr(A_LoopField, "`;")) = 1 ? 1) || !A_LoopField)
             Continue
 
-        TmpVar := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1), %TmpVar% := SubStr(A_LoopField, InStr(A_LoopField, "=")+1)
+        VarRef := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1), %VarRef% := SubStr(A_LoopField, InStr(A_LoopField, "=")+1)
     }
 }
 
 ; Turn the ingame camera to follow the player.
 AutoTurnCamera(Key, RotateL, RotateR, KeyPressDuration = 50, DeadZone = 45) {
     Static Rad := 180 / 3.1415926
-    SendMode, Input
     
     WinGetPos, , ,gW, gH, A
 
     ; Loop while the key is in a logical downstate. For physical status use While(GetKeyState(Key, "P"))
     While(GetKeyState(Key)) {
-
         MouseGetPos, mX, mY
         mX := mX - gW/2, mY := gH/2 - mY
 
-        ; Do nothing when the mouse is inside a degree triangulated dead zone.
+        ; Do nothing when the mouse is inside a triangulated dead zone.
         ; The dead zone starts at the center of the screen and ends at the top, 30 dagrees on each side.
         if ((((mX*mX+mY*mY < 5000) || (mY > 0)) & (Abs(ATan(mX/mY)) * Rad < DeadZone)))
             continue
@@ -399,6 +397,8 @@ LOWORD(Dword,Hex=0){
 
 #IfWinActive, ahk_group ClientGroup
 {
+    ; When this file "UserCode.ahk" resides in the same folder as where the script is. Any code in that script will be
+    ; used by this script when the game window is active.
     #Include *i UserCode.ahk
 
     UserHotKey:
