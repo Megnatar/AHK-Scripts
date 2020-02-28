@@ -68,12 +68,13 @@ if (Admin = 1 && !A_IsAdmin) {
     ExitApp
 }
 
+
 Gui Add, GroupBox, x8 y0 w362 h194
 Gui Add, GroupBox, x16 y8 w345 h64 +Center, Drop you're game executable here.
 Gui Font, s10 Bold
-Gui Add, Text, x24 y32 w329 h23 +Center +Transparent +0x200 vTitle, %Title%
+Gui Add, Text, x24 y36 w329 h23 +Center +Transparent +0x200 vTitle, %Title%
 Gui Font
-Gui Add, Picture, x20 y18 w50 h50 0x6 0x3 +BackgroundTrans vPic, %FullPath%
+Gui Add, Picture, x20 y18 w50 h50 0x6 0x3 +BackgroundTrans vPic, % "HICON:*" HIcon := LoadPicture(FullPath, "GDI+ Icon1 w50", Imtype)
 Gui Add, Button, x309 y16 w50 h18, &Browse
 Gui Add, Button, x16 y160 w80 h23 vRunGame gRunGame, &Start Game
 Gui Add, Button, x104 y160 w80 h23 gOpenFolder, Open Folder
@@ -233,7 +234,7 @@ ToggleKey(hKey := 0, sKey := 0, SndUp := 0) {
     return KeyState
 }
 
-; Send some key on a singe or double press of a button.
+; Send some key on a sinlge or double press of a button.
 ; The hotkey is optional, and when emptry Keywait() will return the last hokey used.
 ButtonDoubleSingle(KeySingle, KeyDouble, DetectDownDelay := "0.1", A_hotKey = 0) {
     A_hotKey := A_hotKey ? keywait(A_hotKey) : keywait()
