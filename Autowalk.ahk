@@ -45,7 +45,6 @@ IsoCam      := 0
 Admin       := 0
 TurnCamera  := 0
 
-
 If (!FileExist(ConfigFile))
     IniWrite Xbutton1, %ConfigFile%, Settings, Hkey
 
