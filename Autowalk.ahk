@@ -90,8 +90,6 @@ Gui Add, CheckBox, x224 y88 w83 h23 Checked%Admin% vAdmin gAdmin, Run as admin
 Gui Add, Edit, x224 y120 w60 h21 +Disabled Limit1 T1 vLeftKey, %LeftKey%
 Gui Add, Edit, x288 y120 w60 h21 +Disabled Limit1 T1 vRightKey, %RightKey%
 Gui Show, w378 h201 x%Gui_X% y%Gui_Y%, AutoWalk
-Gui_X := "Center"
-Gui_Y := "Center"
 
 if (IsoCam = 1) {
     GuiControl([["Disable", "Hkey"], ["Enable", "TurnCamera"]])
@@ -99,7 +97,6 @@ if (IsoCam = 1) {
         GuiControl([["Enable", "LeftKey"], ["Enable", "RightKey"]])
     }
 }
-
 Hotkey, ~%Hkey%, HotKeyAutoWalk, on
 OnMessage(Wm_MouseMove, "WM_Mouse")
 OnMessage(Wm_LbuttonDown, "WM_Mouse")
