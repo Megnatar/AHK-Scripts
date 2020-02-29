@@ -70,7 +70,6 @@ if (Admin = 1 && !A_IsAdmin) {
     ExitApp
 }
 
-
 Gui Add, GroupBox, x8 y0 w362 h194
 Gui Add, GroupBox, x16 y8 w345 h64 +Center, Drop you're game executable here.
 Gui Font, s10 Bold
@@ -97,6 +96,7 @@ if (IsoCam = 1) {
         GuiControl([["Enable", "LeftKey"], ["Enable", "RightKey"]])
     }
 }
+
 Hotkey, ~%Hkey%, HotKeyAutoWalk, on
 OnMessage(Wm_MouseMove, "WM_Mouse")
 OnMessage(Wm_LbuttonDown, "WM_Mouse")
@@ -281,9 +281,9 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
         If ((InputActive = 0) & (InputActive := InStr(ControlBelowMouse, "Edit"))) {
             GuiControlGet, IsControlOn, Enabled, %ControlBelowMouse%
 
-            ; When this control is not disabled.
+            ; And when this control is not disabled.
             If (IsControlOn = 1) {
-                ; store it's current text and give the control input focus (actually it's the other way around, hehe).
+                ; store it's text and give the control input focus (actually it's the other way around, hehe).
                 ControlFocus, %ControlBelowMouse%
                 ControlGetText, ctrlTxt, %ControlBelowMouse%
 
@@ -342,9 +342,12 @@ EditGetKey() {
     exit
 }
 
-; Parameter ControlID can be a liniar array. For example, if you want to use the GuiControl command 3 times in a row.
-; Then the array should look like:
-;  ControlID := [[SubCommand, ControlID, Value], [SubCommand, ControlID, Value], [SubCommand, ControlID, Value]]
+; Parameter ControlID can be a array. For example, if you want to use the GuiControl command 3 times in a row.
+; Then the array should look something like:
+;  ControlID := [[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]]
+; You can also inser a object directly on the parameter for ControlID
+;  GuiControl([[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]])
+;
 GuiControl(ControlID, SubCommand = 0, Value = 0) {
     Static Commands := ["Text", "Move", "MoveDraw", "Focus", "Disable", "Enable", "Hide", "Show", "Delete", "Choose", "ChooseString", "Font", "Options"]
 
@@ -362,7 +365,6 @@ GuiControl(ControlID, SubCommand = 0, Value = 0) {
             GuiControl % SubCommand, % ControlID, % Value
         }
     }
-    Return ErrorLevel
 }
 
 ; Read ini file and create variables. Referenced variables are not local to functions.
