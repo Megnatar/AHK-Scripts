@@ -36,10 +36,10 @@ SetWorkingDir %A_ScriptDir%
 DetectHiddenWindows On
 sendmode Input
 
-Global Wm_LbuttonDown:=0x201
-, Wm_Mousemove :=0x200
-, InputActive := 0
-, ConfigFile  := "Settings.ini"
+Global Wm_LbuttonDown   := 0x201
+, Wm_Mousemove          := 0x200
+, InputActive           := 0
+, ConfigFile            := "Settings.ini"
 , ControlOldBelowMouse
 , ControlBelowMouse
 , ctrlTxt
