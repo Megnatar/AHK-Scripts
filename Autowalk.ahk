@@ -70,6 +70,8 @@ if (Admin = 1 && !A_IsAdmin) {
     ExitApp
 }
 
+OnExit("ExitApp")
+
 Gui Add, GroupBox, x8 y0 w362 h194
 Gui Add, GroupBox, x16 y8 w345 h64 +Center, Drop you're game executable here.
 Gui Font, s10 Bold
@@ -100,7 +102,7 @@ if (IsoCam = 1) {
 Hotkey, ~%Hkey%, HotKeyAutoWalk, on
 OnMessage(Wm_MouseMove, "WM_Mouse")
 OnMessage(Wm_LbuttonDown, "WM_Mouse")
-OnExit("ExitApp")
+
 Return
 
 IsoCam:
@@ -214,11 +216,12 @@ ExitApp
 ;_______________________________________ Script Functions _______________________________________
 
 ExitApp() {
-	WinGetPos, Gui_X, Gui_Y, Gui_W, Gui_H, ahk_id %A_ScriptHwnd%
-	IniWrite, %Gui_X%, %ConfigFile%, Settings, Gui_X
-	IniWrite, %Gui_Y%, %ConfigFile%, Settings, Gui_Y
-	IniWrite, %Gui_W%, %ConfigFile%, Settings, Gui_W
-	IniWrite, %Gui_H%, %ConfigFile%, Settings, Gui_H
+    WinGetPos, Gui_X, Gui_Y, ,, AutoWalk
+    
+    if ((Gui_X > 0) & (Gui_Y > 0)) {
+        IniWrite, %Gui_X%, %ConfigFile%, Settings, Gui_X
+        IniWrite, %Gui_Y%, %ConfigFile%, Settings, Gui_Y
+    }
 }
 
 ; Toggle some key down or up. Only one key can be used by the function.
@@ -345,7 +348,8 @@ EditGetKey() {
 ; Parameter ControlID can be a array. For example, if you want to use the GuiControl command 3 times in a row.
 ; Then the array should look something like:
 ;  ControlID := [[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]]
-; You can also inser a object directly on the parameter for ControlID
+;
+; You can also insert a object directly on the parameter for ControlID
 ;  GuiControl([[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]])
 ;
 GuiControl(ControlID, SubCommand = 0, Value = 0) {
