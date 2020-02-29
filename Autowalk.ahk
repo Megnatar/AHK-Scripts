@@ -341,7 +341,7 @@ EditGetKey() {
         Hotkey, Rbutton Up, RbttnUp, Off
 
     InputActive := 0
-    exit
+    return
 }
 
 ; Parameter ControlID can be a array. For example, if you want to use the GuiControl command 3 times in a row.
@@ -381,7 +381,7 @@ ReadIni(InputFile) {
 }
 
 ; Turn the ingame camera to follow the player.
-AutoTurnCamera(Key, RotateL, RotateR, KeyPressDuration = 50, DeadZone = 45) {
+AutoTurnCamera(Key, RotateL, RotateR, KeyPressDuration = 50, DeadZone = 22.5) {
     Static Rad := 180 / 3.1415926
 
     WinGetPos, , ,gW, gH, A
