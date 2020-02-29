@@ -46,6 +46,8 @@ Global Wm_LbuttonDown:=0x201
 
 LeftKey     := "Left"
 RightKey    := "Right"
+Gui_X       := "Center"
+Gui_Y       := "Center"
 IsoCam      := 0
 Admin       := 0
 TurnCamera  := 0
@@ -72,22 +74,24 @@ if (Admin = 1 && !A_IsAdmin) {
 Gui Add, GroupBox, x8 y0 w362 h194
 Gui Add, GroupBox, x16 y8 w345 h64 +Center, Drop you're game executable here.
 Gui Font, s10 Bold
-Gui Add, Text, x24 y36 w329 h23 +Center +Transparent +0x200 vTitle, %Title%
+Gui Add, Text, x24 y36 w329 h19 +Center +Transparent +0x200 vTitle, %Title%
 Gui Font
-Gui Add, Picture, x20 y18 w50 h50 0x6 0x3 +BackgroundTrans vPic, % "HICON:*" HIcon := LoadPicture(FullPath, "GDI+ Icon1 w50", Imtype)
-Gui Add, Button, x309 y16 w50 h18, &Browse
-Gui Add, Button, x16 y160 w80 h23 vRunGame gRunGame, &Start Game
-Gui Add, Button, x104 y160 w80 h23 gOpenFolder, Open Folder
+Gui Add, Picture, x20 y18 w50 h50 +0x09 +BackgroundTrans vPic, % "HICON:*" hIcon := LoadPicture(FullPath, "GDI+ Icon1 w50", ImageType)
+Gui Add, Button, x307 y18 w50 h18, &Browse
+Gui Add, Button, x16 y160 w80 h23 vRunGame, &Start Game
+Gui Add, Button, x104 y160 w80 h23, Open Folder
 Gui Add, Button, x280 y160 w80 h23 gGuiClose, Exit
 Gui Add, GroupBox, x16 y72 w345 h83
-Gui Add, Text, x24 y88 w44 h23, Hotkey:
-Gui Add, Edit, x64 y88 w63 h21 Limit1 vHkey, %Hkey%
+Gui Add, Text, x24 y92 w99 h23, Hotkey Autowalk:
+Gui Add, Edit, x24 y120 w63 h21 Limit1 vHkey, %Hkey%
 Gui Add, CheckBox, x136 y88 w80 h23 Checked%IsoCam% vIsoCam gIsoCam, RPG Games
 Gui Add, CheckBox, x136 y120 w79 h17 +Disabled Checked%TurnCamera% vTurnCamera gTurnCamera, Turn Camera
 Gui Add, CheckBox, x224 y88 w83 h23 Checked%Admin% vAdmin gAdmin, Run as admin
 Gui Add, Edit, x224 y120 w60 h21 +Disabled Limit1 T1 vLeftKey, %LeftKey%
 Gui Add, Edit, x288 y120 w60 h21 +Disabled Limit1 T1 vRightKey, %RightKey%
-Gui Show, w378 h201, AutoWalk
+Gui Show, w378 h201 x%Gui_X% y%Gui_Y%, AutoWalk
+Gui_X := "Center"
+Gui_Y := "Center"
 
 if (IsoCam = 1) {
     GuiControl([["Disable", "Hkey"], ["Enable", "TurnCamera"]])
@@ -96,9 +100,10 @@ if (IsoCam = 1) {
     }
 }
 
-Hotkey, ~%Hkey%, UserHotKey, on
+Hotkey, ~%Hkey%, HotKeyAutoWalk, on
 OnMessage(Wm_MouseMove, "WM_Mouse")
 OnMessage(Wm_LbuttonDown, "WM_Mouse")
+OnExit("ExitApp")
 Return
 
 IsoCam:
@@ -164,7 +169,7 @@ ButtonBrowse:
     Reload
 Return
 
-RunGame:
+ButtonStartGame:
     If (!WinExist("ahk_exe " ExeFile)) {
         Run, %FullPath%, %Path%, , ProcessID
         WinWaitActive, ahk_exe %ExeFile%, , , AutoWalk
@@ -201,7 +206,7 @@ RunGame:
     }
 Return
 
-OpenFolder:
+ButtonOpenFolder:
     Run, Explorer.exe "%Path%"
 Return
 
@@ -210,6 +215,14 @@ GuiClose:
 ExitApp
 
 ;_______________________________________ Script Functions _______________________________________
+
+ExitApp() {
+	WinGetPos, Gui_X, Gui_Y, Gui_W, Gui_H, ahk_id %A_ScriptHwnd%
+	IniWrite, %Gui_X%, %ConfigFile%, Settings, Gui_X
+	IniWrite, %Gui_Y%, %ConfigFile%, Settings, Gui_Y
+	IniWrite, %Gui_W%, %ConfigFile%, Settings, Gui_W
+	IniWrite, %Gui_H%, %ConfigFile%, Settings, Gui_H
+}
 
 ; Toggle some key down or up. Only one key can be used by the function.
 ToggleKey(hKey := 0, sKey := 0, SndUp := 0) {
@@ -402,7 +415,7 @@ AutoTurnCamera(Key, RotateL, RotateR, KeyPressDuration = 50, DeadZone = 45) {
     ; used by this script when the game window is active.
     #Include *i UserCode.ahk
 
-    UserHotKey:
+    HotKeyAutoWalk:
         If (IsoCam = 1) {
             If (KeyWait("Lbutton", "T0.2", 1) = 0) {
                 If (KeyWait("Lbutton", "D T0.2", 1) = 0) {
