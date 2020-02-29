@@ -392,7 +392,7 @@ AutoTurnCamera(Key, RotateL, RotateR, KeyPressDuration = 50, DeadZone = 45) {
         mX := mX - gW/2, mY := gH/2 - mY
 
         ; Do nothing when the mouse is inside a triangulated dead zone.
-        ; The dead zone starts at the center of the screen and ends at the top, 30 dagrees on each side.
+        ; The dead zone starts at the center of the screen and ends at the top.
         if (((((mX*mX)+(mY*mY) < 5000) || (mY > 0)) & (Abs(ATan(mX/mY)) * Rad < DeadZone)))
             continue
 
