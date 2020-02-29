@@ -102,7 +102,6 @@ if (IsoCam = 1) {
 Hotkey, ~%Hkey%, HotKeyAutoWalk, on
 OnMessage(Wm_MouseMove, "WM_Mouse")
 OnMessage(Wm_LbuttonDown, "WM_Mouse")
-
 Return
 
 IsoCam:
