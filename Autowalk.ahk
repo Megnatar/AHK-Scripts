@@ -26,9 +26,9 @@
 */
 #NoEnv
 #Persistent
-#SingleInstance force
+#SingleInstance off
 #KeyHistory 0
-ListLines off
+;ListLines off
 SetBatchLines -1
 SetTitleMatchMode 3
 SetKeyDelay 5, 1
@@ -59,6 +59,14 @@ If (!FileExist(ConfigFile))
 
 ReadIni(ConfigFile)
 
+
+if (A_IsAdmin && A_Args[1] = "/Start") {
+    InstanceMain := A_Args[2]
+    
+    GoSub, ButtonStartGame
+    Return
+}
+
 if ((Admin = 1) & (!A_IsAdmin)) {
     Try {
         if (A_IsCompiled) {
@@ -72,6 +80,9 @@ if ((Admin = 1) & (!A_IsAdmin)) {
     ExitApp
 }
 
+
+
+
 Gui Add, GroupBox, x8 y0 w362 h194
 Gui Add, GroupBox, x16 y8 w345 h64 +Center, Drop you're game executable here.
 Gui Font, s10 Bold
@@ -79,7 +90,7 @@ Gui Add, Text, x24 y36 w329 h19 +Center +BackgroundTrans +0x200 vTitle, %Title%
 Gui Font
 Gui Add, Picture, x20 y18 w50 h50 +0x09 vPic, % "HICON:*" hIcon := LoadPicture(FullPath, "GDI+ Icon1 w50", ImageType)
 Gui Add, Button, x307 y18 w50 h18, &Browse
-Gui Add, Button, x16 y160 w80 h23 vRunGame, &Start Game
+Gui Add, Button, x16 y160 w80 h23 vRunGame gStartAdmin, &Start Game
 Gui Add, Button, x104 y160 w80 h23, Open Folder
 Gui Add, Button, x280 y160 w80 h23 gGuiClose, Exit
 Gui Add, GroupBox, x16 y72 w345 h83
@@ -114,7 +125,7 @@ Return
             #IfWinActive, ahk_group ClientGroup
             {
                 ; When this file "UserCode.ahk" resides in the same folder as where the script is. 
-                ; used by this script when the game window is active.
+                ; All hotkeys in UserCode.ahk are used by this script when the game window is active.
                 #Include *i UserCode.ahk
 
                 HotKeyAutoWalk:
@@ -122,13 +133,13 @@ Return
                     If (A_Hotkey := KeyWait()) {
                         If (KeyWait(A_hotKey, "D T0.2", 1) = 0) {
                             keywait(A_hotKey), KeyState := KeyState != "Down" ? "Down" : "Up"
-                            Send {%A_hotKey% %KeyState%}
+                            Send, {%A_hotKey% %KeyState%}
 
                             If ((TurnCamera = 1) & (KeyState = "Down"))
                                 AutoTurnCamera(A_hotKey, LeftKey, RightKey, VirtualKey := 1)
                         } else {
                             KeyState := "Up"
-                            Send {%A_hotKey% %KeyState%}
+                            Send, {%A_hotKey% %KeyState%}
                         }
                     }
                 } Else If (!IsoCam) {
@@ -137,7 +148,7 @@ Return
                         KeyWait()
                         
                     KeyState := KeyState != "Down" ? "Down" : "Up"
-                    Send {w %KeyState%}
+                    Send, {w %KeyState%}
                     
                     if (KeyState = "Down") {
                         Hotkey, ~*Vk057, InterruptDownState, ON     ; Vk057 = w
@@ -148,7 +159,6 @@ Return
                     }
                 Return
                 }
-            Return
             }
         }
     }
@@ -160,7 +170,7 @@ Return
 IsoCam:
     GUI, submit, nohide
     IniWrite, %IsoCam%, %ConfigFile%, Settings, IsoCam
-    if (IsoCam) {
+    if (IsoCam = 1) {
         Hkey := "Lbutton"
         GuiControl([[ , "Hkey", "Lbutton"], ["Disable", "Hkey"], ["Enable", "TurnCamera"]])
         IniWrite, %Hkey%, %ConfigFile%, Settings, Hkey
@@ -184,10 +194,10 @@ Return
 Admin:
     GUI, submit, nohide
     IniWrite, %Admin%, %ConfigFile%, Settings, Admin
-    if (Admin) {
+    if (Admin = 1) {
         Reload
     } else {
-        ExitApp
+        Reload
     }
 Return
 
@@ -220,6 +230,10 @@ ButtonBrowse:
     Reload
 Return
 
+
+StartAdmin:
+    RunGame()
+Return
 ButtonStartGame:
     If (!WinExist("ahk_exe " ExeFile)) {
         Run, %FullPath%, %Path%, , ProcessID
@@ -255,6 +269,7 @@ ButtonStartGame:
         IniWrite %Title%, %ConfigFile%, Settings, Title
         GuiControl([[ , "Title", Title], ["MoveDraw", "Pic"]])
     }
+    HookOn := RegisterOnAppExitHook("OnAppExit")
 Return
 
 ButtonOpenFolder:
@@ -263,9 +278,39 @@ Return
 
 GuiEscape:
 GuiClose:
-    ExitApp
+ExitApp
 
 ;_______________________________________ Script Functions _______________________________________
+
+
+; Create shell message hook for OnAppExit monitor function.
+RegisterOnAppExitHook(FuncName := "OnAppExit", t = 0) {
+    Static HookToggle, MessageID
+
+    If (!HookToggle || t := 0 && HookToggle != 1) {
+        DllCall("RegisterShellHookWindow", UInt, A_ScriptHwnd)
+        OnMessage((MessageID := DllCall("RegisterWindowMessage", Str, "SHELLHOOK")), FuncName)
+    } else If (HookToggle || t := 1 && HookToggle != 0) {
+        DllCall("DeregisterShellHookWindow", UInt, A_ScriptHwnd)
+        OnMessage(MessageID, "")
+    }
+    Return % t := HookToggle := HookToggle ? 1 : 0
+}
+
+; Each application closed by the user will here be checked if it is the game.
+OnAppExit(wParam, lParam, ExeFile, InstanceMain) {
+    static AppClose := 2
+    
+    if ((wParam = AppClose) & (!WinExist("ahk_exe " ExeFile) || !WinExist("ahk_id " InstanceMain))) {
+        ExitApp
+    }
+}
+
+
+RunGame() {
+    RunWait *RunAs "%A_AhkPath%"  /ErrorStdOut "%A_ScriptFullPath%" /Start %A_ScriptHwnd%
+}
+
 
 ; Read ini file and create variables. Sections are not supported.
 ; Referenced variables are not local to functions.
@@ -305,7 +350,7 @@ GuiControl(ControlID, SubCommand = 0, Value = 0) {
 
 ; Keep track of mouse movement and left clicks inside the gui.
 WM_Mouse(wParam, lParam, msg, hWnd) {
-    Static ClsNNPrevious, ClsNNCurrent
+    Static ClsNNPrevious, ClsNNCurrent, ControlID
     ; ClsNNPrevious and ClsNNCurrent will hold the same value while the mouse moves inside a control.
     ClsNNPrevious := ClsNNCurrent
     MouseGetPos, , , , ClsNNCurrent
@@ -350,7 +395,7 @@ EditGetKey() {
     ; Loop untill the user pressed some button or as long as the mouse is over some edit box.
     Critical
     loop {
-        ; Getting user input from array Inputkeys.
+        ; Getting user input from array Inputkeys, are
         For k, ThisKey in InputKeys {
             if (GetKeyState(ThisKey, "P")) {
                 GuiControl(ControlBelowMouse, "", ThisKey)
@@ -370,8 +415,7 @@ EditGetKey() {
     }
     Critical Off
     ControlFocus, Button2
-    GUI, submit, nohide
-    
+
     ; Save new values to Settings.ini if the For loop didn't break when the mouse moved outside the control.
     If (ExitLoop != 1)
         IniWrite, %ThisKey%, %ConfigFile%, Settings, %A_GuiControl%
@@ -385,12 +429,12 @@ EditGetKey() {
 }
 
 ; Send some key on a sinlge or double press of a button.
-; The hotkey is optional and when ThisHotKey is empty Keywait() will return the last hokey used.
-ButtonSingleDouble(KeySingle, KeyDouble, ThisHotKey = 0, WaitRelease = 0) {
+; The hotkey is optional, and when emptry Keywait() will return the last hokey used.
+ButtonDoubleSingle(KeySingle, KeyDouble, A_hotKey = 0, WaitRelease = 0) {
     if (WaitRelease) {
-        Send {%KeySingle% Down}
-        A_hotKey := ThisHotKey ? keywait(ThisHotKey) : keywait()
-        Send {%KeySingle% Up}
+        Send, {%KeySingle% Down}
+        A_hotKey ? keywait(A_hotKey) : keywait()
+        Send, {%KeySingle% Up}
         
         if (keywait(A_hotKey, "D T0.1", 1) = 0) {
             Send {%KeyDouble% Down}
@@ -398,18 +442,18 @@ ButtonSingleDouble(KeySingle, KeyDouble, ThisHotKey = 0, WaitRelease = 0) {
             Send {%KeyDouble% Up}
         }
     } else if (!WaitRelease) {
-        A_hotKey := ThisHotKey ? keywait(ThisHotKey) : keywait()
+        A_hotKey := A_hotKey ? keywait(A_hotKey) : keywait()
         
         if (keywait(A_hotKey, "D T0.1", 1) = 0) {
-            Send {%KeyDouble% Down}{%KeyDouble% Up}
+            Send, {%KeyDouble% Down}{%KeyDouble% Up}
         } else {
-            Send {%KeySingle% Down}{%KeySingle% Up}
+            send, {%KeySingle% Down}{%KeySingle% Up}
         }   
     }
     Return
 }
 
-; Turn the ingame camera to follow the player when some key is down.
+; Turn the ingame camera to follow the player.
 AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 50, DeadZone = 22.5) {
     Static Rad := 180 / 3.1415926
 
@@ -442,11 +486,9 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 50, DeadZ
     Return
 }
 
-; This is called right before the script terminates.
 ExitScript() {
     WinGetPos, Gui_X, Gui_Y, ,, AutoWalk
     
-    ; See if there are any variables in the ini that are empty or set to zero.
     Loop, parse, % FileOpen(ConfigFile, 0).read(), `n, `r
     {
         ; Create section name variable 'SectionName'.
@@ -454,11 +496,10 @@ ExitScript() {
             SectionName := StrReplace(A_Loopfield, "["), SectionName := StrReplace(SectionName, "]")
             Continue
         }
-        ; Purge empty variables from the configuration file.
+        ; Purge empty variables from configuration file.
         If (((SubStr(A_LoopField, InStr(A_LoopField, "=")+1)) <= "               ") | (SubStr(A_LoopField, InStr(A_LoopField, "=")+1) = 0))
             IniDelete, %ConfigFile%, %SectionName%, % SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1)
     }
-    ; Remember the position of the gui for the script.
     if ((Gui_X > -1) & (Gui_Y > -1)) {
         IniWrite, %Gui_X%, %ConfigFile%, Settings, Gui_X
         IniWrite, %Gui_Y%, %ConfigFile%, Settings, Gui_Y
