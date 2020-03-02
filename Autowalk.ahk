@@ -80,9 +80,6 @@ if ((Admin = 1) & (!A_IsAdmin)) {
     ExitApp
 }
 
-
-
-
 Gui Add, GroupBox, x8 y0 w362 h194
 Gui Add, GroupBox, x16 y8 w345 h64 +Center, Drop you're game executable here.
 Gui Font, s10 Bold
