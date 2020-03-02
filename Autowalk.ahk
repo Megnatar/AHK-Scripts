@@ -305,7 +305,7 @@ GuiControl(ControlID, SubCommand = 0, Value = 0) {
 
 ; Keep track of mouse movement and left clicks inside the gui.
 WM_Mouse(wParam, lParam, msg, hWnd) {
-    Static ClsNNPrevious, ClsNNCurrent, ControlID
+    Static ClsNNPrevious, ClsNNCurrent
     ; ClsNNPrevious and ClsNNCurrent will hold the same value while the mouse moves inside a control.
     ClsNNPrevious := ClsNNCurrent
     MouseGetPos, , , , ClsNNCurrent
@@ -385,11 +385,11 @@ EditGetKey() {
 }
 
 ; Send some key on a sinlge or double press of a button.
-; The hotkey is optional, and when emptry Keywait() will return the last hokey used.
-ButtonDoubleSingle(KeySingle, KeyDouble, A_hotKey = 0, WaitRelease = 0) {
+; The hotkey is optional and when ThisHotKey is empty Keywait() will return the last hokey used.
+ButtonSingleDouble(KeySingle, KeyDouble, ThisHotKey = 0, WaitRelease = 0) {
     if (WaitRelease) {
         Send {%KeySingle% Down}
-        A_hotKey ? keywait(A_hotKey) : keywait()
+        A_hotKey := ThisHotKey ? keywait(ThisHotKey) : keywait()
         Send {%KeySingle% Up}
         
         if (keywait(A_hotKey, "D T0.1", 1) = 0) {
@@ -398,7 +398,7 @@ ButtonDoubleSingle(KeySingle, KeyDouble, A_hotKey = 0, WaitRelease = 0) {
             Send {%KeyDouble% Up}
         }
     } else if (!WaitRelease) {
-        A_hotKey := A_hotKey ? keywait(A_hotKey) : keywait()
+        A_hotKey := ThisHotKey ? keywait(ThisHotKey) : keywait()
         
         if (keywait(A_hotKey, "D T0.1", 1) = 0) {
             Send {%KeyDouble% Down}{%KeyDouble% Up}
@@ -409,7 +409,7 @@ ButtonDoubleSingle(KeySingle, KeyDouble, A_hotKey = 0, WaitRelease = 0) {
     Return
 }
 
-; Turn the ingame camera to follow the player.
+; Turn the ingame camera to follow the player when some key is down.
 AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 50, DeadZone = 22.5) {
     Static Rad := 180 / 3.1415926
 
@@ -442,9 +442,11 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 50, DeadZ
     Return
 }
 
+; This is called right before the script terminates.
 ExitScript() {
     WinGetPos, Gui_X, Gui_Y, ,, AutoWalk
     
+    ; See if there are any variables in the ini that are empty or set to zero.
     Loop, parse, % FileOpen(ConfigFile, 0).read(), `n, `r
     {
         ; Create section name variable 'SectionName'.
@@ -452,10 +454,11 @@ ExitScript() {
             SectionName := StrReplace(A_Loopfield, "["), SectionName := StrReplace(SectionName, "]")
             Continue
         }
-        ; Purge empty variables from configuration file.
+        ; Purge empty variables from the configuration file.
         If (((SubStr(A_LoopField, InStr(A_LoopField, "=")+1)) <= "               ") | (SubStr(A_LoopField, InStr(A_LoopField, "=")+1) = 0))
             IniDelete, %ConfigFile%, %SectionName%, % SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1)
     }
+    ; Remember the position of the gui for the script.
     if ((Gui_X > -1) & (Gui_Y > -1)) {
         IniWrite, %Gui_X%, %ConfigFile%, Settings, Gui_X
         IniWrite, %Gui_Y%, %ConfigFile%, Settings, Gui_Y
