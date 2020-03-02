@@ -27,9 +27,10 @@
 #NoEnv
 #Persistent
 #SingleInstance force
+#InstallKeybdHook
 #KeyHistory 0
 ListLines off
-SetBatchLines -1
+;SetBatchLines -1
 SetTitleMatchMode 3
 SetKeyDelay 5, 1
 SetWorkingDir %A_ScriptDir%
@@ -38,8 +39,11 @@ sendmode Input
 
 Global Wm_LbuttonDown   := 0x201
 , Wm_Mousemove          := 0x200
+, Wm_DraggGui           := 0x5050
+, WM_NCLBUTTONDOWN      := 0xA1
 , InputActive           := 0
 , ConfigFile            := "Settings.ini"
+, hScriptGui
 , ControlBelowMouse
 , ControlOldBelowMouse
 , ctrlTxt
@@ -72,6 +76,7 @@ if ((Admin = 1) & (!A_IsAdmin)) {
     ExitApp
 }
 
+GUI +LastFound +hWndhScriptGui 
 Gui Add, GroupBox, x8 y0 w362 h194
 Gui Add, GroupBox, x16 y8 w345 h64 +Center, Drop you're game executable here.
 Gui Font, s10 Bold
@@ -100,7 +105,7 @@ if (IsoCam = 1) {
 }
 
 Hotkey, ~%Hkey%, HotKeyAutoWalk, On
-OnMessage(Wm_MouseMove, "WM_Mouse"), OnMessage(Wm_LbuttonDown, "WM_Mouse"), OnExit("ExitScript")
+OnMessage(Wm_MouseMove, "WM_Mouse"), OnMessage(Wm_LbuttonDown, "WM_Mouse"), OnMessage(Wm_DraggGui, "WM_Mouse"), OnExit("ExitScript")
 Return
 
 ;_______________________________________ Game Specific Code _______________________________________
@@ -114,7 +119,7 @@ Return
             #IfWinActive, ahk_group ClientGroup
             {
                 ; When this file "UserCode.ahk" resides in the same folder as where the script is. 
-                ; All hotkeys in UserCode.ahk are used by this script when the game window is active.
+                ; used by this script when the game window is active.
                 #Include *i UserCode.ahk
 
                 HotKeyAutoWalk:
@@ -226,17 +231,22 @@ ButtonStartGame:
         WinWaitActive, ahk_exe %ExeFile%, , , AutoWalk
         WinGet, HwndClient, ID, ahk_exe %ExeFile%
     } else {
-        WinGet, WinStat, MinMax, ahk_exe %ExeFile%, , AutoWalk
+        WinGet, WinState, MinMax, ahk_exe %ExeFile%, , AutoWalk
         if (!ClientExist) {
             WinGet, hWndClient, ID, ahk_exe %ExeFile%, , AutoWalk
             WinGet, ProcessID, PID, ahk_exe %ExeFile%, , AutoWalk
+            WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
         }
-        if (WinStat = -1)
+        #WinActivateForce
+        if (WinState = -1) { 
             WinRestore, ahk_id %hWndClient%, , AutoWalk
-        else
+        } else {
             WinActivate, ahk_id %hWndClient%, , AutoWalk
+        }
+            
+        WinSet, Top ,, ahk_id %hWndClient%
     }
-    WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
+    
 
     ; Checks for any popup window and wait for it to close.
     if InStr(ClientGuiClass, "Splash") {
@@ -247,8 +257,8 @@ ButtonStartGame:
     ; Create ClientGroup only once.
     if (!ClientExist) {
         ClientExist := 1
-        GroupAdd, ClientGroup, ahk_id %hWndClient%
         GroupAdd, ClientGroup, ahk_class %ClientGuiClass%
+        GroupAdd, ClientGroup, ahk_id %hWndClient%
     }
     If (InStr(Title, "Ready to start you're game")) {
         WinGetTitle, Title, ahk_exe %ExeFile%
@@ -305,6 +315,7 @@ GuiControl(ControlID, SubCommand = 0, Value = 0) {
 ; Keep track of mouse movement and left clicks inside the gui.
 WM_Mouse(wParam, lParam, msg, hWnd) {
     Static ClsNNPrevious, ClsNNCurrent
+    ListLines off
     ; ClsNNPrevious and ClsNNCurrent will hold the same value while the mouse moves inside a control.
     ClsNNPrevious := ClsNNCurrent
     MouseGetPos, , , , ClsNNCurrent
@@ -315,7 +326,6 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
         ControlOldBelowMouse := ClsNNPrevious
 
     if (msg = Wm_LbuttonDown) {
-    
         ; When some control under the mouse is a Edit control and the script is not already getting a key.
         If ((InputActive = 0) & (InputActive := InStr(ControlBelowMouse, "Edit"))) {
             GuiControlGet, IsControlOn, Enabled, %ControlBelowMouse%
@@ -333,6 +343,20 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
                 InputActive := 0
             }
         }
+        if ((GetKeyState("Lbutton", "P")) & (!A_GuiControl)) {
+            PostMessage, 0x5050
+        }
+        Return
+    }
+    
+    if (msg = Wm_DraggGui) {
+        if ((GetKeyState("Lbutton", "P")) & (!A_GuiControl)) {
+            FadeInOut(hScriptGui, 1)
+            PostMessage, WM_NCLBUTTONDOWN, 2
+            KeyWait("Lbutton")
+            FadeInOut(hScriptGui)
+        }
+        Return
     }
 }
 
@@ -409,7 +433,7 @@ ButtonSingleDouble(KeySingle, KeyDouble, ThisHotKey = 0, WaitRelease = 0) {
 }
 
 ; Turn the ingame camera to follow the player when some key is down.
-AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 50, DeadZone = 22.5) {
+AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 40, DeadZone = 35) {
     Static Rad := 180 / 3.1415926
 
     WinGetPos, , ,gW, gH, A
@@ -437,8 +461,38 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 50, DeadZ
             Sleep, %DownPeriod%
             Send {%RotateR% Up}
         }
+        sleep 50
     }
     Return
+}
+
+; Fade Gui in or out.
+FadeInOut(hWnd, dragg = 0) {
+    SetBatchLines -1
+    static Transparency := 250
+    if (dragg = 1) {
+        Loop {
+            If (A_TickCount >= WaitNextTick) {
+                WaitNextTick := A_TickCount+50
+                WinSet, Transparent, % Transparency -= 20, ahk_id %hWnd%
+                If (Transparency <= 210)
+                    break
+            }
+        }
+    } else if (dragg = 0) {
+        Loop {
+            If (A_TickCount >= WaitNextTick) {
+                WaitNextTick := A_TickCount+50
+                WinSet, Transparent, % Transparency += 20, ahk_id %hWnd%
+                If (Transparency >= 255) {
+                    WinSet, Transparent, Off, ahk_id %hWnd%
+                    break
+                }   
+            }   
+        
+        }
+    }
+    return
 }
 
 ; This is called right before the script terminates.
