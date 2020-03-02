@@ -387,7 +387,6 @@ EditGetKey() {
 ; Send some key on a sinlge or double press of a button.
 ; The hotkey is optional, and when emptry Keywait() will return the last hokey used.
 ButtonDoubleSingle(KeySingle, KeyDouble, A_hotKey = 0, WaitRelease = 0) {
-    
     if (WaitRelease) {
         Send, {%KeySingle% Down}
         A_hotKey ? keywait(A_hotKey) : keywait()
