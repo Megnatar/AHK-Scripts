@@ -72,8 +72,6 @@ if ((Admin = 1) & (!A_IsAdmin)) {
     ExitApp
 }
 
-OnExit("ExitApp")
-
 Gui Add, GroupBox, x8 y0 w362 h194
 Gui Add, GroupBox, x16 y8 w345 h64 +Center, Drop you're game executable here.
 Gui Font, s10 Bold
@@ -101,10 +99,10 @@ if (IsoCam = 1) {
     }
 }
 
-OnMessage(Wm_MouseMove, "WM_Mouse")
-OnMessage(Wm_LbuttonDown, "WM_Mouse")
 Hotkey, ~%Hkey%, HotKeyAutoWalk, On
+OnMessage(Wm_MouseMove, "WM_Mouse"), OnMessage(Wm_LbuttonDown, "WM_Mouse"), OnExit("ExitScript")
 Return
+
 ;_______________________________________ Game Specific Code _______________________________________
 
 #IfWinExist, AutoWalk
@@ -293,8 +291,8 @@ SetBatchLines -1
 ;
 ; You can also insert objects directly on the parameter for ControlID
 ;  GuiControl([[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]])
+;
 GuiControl(ControlID, SubCommand = 0, Value = 0) {
-
     If (IsObject(ControlID)) {
         Loop % ControlID.Length() {
             GuiControl % ControlID[A_index][1], % ControlID[A_index][2], % ControlID[A_index][3]
@@ -445,7 +443,7 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 50, DeadZ
     Return
 }
 
-ExitApp() {
+ExitScript() {
     WinGetPos, Gui_X, Gui_Y, ,, AutoWalk
     
     Loop, parse, % FileOpen(ConfigFile, 0).read(), `n, `r
@@ -459,7 +457,6 @@ ExitApp() {
         If (((SubStr(A_LoopField, InStr(A_LoopField, "=")+1)) <= "               ") | (SubStr(A_LoopField, InStr(A_LoopField, "=")+1) = 0))
             IniDelete, %ConfigFile%, %SectionName%, % SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1)
     }
-    
     if ((Gui_X > -1) & (Gui_Y > -1)) {
         IniWrite, %Gui_X%, %ConfigFile%, Settings, Gui_X
         IniWrite, %Gui_Y%, %ConfigFile%, Settings, Gui_Y
