@@ -160,7 +160,7 @@ Return
 IsoCam:
     GUI, submit, nohide
     IniWrite, %IsoCam%, %ConfigFile%, Settings, IsoCam
-    if (IsoCam = 1) {
+    if (IsoCam) {
         Hkey := "Lbutton"
         GuiControl([[ , "Hkey", "Lbutton"], ["Disable", "Hkey"], ["Enable", "TurnCamera"]])
         IniWrite, %Hkey%, %ConfigFile%, Settings, Hkey
@@ -184,7 +184,7 @@ Return
 Admin:
     GUI, submit, nohide
     IniWrite, %Admin%, %ConfigFile%, Settings, Admin
-    if (Admin = 1) {
+    if (Admin) {
         Reload
     } else {
         Reload
@@ -350,7 +350,7 @@ EditGetKey() {
     ; Loop untill the user pressed some button or as long as the mouse is over some edit box.
     Critical
     loop {
-        ; Getting user input from array Inputkeys, are
+        ; Getting user input from array Inputkeys.
         For k, ThisKey in InputKeys {
             if (GetKeyState(ThisKey, "P")) {
                 GuiControl(ControlBelowMouse, "", ThisKey)
@@ -370,7 +370,8 @@ EditGetKey() {
     }
     Critical Off
     ControlFocus, Button2
-
+    GUI, submit, nohide
+    
     ; Save new values to Settings.ini if the For loop didn't break when the mouse moved outside the control.
     If (ExitLoop != 1)
         IniWrite, %ThisKey%, %ConfigFile%, Settings, %A_GuiControl%
