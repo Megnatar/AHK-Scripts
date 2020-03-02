@@ -8,15 +8,15 @@
 
     Usage:
     To add a new game, just drop the executable on the gui or use the browse button.
-    IMPORTANT: Drop files will NOT work when the script is running in admin mode.
+    IMPORTANT: Droping files will NOT work when the script is running in admin mode.
 
     Click in a edit box to set a new hotkey. Any posible key will do. The script will write
     the name of the key to the edit control. For example pressing numpad1 after a click inside a edit
     control will write numpad1 to it, not 1. Game controllers are supported.
 
-    Enable the checkbox "RPG Games" for games with a isometric camera (Top down view).
-    All these games use left mouse button down to move around. Thus, double click the left
-    mouse button to send Lbutton down. Click again , once or twice, to stop.
+    Enable the checkbox "RPG Games" for games with a isometric camera (top Down view).
+    All these games use left mouse button Down to move around. Thus, double click the left
+    mouse button to send Lbutton Down. Click again , once or twice, to stop.
 
     When the camera does not automatically follow the player enable "Turn camera" and
     set the two keys used by the game to rotate the camera left or right.
@@ -26,7 +26,7 @@
 */
 #NoEnv
 #Persistent
-#SingleInstance ignore
+#SingleInstance force
 #KeyHistory 0
 ListLines off
 SetBatchLines -1
@@ -40,14 +40,16 @@ Global Wm_LbuttonDown   := 0x201
 , Wm_Mousemove          := 0x200
 , InputActive           := 0
 , ConfigFile            := "Settings.ini"
-, ControlOldBelowMouse
 , ControlBelowMouse
+, ControlOldBelowMouse
 , ctrlTxt
+, A_hotKey
 
 LeftKey     := "Left"
 RightKey    := "Right"
 Gui_X       := "Center"
 Gui_Y       := "Center"
+KeyState    := "Up"
 IsoCam      := 0
 Admin       := 0
 TurnCamera  := 0
@@ -57,7 +59,7 @@ If (!FileExist(ConfigFile))
 
 ReadIni(ConfigFile)
 
-if (Admin = 1 && !A_IsAdmin) {
+if ((Admin = 1) & (!A_IsAdmin)) {
     Try {
         if (A_IsCompiled) {
             Run, *RunAs "%A_ScriptFullPath%"
@@ -70,6 +72,14 @@ if (Admin = 1 && !A_IsAdmin) {
     ExitApp
 }
 
+if (A_IsAdmin && (State := A_Args[1])) {
+    ;Error := State = "/Start" ? StartServices() : StopServices()
+    if (Error) {
+        MsgBox,,COM Error!, % "Error message:`n  " Error "`n`nThe script will now exit!"
+        Process, Close, % A_Args[2]
+    }
+    ExitApp
+}
 OnExit("ExitApp")
 
 Gui Add, GroupBox, x8 y0 w362 h194
@@ -99,33 +109,85 @@ if (IsoCam = 1) {
     }
 }
 
-Hotkey, ~%Hkey%, HotKeyAutoWalk, on
 OnMessage(Wm_MouseMove, "WM_Mouse")
 OnMessage(Wm_LbuttonDown, "WM_Mouse")
+Hotkey, ~%Hkey%, HotKeyAutoWalk, On
 Return
+;_______________________________________ Game Specific Code _______________________________________
+
+#IfWinExist, AutoWalk
+{
+    #IfWinNotActive, AutoWalk
+    {
+        #IfWinExist, ahk_group ClientGroup
+        {
+            #IfWinActive, ahk_group ClientGroup
+            {
+                ; When this file "UserCode.ahk" resides in the same folder as where the script is. 
+                ; used by this script when the game window is active.
+                #Include *i UserCode.ahk
+
+                HotKeyAutoWalk:
+                If (IsoCam) {
+                    If (A_Hotkey := KeyWait()) {
+                        If (KeyWait(A_hotKey, "D T0.2", 1) = 0) {
+                            keywait(A_hotKey), KeyState := KeyState != "Down" ? "Down" : "Up"
+                            Send, {%A_hotKey% %KeyState%}
+
+                            If ((TurnCamera = 1) & (KeyState = "Down"))
+                                AutoTurnCamera(A_hotKey, LeftKey, RightKey, VirtualKey := 1)
+                        } else {
+                            KeyState := "Up"
+                            Send, {%A_hotKey% %KeyState%}
+                        }
+                    }
+                } Else If (!IsoCam) {
+                InterruptDownState:
+                    if (KeyState = "Down")
+                        KeyWait()
+                        
+                    KeyState := KeyState != "Down" ? "Down" : "Up"
+                    Send, {w %KeyState%}
+                    
+                    if (KeyState = "Down") {
+                        Hotkey, ~*Vk057, InterruptDownState, ON     ; Vk057 = w
+                        Hotkey, ~*Vk01, InterruptDownState, ON      ; Vk01  = Lbutton
+                    } else if (KeyState = "Up") {
+                        Hotkey, ~*Vk057, InterruptDownState, OFF
+                        Hotkey, ~*Vk01, InterruptDownState, OFF
+                    }
+                Return
+                }
+            }
+        }
+    }
+}
+Return
+
+;_______________________________________ Script Lables _______________________________________
 
 IsoCam:
     GUI, submit, nohide
+    IniWrite, %IsoCam%, %ConfigFile%, Settings, IsoCam
     if (IsoCam = 1) {
         Hkey := "Lbutton"
         GuiControl([[ , "Hkey", "Lbutton"], ["Disable", "Hkey"], ["Enable", "TurnCamera"]])
         IniWrite, %Hkey%, %ConfigFile%, Settings, Hkey
     } else {
-        TurnCamera := 0
+        TurnCamera := ""
         GuiControl([["enable", "Hkey"], ["Disable", "TurnCamera"], ["Disable", "LeftKey"], ["Disable", "RightKey"], [ , "TurnCamera", "0"]])
         IniWrite, %TurnCamera%, %ConfigFile%, Settings, TurnCamera
     }
-    IniWrite, %IsoCam%, %ConfigFile%, Settings, IsoCam
 Return
 
 TurnCamera:
     GUI, submit, nohide
-    if (TurnCamera = 1) {
+    IniWrite, %TurnCamera%, %ConfigFile%, Settings, TurnCamera
+    if (TurnCamera) {
         GuiControl([["Enable", "LeftKey"], ["Enable", "RightKey"]])
     } else {
         GuiControl([["Disable", "LeftKey"], ["Disable", "RightKey"]])
     }
-    IniWrite, %TurnCamera%, %ConfigFile%, Settings, TurnCamera
 Return
 
 Admin:
@@ -134,7 +196,7 @@ Admin:
     if (Admin = 1) {
         Reload
     } else {
-        ExitApp
+        Reload
     }
 Return
 
@@ -191,7 +253,7 @@ ButtonStartGame:
         WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
         WinGet, HwndClient, ID, ahk_exe %ExeFile%
     }
-    ; Create the ClientGroup only once.
+    ; Create ClientGroup only once.
     if (!ClientExist) {
         ClientExist := 1
         GroupAdd, ClientGroup, ahk_id %hWndClient%
@@ -214,61 +276,47 @@ ExitApp
 
 ;_______________________________________ Script Functions _______________________________________
 
-ExitApp() {
-    WinGetPos, Gui_X, Gui_Y, ,, AutoWalk
-    
-    if ((Gui_X > 0) & (Gui_Y > 0)) {
-        IniWrite, %Gui_X%, %ConfigFile%, Settings, Gui_X
-        IniWrite, %Gui_Y%, %ConfigFile%, Settings, Gui_Y
-    }
-}
-
-; Toggle some key down or up. Only one key can be used by the function.
-ToggleKey(hKey := 0, sKey := 0, SndUp := 0) {
-    static KeyState, SendThisKey, ThisHotKey
-
-    if (SndUp = 1 && KeyState = "Down") {
-        Send, {%SendThisKey% %KeyState%}
-        return KeyState := "Up"
-    }
-    If (!ThisHotKey)
-        SendThisKey := sKey, ThisHotKey := hKey
-
-    KeyState := KeyState != "Down" ? "Down" : "Up"
-
-    If (ThisHotKey && SendThisKey) {
-        KeyWait(ThisHotKey)
-        Send, {%SendThisKey% %KeyState%}
-    } else If ((ThisHotKey) & !(SendThisKey)) {
-        KeyWait(ThisHotKey)
-        Send, {%ThisHotKey% %KeyState%}
-    }
-    return KeyState
-}
-
-; Send some key on a sinlge or double press of a button.
-; The hotkey is optional, and when emptry Keywait() will return the last hokey used.
-ButtonDoubleSingle(KeySingle, KeyDouble, DetectDownDelay := "0.1", A_hotKey = 0) {
-    A_hotKey := A_hotKey ? keywait(A_hotKey) : keywait()
-
-    if (keywait(A_hotKey, "D T" DetectDownDelay, 1) = 0) {
-        Send, {%KeyDouble% down}{%KeyDouble% Up}
-    } else {
-        send, {%KeySingle% Down}{%KeySingle% Up}
+; Read ini file and create variables. Sections are not supported.
+; Referenced variables are not local to functions.
+ReadIni(InputFile) {
+    Loop, parse, % FileOpen(InputFile, 0).read(), `n, `r
+    {
+        if (((InStr(A_LoopField, "[")) = 1 ? 1) || ((InStr(A_LoopField, "`;")) = 1 ? 1) || !A_LoopField)
+            Continue
+        VarRef := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1), %VarRef% := SubStr(A_LoopField, InStr(A_LoopField, "=")+1)
     }
 }
 
 ; KeyWait as a function for more flexible usage.
-; When no parameters are used keywait will use the value in A_ThisHotkey as the key to wait for.
+; When no parameters are used, keywait will use the value in A_ThisHotkey as the key to wait for.
 KeyWait(Key = 0, Options = 0, ErrLvL = 0) {
+SetBatchLines -1
     keywait, % ThisKey := Key ? Key : RegExReplace(A_ThisHotkey, "[~\*\$]"), % Options
     Return ErrLvL = 1 ? ErrorLevel : ThisKey
 }
 
-; Keep track of mouse movement and left click inside the gui.
+; Parameter ControlID can be a array. For example, if you want to use the GuiControl command 3 times in a row.
+; Then the array should look something like:
+;  ControlID := [[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]]
+;
+; You can also insert objects directly on the parameter for ControlID
+;  GuiControl([[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]])
+GuiControl(ControlID, SubCommand = 0, Value = 0) {
+
+    If (IsObject(ControlID)) {
+        Loop % ControlID.Length() {
+            GuiControl % ControlID[A_index][1], % ControlID[A_index][2], % ControlID[A_index][3]
+        }
+    } else {
+        GuiControl % SubCommand, % ControlID, % Value
+    }
+}
+
+; Keep track of mouse movement and left clicks inside the gui.
 WM_Mouse(wParam, lParam, msg, hWnd) {
     Static ClsNNPrevious, ClsNNCurrent, ControlID
-
+    listlines Off
+    
     ; ClsNNPrevious and ClsNNCurrent will hold the same value while the mouse moves inside a control.
     ClsNNPrevious := ClsNNCurrent
     MouseGetPos, , , , ClsNNCurrent
@@ -279,12 +327,14 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
         ControlOldBelowMouse := ClsNNPrevious
 
     if (msg = Wm_LbuttonDown) {
+    
         ; When some control under the mouse is a Edit control and the script is not already getting a key.
         If ((InputActive = 0) & (InputActive := InStr(ControlBelowMouse, "Edit"))) {
             GuiControlGet, IsControlOn, Enabled, %ControlBelowMouse%
 
             ; And when this control is not disabled.
             If (IsControlOn = 1) {
+            
                 ; store it's text and give the control input focus (actually it's the other way around, hehe).
                 ControlFocus, %ControlBelowMouse%
                 ControlGetText, ctrlTxt, %ControlBelowMouse%
@@ -304,11 +354,11 @@ EditGetKey() {
 
     KeyWait("Lbutton")
 
-    ; prevent right click from showing a context menu.
+    ; Prevent a right click from showing the context menu.
     Hotkey, IfWinExist, AutoWalk
-    Hotkey, Rbutton Up, RbttnUp, On
+    Hotkey, Vk02 Up, RbttnUp, On     ; Vk02 = Rbutton
 
-    ; loop untill the user pressed some button or as long as the mouse is over some edit box.
+    ; Loop untill the user pressed some button or as long as the mouse is over some edit box.
     Critical
     loop {
         ; Getting user input from array Inputkeys, are
@@ -320,9 +370,9 @@ EditGetKey() {
             }
             ; When ControlBelowMouse does not contain the word "Edit". Then the mouse moved away from the control.
             If (!InStr(ControlBelowMouse, "Edit")) {
+                ExitLoop := 1
                 GuiControl(ControlOldBelowMouse, "", ctrlTxt)
                 ControlFocus, %ControlBelowMouse%
-                ExitLoop := 1
                 Break
             }
         }
@@ -332,129 +382,94 @@ EditGetKey() {
     Critical Off
     ControlFocus, Button2
 
-    ; Save the new values, if the for loop didn't break because the mouse moved outside the control.
+    ; Save new values to Settings.ini if the For loop didn't break when the mouse moved outside the control.
     If (ExitLoop != 1)
         IniWrite, %ThisKey%, %ConfigFile%, Settings, %A_GuiControl%
 
     RbttnUp:
         Hotkey, IfWinExist, AutoWalk
-        Hotkey, Rbutton Up, RbttnUp, Off
+        Hotkey, Vk02 Up, RbttnUp, Off
 
     InputActive := 0
-    return
+    Return
 }
 
-; Parameter ControlID can be a array. For example, if you want to use the GuiControl command 3 times in a row.
-; Then the array should look something like:
-;  ControlID := [[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]]
-;
-; You can also insert a object directly on the parameter for ControlID
-;  GuiControl([[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]])
-;
-GuiControl(ControlID, SubCommand = 0, Value = 0) {
-    Static Commands := ["Text", "Move", "MoveDraw", "Focus", "Disable", "Enable", "Hide", "Show", "Delete", "Choose", "ChooseString", "Font", "Options"]
-
-    If (IsObject(ControlID)) {
-        Loop % ControlID.Length() {
-            GuiControl % ControlID[A_index][1], % ControlID[A_index][2], % ControlID[A_index][3]
+; Send some key on a sinlge or double press of a button.
+; The hotkey is optional, and when emptry Keywait() will return the last hokey used.
+ButtonDoubleSingle(KeySingle, KeyDouble, A_hotKey = 0, WaitRelease = 0) {
+    
+    if (WaitRelease) {
+        Send, {%KeySingle% Down}
+        A_hotKey ? keywait(A_hotKey) : keywait()
+        Send, {%KeySingle% Up}
+        
+        if (keywait(A_hotKey, "D T0.1", 1) = 0) {
+            Send {%KeyDouble% Down}
+            KeyWait(A_hotKey)
+            Send {%KeyDouble% Up}
         }
-    } else {
-        If (SubCommand) {
-            For i, ThisSubCom in Commands {
-                if (ThisSubCom = SubCommand)
-                    GuiControl % SubCommand, % ControlID, % Value
-            }
+    } else if (!WaitRelease) {
+        A_hotKey := A_hotKey ? keywait(A_hotKey) : keywait()
+        
+        if (keywait(A_hotKey, "D T0.1", 1) = 0) {
+            Send, {%KeyDouble% Down}{%KeyDouble% Up}
         } else {
-            GuiControl % SubCommand, % ControlID, % Value
-        }
+            send, {%KeySingle% Down}{%KeySingle% Up}
+        }   
     }
-}
-
-; Read ini file and create variables. Referenced variables are not local to functions.
-ReadIni(InputFile) {
-    Loop, parse, % FileOpen(InputFile, 0).read(), `n, `r
-    {
-        if (((InStr(A_LoopField, "[")) = 1 ? 1) || ((InStr(A_LoopField, "`;")) = 1 ? 1) || !A_LoopField)
-            Continue
-        VarRef := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1), %VarRef% := SubStr(A_LoopField, InStr(A_LoopField, "=")+1)
-    }
+    Return
 }
 
 ; Turn the ingame camera to follow the player.
-AutoTurnCamera(Key, RotateL, RotateR, KeyPressDuration = 50, DeadZone = 22.5) {
+AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 50, DeadZone = 22.5) {
     Static Rad := 180 / 3.1415926
 
     WinGetPos, , ,gW, gH, A
-
-    ; Loop while the key is in a logical downstate. For physical status use While(GetKeyState(Key, "P"))
-    While(GetKeyState(Key)) {
+    
+    ; Check mouse position and turns the camera when the mouse moved outside a deadszone while the key in KeyDown has status Down.
+    ; By default the physical key state is monitored. Set parameter VirtualKey to 1 to check the logical key state. Logical is when
+    ; a key is send Down by the send command or in some other way.
+    While(GetKeyState(KeyDown, (!VirtualKey ? "P" : ""))) {
         MouseGetPos, mX, mY
-        mX := mX - gW/2, mY := gH/2 - mY
 
-        ; Do nothing when the mouse is inside a triangulated dead zone.
-        ; The dead zone starts at the center of the screen and ends at the top.
-        if (((((mX*mX)+(mY*mY) < 5000) || (mY > 0)) & (Abs(ATan(mX/mY)) * Rad < DeadZone)))
+        ; Calculate cursor position, where the vertical/horizontal center of the display are seen as zero. Both the left and right side
+        ; of the display yeald as positive (Abs). A triangle (ATan) of 45 dagrees (22.5*2) is greated from the very centre to the top. 
+        ; This triangle will be the dead zone, where the camera does not turn.
+        if (((((mX := mX-gW/2)*mX)+((mY := gH/2-mY)*mY) < 5000) | (mY > 0)) & ((Abs(ATan(mX/mY)) * Rad) < DeadZone)) {
             continue
+        }
 
-        ; Turn right when the x position of the mouse is positive and left when negative.
-        if (mX > 0) {
-            Send {%RotateR% down}
-            Sleep, %KeyPressDuration%
-            Send {%RotateR% up}
+        ; Turn the ingame camera left or right when the mouse moved outside the deadzone.
+        if (mX < 0) {
+            Send {%RotateL% Down}
+            Sleep, %DownPeriod%
+            Send {%RotateL% Up}
         } else {
-            Send {%RotateL% down}
-            Sleep, %KeyPressDuration%
-            Send {%RotateL% up}
+            Send {%RotateR% Down}
+            Sleep, %DownPeriod%
+            Send {%RotateR% Up}
         }
     }
-}
-
-;_______________________________________ Game Specific Hotkeys _______________________________________
-
-#IfWinActive, ahk_group ClientGroup
-{
-    ; When this file "UserCode.ahk" resides in the same folder as where the script is. Then the code in that script will be
-    ; used by this script when the game window is active.
-    #Include *i UserCode.ahk
-
-    HotKeyAutoWalk:
-        If (IsoCam = 1) {
-            If (KeyWait("Lbutton", "T0.2", 1) = 0) {
-                If (KeyWait("Lbutton", "D T0.2", 1) = 0) {
-                    keywait("Lbutton")
-                    KeyState := KeyState != "down" ? "down" : "up"
-                    Send, {Lbutton %KeyState%}
-
-                    If ((TurnCamera = 1) & (KeyState = "Down"))
-                        AutoTurnCamera("LButton", LeftKey, RightKey)
-                } else {
-                    Send, {Lbutton up}
-                    KeyState = up
-                }
-            } else {
-                ; ....
-            }
-            Return
-        }
-        State := ToggleKey(RegExReplace(A_ThisHotkey, "[~\*\$]"), "w")
-
-        if (State = "Down") {
-            Hotkey, W, InterruptDownState, ON
-            Hotkey, Lbutton, InterruptDownState, ON
-        } else if (State = "Up") {
-            Hotkey, W, InterruptDownState, OFF
-            Hotkey, Lbutton, InterruptDownState, OFF
-        }
     Return
-
-    InterruptDownState:
-        if (A_ThisHotkey = "w")
-            KeyWait("w")
-
-        State := ToggleKey(,,"1")
-
-        Hotkey, W, InterruptDownState, OFF
-        Hotkey, Lbutton, InterruptDownState, OFF
-    return
 }
-return
+
+ExitApp() {
+    WinGetPos, Gui_X, Gui_Y, ,, AutoWalk
+    
+    Loop, parse, % FileOpen(ConfigFile, 0).read(), `n, `r
+    {
+        ; Create section name variable 'SectionName'.
+        if InStr(A_Loopfield, "[") {
+            SectionName := StrReplace(A_Loopfield, "["), SectionName := StrReplace(SectionName, "]")
+            Continue
+        }
+        ; Purge empty variables from configuration file.
+        If (((SubStr(A_LoopField, InStr(A_LoopField, "=")+1)) <= "               ") | (SubStr(A_LoopField, InStr(A_LoopField, "=")+1) = 0))
+            IniDelete, %ConfigFile%, %SectionName%, % SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1)
+    }
+    
+    if ((Gui_X > -1) & (Gui_Y > -1)) {
+        IniWrite, %Gui_X%, %ConfigFile%, Settings, Gui_X
+        IniWrite, %Gui_Y%, %ConfigFile%, Settings, Gui_Y
+    }
+}
