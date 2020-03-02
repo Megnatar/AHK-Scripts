@@ -187,7 +187,7 @@ Admin:
     if (Admin) {
         Reload
     } else {
-        Reload
+        ExitApp
     }
 Return
 
