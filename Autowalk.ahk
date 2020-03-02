@@ -292,7 +292,6 @@ SetBatchLines -1
 ;
 ; You can also insert objects directly on the parameter for ControlID.
 ;  GuiControl([[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]])
-;
 GuiControl(ControlID, SubCommand = 0, Value = 0) {
     If (IsObject(ControlID)) {
         Loop % ControlID.Length() {
