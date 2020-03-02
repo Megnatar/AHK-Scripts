@@ -75,21 +75,21 @@ if ((Admin = 1) & (!A_IsAdmin)) {
 Gui Add, GroupBox, x8 y0 w362 h194
 Gui Add, GroupBox, x16 y8 w345 h64 +Center, Drop you're game executable here.
 Gui Font, s10 Bold
-Gui Add, Text, x24 y36 w329 h19 +Center +Transparent +0x200 vTitle, %Title%
+Gui Add, Text, x24 y36 w329 h19 +Center +BackgroundTrans +0x200 vTitle, %Title%
 Gui Font
-Gui Add, Picture, x20 y18 w50 h50 +0x09 +BackgroundTrans vPic, % "HICON:*" hIcon := LoadPicture(FullPath, "GDI+ Icon1 w50", ImageType)
+Gui Add, Picture, x20 y18 w50 h50 +0x09 vPic, % "HICON:*" hIcon := LoadPicture(FullPath, "GDI+ Icon1 w50", ImageType)
 Gui Add, Button, x307 y18 w50 h18, &Browse
 Gui Add, Button, x16 y160 w80 h23 vRunGame, &Start Game
 Gui Add, Button, x104 y160 w80 h23, Open Folder
 Gui Add, Button, x280 y160 w80 h23 gGuiClose, Exit
 Gui Add, GroupBox, x16 y72 w345 h83
 Gui Add, Text, x24 y92 w99 h23, Hotkey Autowalk:
-Gui Add, Edit, x24 y120 w63 h21 Limit1 vHkey, %Hkey%
+Gui Add, Edit, x24 y120 w63 h21 Limit1 -TabStop vHkey, %Hkey%
 Gui Add, CheckBox, x136 y88 w80 h23 Checked%IsoCam% vIsoCam gIsoCam, RPG Games
 Gui Add, CheckBox, x136 y120 w79 h17 +Disabled Checked%TurnCamera% vTurnCamera gTurnCamera, Turn Camera
 Gui Add, CheckBox, x224 y88 w83 h23 Checked%Admin% vAdmin gAdmin, Run as admin
-Gui Add, Edit, x224 y120 w60 h21 +Disabled Limit1 T1 vLeftKey, %LeftKey%
-Gui Add, Edit, x288 y120 w60 h21 +Disabled Limit1 T1 vRightKey, %RightKey%
+Gui Add, Edit, x224 y120 w60 h21 +Disabled Limit1 -TabStop vLeftKey, %LeftKey%
+Gui Add, Edit, x288 y120 w60 h21 +Disabled Limit1 -TabStop vRightKey, %RightKey%
 Gui Show, w378 h201 x%Gui_X% y%Gui_Y%, AutoWalk
 
 if (IsoCam = 1) {
@@ -122,13 +122,13 @@ Return
                     If (A_Hotkey := KeyWait()) {
                         If (KeyWait(A_hotKey, "D T0.2", 1) = 0) {
                             keywait(A_hotKey), KeyState := KeyState != "Down" ? "Down" : "Up"
-                            Send, {%A_hotKey% %KeyState%}
+                            Send {%A_hotKey% %KeyState%}
 
                             If ((TurnCamera = 1) & (KeyState = "Down"))
                                 AutoTurnCamera(A_hotKey, LeftKey, RightKey, VirtualKey := 1)
                         } else {
                             KeyState := "Up"
-                            Send, {%A_hotKey% %KeyState%}
+                            Send {%A_hotKey% %KeyState%}
                         }
                     }
                 } Else If (!IsoCam) {
@@ -137,7 +137,7 @@ Return
                         KeyWait()
                         
                     KeyState := KeyState != "Down" ? "Down" : "Up"
-                    Send, {w %KeyState%}
+                    Send {w %KeyState%}
                     
                     if (KeyState = "Down") {
                         Hotkey, ~*Vk057, InterruptDownState, ON     ; Vk057 = w
@@ -148,6 +148,7 @@ Return
                     }
                 Return
                 }
+            Return
             }
         }
     }
@@ -262,7 +263,7 @@ Return
 
 GuiEscape:
 GuiClose:
-ExitApp
+    ExitApp
 
 ;_______________________________________ Script Functions _______________________________________
 
@@ -289,7 +290,7 @@ SetBatchLines -1
 ; Then the array should look something like:
 ;  ControlID := [[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]]
 ;
-; You can also insert objects directly on the parameter for ControlID
+; You can also insert objects directly on the parameter for ControlID.
 ;  GuiControl([[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]])
 ;
 GuiControl(ControlID, SubCommand = 0, Value = 0) {
@@ -305,8 +306,6 @@ GuiControl(ControlID, SubCommand = 0, Value = 0) {
 ; Keep track of mouse movement and left clicks inside the gui.
 WM_Mouse(wParam, lParam, msg, hWnd) {
     Static ClsNNPrevious, ClsNNCurrent, ControlID
-    listlines Off
-    
     ; ClsNNPrevious and ClsNNCurrent will hold the same value while the mouse moves inside a control.
     ClsNNPrevious := ClsNNCurrent
     MouseGetPos, , , , ClsNNCurrent
@@ -388,9 +387,9 @@ EditGetKey() {
 ; The hotkey is optional, and when emptry Keywait() will return the last hokey used.
 ButtonDoubleSingle(KeySingle, KeyDouble, A_hotKey = 0, WaitRelease = 0) {
     if (WaitRelease) {
-        Send, {%KeySingle% Down}
+        Send {%KeySingle% Down}
         A_hotKey ? keywait(A_hotKey) : keywait()
-        Send, {%KeySingle% Up}
+        Send {%KeySingle% Up}
         
         if (keywait(A_hotKey, "D T0.1", 1) = 0) {
             Send {%KeyDouble% Down}
@@ -401,9 +400,9 @@ ButtonDoubleSingle(KeySingle, KeyDouble, A_hotKey = 0, WaitRelease = 0) {
         A_hotKey := A_hotKey ? keywait(A_hotKey) : keywait()
         
         if (keywait(A_hotKey, "D T0.1", 1) = 0) {
-            Send, {%KeyDouble% Down}{%KeyDouble% Up}
+            Send {%KeyDouble% Down}{%KeyDouble% Up}
         } else {
-            send, {%KeySingle% Down}{%KeySingle% Up}
+            Send {%KeySingle% Down}{%KeySingle% Up}
         }   
     }
     Return
@@ -422,7 +421,7 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 50, DeadZ
         MouseGetPos, mX, mY
 
         ; Calculate cursor position, where the vertical/horizontal center of the display are seen as zero. Both the left and right side
-        ; of the display yeald as positive (Abs). A triangle (ATan) of 45 dagrees (22.5*2) is greated from the very centre to the top. 
+        ; of the display yeald as positive (Abs). A triangle (ATan) of 45 dagrees (22.5*2) is created from the very centre to the top. 
         ; This triangle will be the dead zone, where the camera does not turn.
         if (((((mX := mX-gW/2)*mX)+((mY := gH/2-mY)*mY) < 5000) | (mY > 0)) & ((Abs(ATan(mX/mY)) * Rad) < DeadZone)) {
             continue
