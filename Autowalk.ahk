@@ -72,14 +72,6 @@ if ((Admin = 1) & (!A_IsAdmin)) {
     ExitApp
 }
 
-if (A_IsAdmin && (State := A_Args[1])) {
-    ;Error := State = "/Start" ? StartServices() : StopServices()
-    if (Error) {
-        MsgBox,,COM Error!, % "Error message:`n  " Error "`n`nThe script will now exit!"
-        Process, Close, % A_Args[2]
-    }
-    ExitApp
-}
 OnExit("ExitApp")
 
 Gui Add, GroupBox, x8 y0 w362 h194
