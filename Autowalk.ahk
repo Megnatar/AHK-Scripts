@@ -1,6 +1,4 @@
 /*
-    Autowalk v1.0.1. Written by Megnatar.
-
     Everyone is free to use, add code and redistribute this script.
     But you MUST always credit ME Megnatar for creating the source!
     The source code for this script can be found on my Github repository:
@@ -8,7 +6,6 @@
 
     Usage:
     To add a new game, just drop the executable on the gui or use the browse button.
-    IMPORTANT: Droping files will NOT work when the script is running in admin mode.
 
     Click in a edit box to set a new hotkey. Any posible key will do. The script will write
     the name of the key to the edit control. For example pressing numpad1 after a click inside a edit
@@ -16,52 +13,51 @@
 
     Enable the checkbox "RPG Games" for games with a isometric camera (top Down view).
     All these games use left mouse button Down to move around. Thus, double click the left
-    mouse button to send Lbutton Down. Click again , once or twice, to stop.
+    mouse button to send Lbutton Down. Click again, once or twice, to stop.
 
     When the camera does not automatically follow the player enable "Turn camera" and
     set the two keys used by the game to rotate the camera left or right.
     A double click will now also enable auto rotation of the camera.
 
+    IMPORTANT:
     If the game does not accept input. Then enable admin mode and try again!
+    Droping files will NOT work when the script is running in admin mode.
+    And you have to use the real executable for you're game, not a shortcut that looks like a exe.
+    This is usually the case with games build on the Unreal engine.
+    
+    Great thanx to Turul1989 for helping me debug and helping me undestand what needs to be added.
 */
+
 #NoEnv
 #Persistent
 #SingleInstance force
 #InstallKeybdHook
 #KeyHistory 0
 ListLines off
-;SetBatchLines -1
+SetBatchLines -1
 SetTitleMatchMode 3
 SetKeyDelay 5, 1
 SetWorkingDir %A_ScriptDir%
 DetectHiddenWindows On
 sendmode Input
 
-Global Wm_LbuttonDown   := 0x201
-, Wm_Mousemove          := 0x200
-, Wm_DraggGui           := 0x5050
-, WM_NCLBUTTONDOWN      := 0xA1
-, InputActive           := 0
-, ConfigFile            := "Settings.ini"
-, hScriptGui
-, ControlBelowMouse
-, ControlOldBelowMouse
-, ctrlTxt
-, A_hotKey
+Global Wm_LbuttonDown := 0x201          , hScriptGuiMain
+, Wm_Mousemove        := 0x200          , hScriptMain
+, Wm_DraggGui         := 0x5050         , ControlBelowMouse
+, WM_NCLBUTTONDOWN    := 0xA1           , ControlOldBelowMouse
+, WS_CHILD            := 0x40000000     , ExeFile
+, InputActive         := 0              , ctrlTxt
+, ConfigFile          := "Settings.ini" , A_hotKey
 
-LeftKey     := "Left"
-RightKey    := "Right"
-Gui_X       := "Center"
-Gui_Y       := "Center"
-KeyState    := "Up"
-IsoCam      := 0
-Admin       := 0
-TurnCamera  := 0
+LeftKey  := "Left"   , KeyState     := "Up"
+RightKey := "Right"  , Admin        := 0
+Gui_X    := "Center" , TurnCamera   := 0
+Gui_Y    := "Center" , IsoCam       := 0
+Hkey     := "W"
 
-If (!FileExist(ConfigFile))
-    IniWrite Xbutton1, %ConfigFile%, Settings, Hkey
 
-ReadIni(ConfigFile)
+If (FileExist(ConfigFile))
+    ReadIni(ConfigFile)
 
 if ((Admin = 1) & (!A_IsAdmin)) {
     Try {
@@ -76,7 +72,7 @@ if ((Admin = 1) & (!A_IsAdmin)) {
     ExitApp
 }
 
-GUI +LastFound +hWndhScriptGui 
+GUI +LastFound +hWndhScriptGui
 Gui Add, GroupBox, x8 y0 w362 h194
 Gui Add, GroupBox, x16 y8 w345 h64 +Center, Drop you're game executable here.
 Gui Font, s10 Bold
@@ -118,8 +114,8 @@ Return
         {
             #IfWinActive, ahk_group ClientGroup
             {
-                ; When this file "UserCode.ahk" resides in the same folder as where the script is. 
-                ; used by this script when the game window is active.
+                ; When this file "UserCode.ahk" resides in the same folder as where the script is.
+                ; Then the code in that file is used by this script when the game window is active.
                 #Include *i UserCode.ahk
 
                 HotKeyAutoWalk:
@@ -140,10 +136,10 @@ Return
                 InterruptDownState:
                     if (KeyState = "Down")
                         KeyWait()
-                        
+
                     KeyState := KeyState != "Down" ? "Down" : "Up"
                     Send {w %KeyState%}
-                    
+
                     if (KeyState = "Down") {
                         Hotkey, ~*Vk057, InterruptDownState, ON     ; Vk057 = w
                         Hotkey, ~*Vk01, InterruptDownState, ON      ; Vk01  = Lbutton
@@ -199,12 +195,20 @@ Return
 GuiDropFiles:
     Loop, parse, A_GuiEvent, `n, `r
         FullPath := A_LoopField, Path := SubStr(A_LoopField, 1, InStr(A_LoopField, "\", ,-1)-1), ExeFile := SubStr(A_LoopField, InStr(A_LoopField, "\", ,-1)+1)
-
+    
+    FileGetSize,fileSize, %FullPath%, K
+    if (FileSize < 1024)
+        MsgBox,,FileSize: %FileSize%KB, % "The size of you're file is less then 1MB`n`nAre you sure this is the real exe and not a shortcut`nto a ecxecutable some folders below`n`nFile size: " FileSize "KB"
+        
     Title := "Ready to start you're game"
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
     IniWrite %Path%, %ConfigFile%, Settings, Path
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
     IniWrite %Title%, %ConfigFile%, Settings, Title
+    
+    
+        
+
     Reload
 Return
 
@@ -217,7 +221,11 @@ ButtonBrowse:
         Exit
 
     FullPath := Path "\" ExeFile, Title := "Ready to start you're game"
-
+    
+    FileGetSize,fileSize, %FullPath%, K
+    if (FileSize < 1024)
+        MsgBox,,FileSize: %FileSize%KB, % "The size of you're file is less then 1MB`n`nAre you sure this is the real exe and not a shortcut`nto a ecxecutable some folders below`n`nFile size: " FileSize "KB"
+    
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
     IniWrite %Path%, %ConfigFile%, Settings, Path
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
@@ -238,15 +246,15 @@ ButtonStartGame:
             WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
         }
         #WinActivateForce
-        if (WinState = -1) { 
+        if (WinState = -1) {
             WinRestore, ahk_id %hWndClient%, , AutoWalk
         } else {
             WinActivate, ahk_id %hWndClient%, , AutoWalk
         }
-            
+
         WinSet, Top ,, ahk_id %hWndClient%
     }
-    
+
 
     ; Checks for any popup window and wait for it to close.
     if InStr(ClientGuiClass, "Splash") {
@@ -332,7 +340,7 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
 
             ; And when this control is not disabled.
             If (IsControlOn = 1) {
-            
+
                 ; store it's text and give the control input focus (actually it's the other way around, hehe).
                 ControlFocus, %ControlBelowMouse%
                 ControlGetText, ctrlTxt, %ControlBelowMouse%
@@ -348,7 +356,7 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
         }
         Return
     }
-    
+
     if (msg = Wm_DraggGui) {
         if ((GetKeyState("Lbutton", "P")) & (!A_GuiControl)) {
             FadeInOut(hScriptGui, 1)
@@ -394,7 +402,7 @@ EditGetKey() {
     Critical Off
     ControlFocus, Button2
     GUI, submit, nohide
-    
+
     ; Save new values to Settings.ini if the For loop didn't break when the mouse moved outside the control.
     If (ExitLoop != 1)
         IniWrite, %ThisKey%, %ConfigFile%, Settings, %A_GuiControl%
@@ -414,7 +422,7 @@ ButtonSingleDouble(KeySingle, KeyDouble, ThisHotKey = 0, WaitRelease = 0) {
         Send {%KeySingle% Down}
         A_hotKey := ThisHotKey ? keywait(ThisHotKey) : keywait()
         Send {%KeySingle% Up}
-        
+
         if (keywait(A_hotKey, "D T0.1", 1) = 0) {
             Send {%KeyDouble% Down}
             KeyWait(A_hotKey)
@@ -422,12 +430,12 @@ ButtonSingleDouble(KeySingle, KeyDouble, ThisHotKey = 0, WaitRelease = 0) {
         }
     } else if (!WaitRelease) {
         A_hotKey := ThisHotKey ? keywait(ThisHotKey) : keywait()
-        
+
         if (keywait(A_hotKey, "D T0.1", 1) = 0) {
             Send {%KeyDouble% Down}{%KeyDouble% Up}
         } else {
             Send {%KeySingle% Down}{%KeySingle% Up}
-        }   
+        }
     }
     Return
 }
@@ -437,7 +445,7 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 40, DeadZ
     Static Rad := 180 / 3.1415926
 
     WinGetPos, , ,gW, gH, A
-    
+
     ; Check mouse position and turns the camera when the mouse moved outside a deadszone while the key in KeyDown has status Down.
     ; By default the physical key state is monitored. Set parameter VirtualKey to 1 to check the logical key state. Logical is when
     ; a key is send Down by the send command or in some other way.
@@ -445,7 +453,7 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 40, DeadZ
         MouseGetPos, mX, mY
 
         ; Calculate cursor position, where the vertical/horizontal center of the display are seen as zero. Both the left and right side
-        ; of the display yeald as positive (Abs). A triangle (ATan) of 45 dagrees (22.5*2) is created from the very centre to the top. 
+        ; of the display yeald as positive (Abs). A triangle (ATan) of 45 dagrees (22.5*2) is created from the very centre to the top.
         ; This triangle will be the dead zone, where the camera does not turn.
         if (((((mX := mX-gW/2)*mX)+((mY := gH/2-mY)*mY) < 5000) | (mY > 0)) & ((Abs(ATan(mX/mY)) * Rad) < DeadZone)) {
             continue
@@ -487,9 +495,9 @@ FadeInOut(hWnd, dragg = 0) {
                 If (Transparency >= 255) {
                     WinSet, Transparent, Off, ahk_id %hWnd%
                     break
-                }   
-            }   
-        
+                }
+            }
+
         }
     }
     return
@@ -498,7 +506,7 @@ FadeInOut(hWnd, dragg = 0) {
 ; This is called right before the script terminates.
 ExitScript() {
     WinGetPos, Gui_X, Gui_Y, ,, AutoWalk
-    
+
     ; See if there are any variables in the ini that are empty or set to zero.
     Loop, parse, % FileOpen(ConfigFile, 0).read(), `n, `r
     {
