@@ -81,27 +81,35 @@ if ((Admin = 1) & (!A_IsAdmin)) {
 }
 
 GUI +LastFound +hWndhScriptGui
-Gui Add, GroupBox, x8 y0 w362 h194
-Gui Add, GroupBox, x16 y8 w345 h64 +Center, Drop you're game executable here.
+Gui Add, GroupBox, x8 y0 w362 h194 +Center, Drop you're game executable here
+Gui Add, GroupBox, x16 y8 w345 h64 
 Gui Font, s10 Bold
 Gui Add, Text, x24 y36 w329 h19 +Center +BackgroundTrans +0x200 vTitle, %Title%
 Gui Font
 Gui Add, Picture, x20 y18 w50 h50 +0x09 vPic, % "HICON:*" hIcon := LoadPicture(FullPath, "GDI+ Icon1 w50", ImageType)
 Gui Add, Button, x307 y18 w50 h18, &Browse
 Gui Add, Button, x16 y160 w80 h23 vRunGame, &Start Game
-Gui Add, Button, x104 y160 w80 h23, Open Folder
+Gui Add, Button, x104 y160 w80 h23 vOpenFolder, Open Folder
 Gui Add, Button, x280 y160 w80 h23 gGuiClose, Exit
 Gui Add, GroupBox, x16 y72 w345 h83
 Gui Add, Text, x24 y80 w99 h14, Autowalk keys
 Gui Add, Text, x24 y104 w42 h14, Hotkey
-Gui Add, Edit, x72 y104 w63 h21 Limit1 -TabStop vhKey, %hKey%
+;Gui Add, Edit, x72 y104 w63 h21 Limit1 -TabStop vhKey, %hKey%
+Gui Add, Edit, x24 y96 w63 h21 Limit1 -TabStop vhKey, %hKey%
+
 Gui Add, Text, x24 y128 w43 h14, SendKey
-Gui Add, Edit, x72 y128 w63 h21 Limit1 -TabStop vsKey, %sKey%
-Gui Add, CheckBox, x144 y104 w80 h23 Checked%RPGGames% vRPGGames gRPGGames, RPG Games
-Gui Add, CheckBox, x144 y128 w77 h17 +Disabled Checked%TurnCamera% vTurnCamera gTurnCamera, Turn Camera
-Gui Add, CheckBox, x144 y80 w83 h23 Checked%Admin% vAdmin gAdmin, Run as admin
-Gui Add, Edit, x232 y128 w60 h21 +Disabled Limit1 -TabStop vLeftKey, %LeftKey%
-Gui Add, Edit, x296 y128 w60 h21 +Disabled Limit1 -TabStop vRightKey, %RightKey%
+;Gui Add, Edit, x72 y128 w63 h21 Limit1 -TabStop vsKey, %sKey%
+Gui Add, Edit, x24 y120 w63 h21 Limit1 -TabStop vskey, %skey%
+Gui Add, CheckBox, x120 y104 w80 h23 Checked%RPGGames% vRPGGames gRPGGames, RPG Games
+Gui Add, CheckBox, x120 y128 w77 h17 +Disabled Checked%TurnCamera% vTurnCamera gTurnCamera, Turn Camera
+Gui Add, CheckBox, x120 y80 w83 h23 Checked%Admin% vAdmin gAdmin, Run as admin
+Gui Add, Edit, x216 y128 w60 h21 +Disabled Limit1 -TabStop vLeftKey, %LeftKey%
+Gui Add, Edit, x280 y128 w60 h21 +Disabled Limit1 -TabStop vRightKey, %RightKey%
+
+OpenFolder_TT := "Hold control to open script folder."
+hKey_TT := "Click and press a button to set new HOTKEY."
+sKey_TT := "Click and press a button to set new SENDKEY."
+RunGame_TT := "Start or launch you're game"
 
 if (RPGGames = 1) {
     GuiControl([["Enable", "TurnCamera"]])
@@ -145,6 +153,7 @@ Return
                                 KeyState := "Up"
                                 Send {%A_hotKey% %KeyState%}
                             }
+
                         }
                     }
                 } Else If (!RPGGames) {
@@ -179,14 +188,16 @@ RPGGames:
     GUI, submit, nohide
     IniWrite, %RPGGames%, %ConfigFile%, Settings, RPGGames
     if (RPGGames) {
-        hKey := "Lbutton"
+        sKey := hKey := "Lbutton"
         GuiControl([[ , "hKey", "Lbutton"], [ , "sKey", "Lbutton"], ["Enable", "TurnCamera"]])
         IniWrite, %hKey%, %ConfigFile%, Settings, hKey
+        IniWrite, %sKey%, %ConfigFile%, Settings, sKey
     } else {
         TurnCamera := ""
         GuiControl([["enable", "hKey"], ["Disable", "TurnCamera"], ["Disable", "LeftKey"], ["Disable", "RightKey"], [ , "TurnCamera", "0"]])
         IniWrite, %TurnCamera%, %ConfigFile%, Settings, TurnCamera
     }
+    GUI, submit, nohide
 Return
 
 TurnCamera:
@@ -197,6 +208,7 @@ TurnCamera:
     } else {
         GuiControl([["Disable", "LeftKey"], ["Disable", "RightKey"]])
     }
+    GUI, submit, nohide
 Return
 
 Admin:
@@ -207,6 +219,7 @@ Admin:
     } else {
         ExitApp
     }
+    GUI, submit, nohide
 Return
 
 GuiDropFiles:
@@ -288,12 +301,16 @@ ButtonStartGame:
         IniWrite %Title%, %ConfigFile%, Settings, Title
         GuiControl([[ , "Title", Title], ["MoveDraw", "Pic"]])
     }
-    
     Hotkey, ~%hKey%, HotKeyAutoWalk, On
 Return
 
 ButtonOpenFolder:
-    Run, Explorer.exe "%Path%"
+    KeyWait("Lbutton")
+    If ((GetKeyState("LControl", "P")) | (GetKeyState("RControl", "P"))) {       
+        Run, Explorer.exe "%A_ScriptDir%"
+    } else {
+        Run, Explorer.exe "%Path%"
+    }
 Return
 
 GuiEscape:
@@ -349,7 +366,7 @@ GuiControl(ControlID, SubCommand = 0, Value = 0) {
 
 ; Keep track of mouse movement and left mouse button state inside the GUI.
 WM_Mouse(wParam, lParam, msg, hWnd) {
-    Static ClsNNPrevious, ClsNNCurrent
+    Static ClsNNPrevious, ClsNNCurrent, _TT, CurrControl, PrevControl
     ListLines off   ; Even when globaly enabled. Best to set it off here.
     
     ; ClsNNPrevious and ClsNNCurrent will hold the same value while the mouse moves inside a control.
@@ -361,6 +378,28 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
     if (ClsNNPrevious != ClsNNCurrent)
         ControlOldBelowMouse := ClsNNPrevious
 
+    if (msg = WM_MOUSEMOVE) {
+        CurrControl := A_GuiControl
+        
+        if ((ClsNNPrevious != ClsNNCurrent) & (!InStr(CurrControl, " "))) {
+            ToolTip  ; Turn off any previous tooltip.
+            SetTimer, DisplayToolTip, 1000
+            PrevControl := CurrControl
+        }
+        return
+
+        DisplayToolTip:
+        SetTimer, DisplayToolTip, Off
+        ToolTip % %CurrControl%_TT  ; The leading percent sign tell it to use an expression.
+        SetTimer, RemoveToolTip, 3000
+        return
+
+        RemoveToolTip:
+        SetTimer, RemoveToolTip, Off
+        ToolTip
+        return
+    }    
+    
     if (msg = Wm_LbuttonDown) {
         ; When some control under the mouse is a Edit control and the script is not already getting a key.
         If ((InputActive = 0) & (InputActive := InStr(ControlBelowMouse, "Edit"))) {
