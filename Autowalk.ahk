@@ -121,6 +121,8 @@ Return
             {
                 ; When this file "UserCode.ahk" resides in the same folder as where the script is.
                 ; Then the code in that file is used by this script when the game window is active.
+                ; Read comment on function ButtonSingleDouble() for instructions.
+                ;
                 #Include *i UserCode.ahk
 
                 HotKeyAutoWalk:
