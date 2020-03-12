@@ -436,7 +436,6 @@ EditGetKey() {
 ;   ButtonSingleDouble("", "B")
 ; Return
 ;
-;
 ButtonSingleDouble(KeySingle, KeyDouble, ThisHotKey = 0, WaitRelease = 0) {
     if (WaitRelease) {
         Send {%KeySingle% Down}
@@ -474,8 +473,8 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 40, DeadZ
     While(GetKeyState(KeyDown, (!VirtualKey ? "P" : ""))) {
         MouseGetPos, mX, mY
 
-        ; Calculate cursor position, where the vertical/horizontal center of the display are seen as zero. Both the left and right side
-        ; of the display yeald as positive (Abs). A triangle (ATan) of 70 dagrees (35*2) is created from the very centre to the top.
+        ; Calculate cursor position, where the vertical/horizontal centre of the display are seen as zero. Both the left and right side
+        ; of the display are seen as positive (Abs). A triangle (ATan) of 70 degrees (35*2) is created from the very centre to the top.
         ; This triangle will be the dead zone, where the camera does not turn.
         ;
         if (((((mX := mX-gW/2)*mX)+((mY := gH/2-mY)*mY) < 10000) | (mY > 0)) & ((Abs(ATan(mX/mY)) * Rad) < DeadZone)) {
@@ -485,7 +484,7 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 40, DeadZ
         ; Turn the ingame camera left or right when the mouse moved outside the deadzone.
         ; I advice to make the value in DownPeriod not greater then the 50ms sleep. If you do,
         ; then also increase the sleep period to somthing greater then the down perdiod.
-        ; THis will result in a smoother turning of the camera.
+        ; This will result in a smoother turning of the camera.
         ;
         if (mX < 0) {
             Send {%RotateL% Down}
@@ -531,7 +530,7 @@ FadeInOut(hWnd, dragg = 0) {
 }
 
 ; This is called right before the script terminates. It keep the setting.ini clean
-; from unused values and saves GUI posotion.
+; from unused values and saves GUI position.
 ExitScript() {
     WinGetPos, Gui_X, Gui_Y, ,, AutoWalk
 
