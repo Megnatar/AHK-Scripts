@@ -94,11 +94,8 @@ Gui Add, Button, x280 y160 w80 h23 gGuiClose, Exit
 Gui Add, GroupBox, x16 y72 w345 h83
 Gui Add, Text, x24 y80 w99 h14, Autowalk keys
 Gui Add, Text, x24 y104 w42 h14, Hotkey
-;Gui Add, Edit, x72 y104 w63 h21 Limit1 -TabStop vhKey, %hKey%
 Gui Add, Edit, x24 y96 w63 h21 Limit1 -TabStop vhKey, %hKey%
-
 Gui Add, Text, x24 y128 w43 h14, SendKey
-;Gui Add, Edit, x72 y128 w63 h21 Limit1 -TabStop vsKey, %sKey%
 Gui Add, Edit, x24 y120 w63 h21 Limit1 -TabStop vskey, %skey%
 Gui Add, CheckBox, x120 y104 w80 h23 Checked%RPGGames% vRPGGames gRPGGames, RPG Games
 Gui Add, CheckBox, x120 y128 w77 h17 +Disabled Checked%TurnCamera% vTurnCamera gTurnCamera, Turn Camera
