@@ -58,7 +58,9 @@ RightKey    := "Right"
 Gui_X       := "Center"
 Gui_Y       := "Center"
 KeyState    := "Up"
-IsoCam      := 0
+sKey        := "W"
+hKey        := "XButton2"
+RPGGames    := 0
 Admin       := 0
 TurnCamera  := 0
 
@@ -90,21 +92,25 @@ Gui Add, Button, x16 y160 w80 h23 vRunGame, &Start Game
 Gui Add, Button, x104 y160 w80 h23, Open Folder
 Gui Add, Button, x280 y160 w80 h23 gGuiClose, Exit
 Gui Add, GroupBox, x16 y72 w345 h83
-Gui Add, Text, x24 y92 w99 h23, Hotkey Autowalk:
-Gui Add, Edit, x24 y120 w63 h21 Limit1 -TabStop vHkey, %Hkey%
-Gui Add, CheckBox, x136 y88 w80 h23 Checked%IsoCam% vIsoCam gIsoCam, RPG Games
-Gui Add, CheckBox, x136 y120 w79 h17 +Disabled Checked%TurnCamera% vTurnCamera gTurnCamera, Turn Camera
-Gui Add, CheckBox, x224 y88 w83 h23 Checked%Admin% vAdmin gAdmin, Run as admin
-Gui Add, Edit, x224 y120 w60 h21 +Disabled Limit1 -TabStop vLeftKey, %LeftKey%
-Gui Add, Edit, x288 y120 w60 h21 +Disabled Limit1 -TabStop vRightKey, %RightKey%
-Gui Show, w378 h201 x%Gui_X% y%Gui_Y%, AutoWalk
+Gui Add, Text, x24 y80 w99 h14, Autowalk keys
+Gui Add, Text, x24 y104 w42 h14, Hotkey
+Gui Add, Edit, x72 y104 w63 h21 Limit1 -TabStop vhKey, %hKey%
+Gui Add, Text, x24 y128 w43 h14, SendKey
+Gui Add, Edit, x72 y128 w63 h21 Limit1 -TabStop vsKey, %sKey%
+Gui Add, CheckBox, x144 y104 w80 h23 Checked%RPGGames% vRPGGames gRPGGames, RPG Games
+Gui Add, CheckBox, x144 y128 w77 h17 +Disabled Checked%TurnCamera% vTurnCamera gTurnCamera, Turn Camera
+Gui Add, CheckBox, x144 y80 w83 h23 Checked%Admin% vAdmin gAdmin, Run as admin
+Gui Add, Edit, x232 y128 w60 h21 +Disabled Limit1 -TabStop vLeftKey, %LeftKey%
+Gui Add, Edit, x296 y128 w60 h21 +Disabled Limit1 -TabStop vRightKey, %RightKey%
 
-if (IsoCam = 1) {
-    GuiControl([["Disable", "Hkey"], ["Enable", "TurnCamera"]])
+if (RPGGames = 1) {
+    GuiControl([["Enable", "TurnCamera"]])
     if (TurnCamera = 1) {
         GuiControl([["Enable", "LeftKey"], ["Enable", "RightKey"]])
     }
 }
+
+Gui Show, w378 h201 x%Gui_X% y%Gui_Y%, AutoWalk
 
 OnMessage(Wm_MouseMove, "WM_Mouse"), OnMessage(Wm_LbuttonDown, "WM_Mouse"), OnMessage(Wm_DraggGui, "WM_Mouse"), OnExit("ExitScript")
 Return
@@ -121,12 +127,12 @@ Return
             {
                 ; When this file "UserCode.ahk" resides in the same folder as where the script is.
                 ; Then the code in that file is used by this script when the game window is active.
-                ; Read comment on function ButtonSingleDouble() for instructions.
+                ; Read comment on function ButtonSingleDouble() for more instructions.
                 ;
                 #Include *i UserCode.ahk
 
                 HotKeyAutoWalk:
-                If (IsoCam) {
+                If (RPGGames) {
                     If (A_Hotkey := KeyWait()) {
                         If (KeyWait(A_hotKey, "D T0.2", 1) = 0) {
                             keywait(A_hotKey), KeyState := KeyState != "Down" ? "Down" : "Up"
@@ -135,17 +141,20 @@ Return
                             If ((TurnCamera = 1) & (KeyState = "Down"))
                                 AutoTurnCamera(A_hotKey, LeftKey, RightKey, VirtualKey := 1)
                         } else {
-                            KeyState := "Up"
-                            Send {%A_hotKey% %KeyState%}
+                            if (KeyState = "Down") {
+                                KeyState := "Up"
+                                Send {%A_hotKey% %KeyState%}
+                            }
+
                         }
                     }
-                } Else If (!IsoCam) {
+                } Else If (!RPGGames) {
                 InterruptDownState:
                     if (KeyState = "Down")
                         KeyWait()
 
                     KeyState := KeyState != "Down" ? "Down" : "Up"
-                    Send {w %KeyState%}
+                    Send {%sKey% %KeyState%}
 
                     if (KeyState = "Down") {
                         Hotkey, ~*Vk057, InterruptDownState, ON     ; Vk057 = w
@@ -164,18 +173,19 @@ Return
 Return
 
 ;_______________________________________ Script Lables _______________________________________
-; The only thing these lables do is save or change some gui related setting where needed.
+; Appart from the start game button. The only thing these lables do is save or change some 
+; gui related setting where needed.
 
-IsoCam:
+RPGGames:
     GUI, submit, nohide
-    IniWrite, %IsoCam%, %ConfigFile%, Settings, IsoCam
-    if (IsoCam) {
-        Hkey := "Lbutton"
-        GuiControl([[ , "Hkey", "Lbutton"], ["Disable", "Hkey"], ["Enable", "TurnCamera"]])
-        IniWrite, %Hkey%, %ConfigFile%, Settings, Hkey
+    IniWrite, %RPGGames%, %ConfigFile%, Settings, RPGGames
+    if (RPGGames) {
+        hKey := "Lbutton"
+        GuiControl([[ , "hKey", "Lbutton"], [ , "sKey", "Lbutton"], ["Enable", "TurnCamera"]])
+        IniWrite, %hKey%, %ConfigFile%, Settings, hKey
     } else {
         TurnCamera := ""
-        GuiControl([["enable", "Hkey"], ["Disable", "TurnCamera"], ["Disable", "LeftKey"], ["Disable", "RightKey"], [ , "TurnCamera", "0"]])
+        GuiControl([["enable", "hKey"], ["Disable", "TurnCamera"], ["Disable", "LeftKey"], ["Disable", "RightKey"], [ , "TurnCamera", "0"]])
         IniWrite, %TurnCamera%, %ConfigFile%, Settings, TurnCamera
     }
 Return
@@ -226,25 +236,28 @@ ButtonBrowse:
         Exit
 
     FullPath := Path "\" ExeFile, Title := "Ready to start you're game"
+    
     FileGetSize,fileSize, %FullPath%, K
     if (FileSize < 1024)
-        MsgBox,,FileSize: %FileSize%, % FileSize
+        MsgBox,,FileSize: %FileSize% KB, % "The size of you're file is less then 1MB`n`nAre you sure this is the real exe and not a shortcut`nto a ecxecutable some folders below`n`nFile size: " FileSize "KB"
+        
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
     IniWrite %Path%, %ConfigFile%, Settings, Path
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
     IniWrite %Title%, %ConfigFile%, Settings, Title
+    
     Reload
 Return
 
 ButtonStartGame:
-    If (!WinExist("ahk_exe " ExeFile)) {
+    If (!(HwndClient := WinExist("ahk_exe " ExeFile))) {
         Run, %FullPath%, %Path%, , ProcessID
         WinWaitActive, ahk_exe %ExeFile%, , , AutoWalk
         WinGet, HwndClient, ID, ahk_exe %ExeFile%
+        WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
     } else {
         WinGet, WinState, MinMax, ahk_exe %ExeFile%, , AutoWalk
-        if (!ClientExist) {
-            WinGet, hWndClient, ID, ahk_exe %ExeFile%, , AutoWalk
+        if (!ClientGroupExist) {
             WinGet, ProcessID, PID, ahk_exe %ExeFile%, , AutoWalk
             WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
         }
@@ -257,7 +270,6 @@ ButtonStartGame:
 
         WinSet, Top ,, ahk_id %hWndClient%
     }
-
     ; Checks for any popup window and wait for it to close.
     if InStr(ClientGuiClass, "Splash") {
         WinWaitClose, ahk_class %ClientGuiClass%, , , AutoWalk
@@ -265,18 +277,20 @@ ButtonStartGame:
         WinGet, HwndClient, ID, ahk_exe %ExeFile%
     }
     ; Create ClientGroup only once.
-    if (!ClientExist) {
-        ClientExist := 1
+    if (!ClientGroupExist) {
+        ClientGroupExist := 1
         GroupAdd, ClientGroup, ahk_class %ClientGuiClass%
         GroupAdd, ClientGroup, ahk_id %hWndClient%
     }
+    ; When a new game starts for the first time.
     If (InStr(Title, "Ready to start you're game")) {
+        sleep, 10000    ; Give the game some time to load.
         WinGetTitle, Title, ahk_exe %ExeFile%
         IniWrite %Title%, %ConfigFile%, Settings, Title
         GuiControl([[ , "Title", Title], ["MoveDraw", "Pic"]])
     }
     
-    Hotkey, ~%Hkey%, HotKeyAutoWalk, On
+    Hotkey, ~%hKey%, HotKeyAutoWalk, On
 Return
 
 ButtonOpenFolder:
@@ -289,8 +303,9 @@ GuiClose:
 
 ;_______________________________________ Script Functions _______________________________________
 
-; Read ini file and create variables. Sections are not supported.
-; Referenced variables are not local to functions.
+; Read ini file and create variables. Sections are not supported!
+; Referenced variables are not local to functions. So %VarRef% represents global
+; variables to which some value is added %VarRef% := "ValueOfVar"
 ;
 ReadIni(InputFile) {
     Loop, parse, % FileOpen(InputFile, 0).read(), `n, `r
@@ -299,6 +314,7 @@ ReadIni(InputFile) {
             Continue
         VarRef := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1), %VarRef% := SubStr(A_LoopField, InStr(A_LoopField, "=")+1)
     }
+    Return
 }
 
 ; KeyWait as a function for more flexible usage. Returns the key it waited for or ErrorLevel.
@@ -307,6 +323,11 @@ ReadIni(InputFile) {
 KeyWait(Key = 0, Options = 0, ErrLvL = 0) {
     keywait, % ThisKey := Key ? Key : RegExReplace(A_ThisHotkey, "[~\*\$]"), % Options
     Return ErrLvL = 1 ? ErrorLevel : ThisKey
+}
+
+; Returns the last hotkey used with all basic modifiers removed from it.
+ThisHotKey() {
+   Return RegExReplace(A_ThisHotkey, "[~\*\$]") 
 }
 
 ; GuiControl as a function for more flexible usage. Parameter ControlID can be a array. 
@@ -330,7 +351,7 @@ GuiControl(ControlID, SubCommand = 0, Value = 0) {
 ; Keep track of mouse movement and left mouse button state inside the GUI.
 WM_Mouse(wParam, lParam, msg, hWnd) {
     Static ClsNNPrevious, ClsNNCurrent
-    ListLines off   ; even when globaly enabled. Best to set it off here.
+    ListLines off   ; Even when globaly enabled. Best to set it off here.
     
     ; ClsNNPrevious and ClsNNCurrent will hold the same value while the mouse moves inside a control.
     ClsNNPrevious := ClsNNCurrent
@@ -500,7 +521,7 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 40, DeadZ
     Return
 }
 
-; Fade transparency out or in while dragging the Gui
+; Fade transparency out or in while dragging the Gui.
 FadeInOut(hWnd, dragg = 0) {
     SetBatchLines -1
     static Transparency := 250
