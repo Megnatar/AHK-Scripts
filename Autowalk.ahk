@@ -41,7 +41,6 @@ SetWorkingDir %A_ScriptDir%
 DetectHiddenWindows On
 sendmode Input
 
-
 Global Wm_LbuttonDown   := 0x201
 , Wm_Mousemove          := 0x200
 , Wm_DraggGui           := 0x5050
@@ -308,7 +307,8 @@ KeyWait(Key = 0, Options = 0, ErrLvL = 0) {
     Return ErrLvL = 1 ? ErrorLevel : ThisKey
 }
 
-; Parameter ControlID can be a array. For example, if you want to use the GuiControl command 3 times in a row.
+; GuiControl as a function for more flexible usage. Parameter ControlID can be a array. 
+; For example, if you want to use the GuiControl command 3 times in a row.
 ; Then the array should look something like:
 ;  ControlID := [[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]]
 ;
