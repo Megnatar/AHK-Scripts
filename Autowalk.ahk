@@ -20,11 +20,11 @@
     A double click will now also enable auto rotation of the camera.
 
     IMPORTANT:
-    If the game does not accept input. Then enable admin mode and try again!
-    Droping files will NOT work when the script is running in admin mode.
-    And you have to use the real executable for you're game, not a shortcut that looks like a exe.
-    This is usually the case with games build on the Unreal engine.
-    
+    - If the game does not accept input. Then enable admin mode and try again!
+    - Droping files will NOT work when the script is running in admin mode.
+    - You have to use the real executable for you're game, not a shortcut that looks like a exe.
+      This is usually the case with games build on the Unreal engine. Look for a folder named Binaries or Bin. 
+
     Great thanx to Turul1989 for helping me debug and helping me undestand what needs to be added.
 */
 
@@ -41,20 +41,27 @@ SetWorkingDir %A_ScriptDir%
 DetectHiddenWindows On
 sendmode Input
 
-Global Wm_LbuttonDown := 0x201          , hScriptGuiMain
-, Wm_Mousemove        := 0x200          , hScriptMain
-, Wm_DraggGui         := 0x5050         , ControlBelowMouse
-, WM_NCLBUTTONDOWN    := 0xA1           , ControlOldBelowMouse
-, WS_CHILD            := 0x40000000     , ExeFile
-, InputActive         := 0              , ctrlTxt
-, ConfigFile          := "Settings.ini" , A_hotKey
 
-LeftKey  := "Left"   , KeyState     := "Up"
-RightKey := "Right"  , Admin        := 0
-Gui_X    := "Center" , TurnCamera   := 0
-Gui_Y    := "Center" , IsoCam       := 0
-Hkey     := "W"
+Global Wm_LbuttonDown   := 0x201
+, Wm_Mousemove          := 0x200
+, Wm_DraggGui           := 0x5050
+, WM_NCLBUTTONDOWN      := 0xA1
+, InputActive           := 0
+, ConfigFile            := "Settings.ini"
+, hScriptGui
+, ControlBelowMouse
+, ControlOldBelowMouse
+, ctrlTxt
+, A_hotKey
 
+LeftKey     := "Left"
+RightKey    := "Right"
+Gui_X       := "Center"
+Gui_Y       := "Center"
+KeyState    := "Up"
+IsoCam      := 0
+Admin       := 0
+TurnCamera  := 0
 
 If (FileExist(ConfigFile))
     ReadIni(ConfigFile)
@@ -195,19 +202,19 @@ Return
 GuiDropFiles:
     Loop, parse, A_GuiEvent, `n, `r
         FullPath := A_LoopField, Path := SubStr(A_LoopField, 1, InStr(A_LoopField, "\", ,-1)-1), ExeFile := SubStr(A_LoopField, InStr(A_LoopField, "\", ,-1)+1)
-    
+
     FileGetSize,fileSize, %FullPath%, K
     if (FileSize < 1024)
-        MsgBox,,FileSize: %FileSize%KB, % "The size of you're file is less then 1MB`n`nAre you sure this is the real exe and not a shortcut`nto a ecxecutable some folders below`n`nFile size: " FileSize "KB"
-        
+        MsgBox,,FileSize: %FileSize% KB, % "The size of you're file is less then 1MB`n`nAre you sure this is the real exe and not a shortcut`nto a ecxecutable some folders below`n`nFile size: " FileSize "KB"
+
     Title := "Ready to start you're game"
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
     IniWrite %Path%, %ConfigFile%, Settings, Path
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
     IniWrite %Title%, %ConfigFile%, Settings, Title
-    
-    
-        
+
+
+
 
     Reload
 Return
@@ -221,11 +228,9 @@ ButtonBrowse:
         Exit
 
     FullPath := Path "\" ExeFile, Title := "Ready to start you're game"
-    
     FileGetSize,fileSize, %FullPath%, K
     if (FileSize < 1024)
-        MsgBox,,FileSize: %FileSize%KB, % "The size of you're file is less then 1MB`n`nAre you sure this is the real exe and not a shortcut`nto a ecxecutable some folders below`n`nFile size: " FileSize "KB"
-    
+        MsgBox,,FileSize: %FileSize%, % FileSize
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
     IniWrite %Path%, %ConfigFile%, Settings, Path
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
@@ -299,7 +304,6 @@ ReadIni(InputFile) {
 ; KeyWait as a function for more flexible usage.
 ; When no parameters are used, keywait will use the value in A_ThisHotkey as the key to wait for.
 KeyWait(Key = 0, Options = 0, ErrLvL = 0) {
-SetBatchLines -1
     keywait, % ThisKey := Key ? Key : RegExReplace(A_ThisHotkey, "[~\*\$]"), % Options
     Return ErrLvL = 1 ? ErrorLevel : ThisKey
 }
@@ -444,6 +448,7 @@ ButtonSingleDouble(KeySingle, KeyDouble, ThisHotKey = 0, WaitRelease = 0) {
 AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 40, DeadZone = 35) {
     Static Rad := 180 / 3.1415926
 
+    ; The width and hight of the client gui might change in between calls, so getting them here.
     WinGetPos, , ,gW, gH, A
 
     ; Check mouse position and turns the camera when the mouse moved outside a deadszone while the key in KeyDown has status Down.
@@ -453,13 +458,16 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 40, DeadZ
         MouseGetPos, mX, mY
 
         ; Calculate cursor position, where the vertical/horizontal center of the display are seen as zero. Both the left and right side
-        ; of the display yeald as positive (Abs). A triangle (ATan) of 45 dagrees (22.5*2) is created from the very centre to the top.
+        ; of the display yeald as positive (Abs). A triangle (ATan) of 70 dagrees (35*2) is created from the very centre to the top.
         ; This triangle will be the dead zone, where the camera does not turn.
         if (((((mX := mX-gW/2)*mX)+((mY := gH/2-mY)*mY) < 5000) | (mY > 0)) & ((Abs(ATan(mX/mY)) * Rad) < DeadZone)) {
             continue
         }
 
         ; Turn the ingame camera left or right when the mouse moved outside the deadzone.
+        ; I advice to make the value in DownPeriod not greater then the 50ms sleep. If you do,
+        ; then also increase the sleep period to somthing greater then the down perdiod.
+        ; THis will result in a smoother turning of the camera.
         if (mX < 0) {
             Send {%RotateL% Down}
             Sleep, %DownPeriod%
@@ -519,7 +527,7 @@ ExitScript() {
         If (((SubStr(A_LoopField, InStr(A_LoopField, "=")+1)) <= "               ") | (SubStr(A_LoopField, InStr(A_LoopField, "=")+1) = 0))
             IniDelete, %ConfigFile%, %SectionName%, % SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1)
     }
-    ; Remember the position of the gui for the script.
+    ; Remember the position of the script GUI.
     if ((Gui_X > -1) & (Gui_Y > -1)) {
         IniWrite, %Gui_X%, %ConfigFile%, Settings, Gui_X
         IniWrite, %Gui_Y%, %ConfigFile%, Settings, Gui_Y
