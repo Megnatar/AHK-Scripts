@@ -145,7 +145,6 @@ Return
                                 KeyState := "Up"
                                 Send {%A_hotKey% %KeyState%}
                             }
-
                         }
                     }
                 } Else If (!RPGGames) {
