@@ -107,7 +107,6 @@ if (IsoCam = 1) {
     }
 }
 
-Hotkey, ~%Hkey%, HotKeyAutoWalk, On
 OnMessage(Wm_MouseMove, "WM_Mouse"), OnMessage(Wm_LbuttonDown, "WM_Mouse"), OnMessage(Wm_DraggGui, "WM_Mouse"), OnExit("ExitScript")
 Return
 
@@ -164,6 +163,7 @@ Return
 Return
 
 ;_______________________________________ Script Lables _______________________________________
+; The only thing these lables do is save or change some gui related setting where needed.
 
 IsoCam:
     GUI, submit, nohide
@@ -213,9 +213,6 @@ GuiDropFiles:
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
     IniWrite %Title%, %ConfigFile%, Settings, Title
 
-
-
-
     Reload
 Return
 
@@ -260,7 +257,6 @@ ButtonStartGame:
         WinSet, Top ,, ahk_id %hWndClient%
     }
 
-
     ; Checks for any popup window and wait for it to close.
     if InStr(ClientGuiClass, "Splash") {
         WinWaitClose, ahk_class %ClientGuiClass%, , , AutoWalk
@@ -278,6 +274,8 @@ ButtonStartGame:
         IniWrite %Title%, %ConfigFile%, Settings, Title
         GuiControl([[ , "Title", Title], ["MoveDraw", "Pic"]])
     }
+    
+    Hotkey, ~%Hkey%, HotKeyAutoWalk, On
 Return
 
 ButtonOpenFolder:
@@ -292,6 +290,7 @@ GuiClose:
 
 ; Read ini file and create variables. Sections are not supported.
 ; Referenced variables are not local to functions.
+;
 ReadIni(InputFile) {
     Loop, parse, % FileOpen(InputFile, 0).read(), `n, `r
     {
@@ -301,8 +300,9 @@ ReadIni(InputFile) {
     }
 }
 
-; KeyWait as a function for more flexible usage.
+; KeyWait as a function for more flexible usage. Returns the key it waited for or ErrorLevel.
 ; When no parameters are used, keywait will use the value in A_ThisHotkey as the key to wait for.
+;
 KeyWait(Key = 0, Options = 0, ErrLvL = 0) {
     keywait, % ThisKey := Key ? Key : RegExReplace(A_ThisHotkey, "[~\*\$]"), % Options
     Return ErrLvL = 1 ? ErrorLevel : ThisKey
@@ -314,6 +314,7 @@ KeyWait(Key = 0, Options = 0, ErrLvL = 0) {
 ;
 ; You can also insert objects directly on the parameter for ControlID.
 ;  GuiControl([[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]])
+;
 GuiControl(ControlID, SubCommand = 0, Value = 0) {
     If (IsObject(ControlID)) {
         Loop % ControlID.Length() {
@@ -324,10 +325,11 @@ GuiControl(ControlID, SubCommand = 0, Value = 0) {
     }
 }
 
-; Keep track of mouse movement and left clicks inside the gui.
+; Keep track of mouse movement and left mouse button state inside the GUI.
 WM_Mouse(wParam, lParam, msg, hWnd) {
     Static ClsNNPrevious, ClsNNCurrent
-    ListLines off
+    ListLines off   ; even when globaly enabled. Best to set it off here.
+    
     ; ClsNNPrevious and ClsNNCurrent will hold the same value while the mouse moves inside a control.
     ClsNNPrevious := ClsNNCurrent
     MouseGetPos, , , , ClsNNCurrent
@@ -421,6 +423,18 @@ EditGetKey() {
 
 ; Send some key on a sinlge or double press of a button.
 ; The hotkey is optional and when ThisHotKey is empty Keywait() will return the last hokey used.
+; This function can be used with the UserCode.ahk file e.g.:
+; Below code would send A when F is pressed once. And B when F is pressed twice
+; F::
+;   ButtonSingleDouble("A", "B")
+; Return
+;
+; And this will send B when you double click the right mouse button
+; ~Rbutton::
+;   ButtonSingleDouble("", "B")
+; Return
+;
+;
 ButtonSingleDouble(KeySingle, KeyDouble, ThisHotKey = 0, WaitRelease = 0) {
     if (WaitRelease) {
         Send {%KeySingle% Down}
@@ -444,7 +458,7 @@ ButtonSingleDouble(KeySingle, KeyDouble, ThisHotKey = 0, WaitRelease = 0) {
     Return
 }
 
-; Turn the ingame camera to follow the player when some key is down.
+; Automaticly turn the ingame camera to follow the player when some key is down.
 AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 40, DeadZone = 35) {
     Static Rad := 180 / 3.1415926
 
@@ -454,13 +468,15 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 40, DeadZ
     ; Check mouse position and turns the camera when the mouse moved outside a deadszone while the key in KeyDown has status Down.
     ; By default the physical key state is monitored. Set parameter VirtualKey to 1 to check the logical key state. Logical is when
     ; a key is send Down by the send command or in some other way.
+    ;
     While(GetKeyState(KeyDown, (!VirtualKey ? "P" : ""))) {
         MouseGetPos, mX, mY
 
         ; Calculate cursor position, where the vertical/horizontal center of the display are seen as zero. Both the left and right side
         ; of the display yeald as positive (Abs). A triangle (ATan) of 70 dagrees (35*2) is created from the very centre to the top.
         ; This triangle will be the dead zone, where the camera does not turn.
-        if (((((mX := mX-gW/2)*mX)+((mY := gH/2-mY)*mY) < 5000) | (mY > 0)) & ((Abs(ATan(mX/mY)) * Rad) < DeadZone)) {
+        ;
+        if (((((mX := mX-gW/2)*mX)+((mY := gH/2-mY)*mY) < 10000) | (mY > 0)) & ((Abs(ATan(mX/mY)) * Rad) < DeadZone)) {
             continue
         }
 
@@ -468,6 +484,7 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 40, DeadZ
         ; I advice to make the value in DownPeriod not greater then the 50ms sleep. If you do,
         ; then also increase the sleep period to somthing greater then the down perdiod.
         ; THis will result in a smoother turning of the camera.
+        ;
         if (mX < 0) {
             Send {%RotateL% Down}
             Sleep, %DownPeriod%
@@ -482,7 +499,7 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 40, DeadZ
     Return
 }
 
-; Fade Gui in or out.
+; Fade transparency out or in while dragging the Gui
 FadeInOut(hWnd, dragg = 0) {
     SetBatchLines -1
     static Transparency := 250
@@ -511,7 +528,8 @@ FadeInOut(hWnd, dragg = 0) {
     return
 }
 
-; This is called right before the script terminates.
+; This is called right before the script terminates. It keep the setting.ini clean
+; from unused values and saves GUI posotion.
 ExitScript() {
     WinGetPos, Gui_X, Gui_Y, ,, AutoWalk
 
