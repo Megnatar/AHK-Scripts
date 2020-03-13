@@ -99,9 +99,9 @@ Gui Add, GroupBox, x16 y72 w345 h83
 Gui Add, Text, x24 y80 w99 h14, Autowalk keys
 Gui Add, Edit, x24 y100 w63 h21 Limit1 -TabStop vhKey, %hKey%
 Gui Add, Edit, x24 y126 w63 h21 Limit1 -TabStop vskey, %skey%
-Gui Add, CheckBox, x120 y80 w104 h23 Checked%Admin% vAdmin gAdmin, Runas Admin
-Gui Add, CheckBox, x120 y104 w104 h23 Checked%RPGGames% vRPGGames gRPGGames, RPG Games
-Gui Add, CheckBox, x120 y128 w104 h23 +Disabled Checked%TurnCamera% vTurnCamera gTurnCamera, Turn Camera
+Gui Add, CheckBox, x120 y80 w90 h23 Checked%Admin% vAdmin gAdmin, Runas Admin
+Gui Add, CheckBox, x120 y104 w82 h23 Checked%RPGGames% vRPGGames gRPGGames, RPG Games
+Gui Add, CheckBox, x120 y128 w82 h23 +Disabled Checked%TurnCamera% vTurnCamera gTurnCamera, Turn Camera
 Gui Add, Edit, x212 y128 w60 h21 +Disabled Limit1 -TabStop vLeftKey, %LeftKey%
 Gui Add, Edit, x280 y128 w60 h21 +Disabled Limit1 -TabStop vRightKey, %RightKey%
 Gui Add, CheckBox, x216 y80 w104 h23 Checked%TipsOff% gTipsOff vTipsOff, Disable tooltips
