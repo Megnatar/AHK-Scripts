@@ -48,6 +48,7 @@ Global Wm_LbuttonDown   := 0x201
 , Wm_DraggGui           := 0x5050
 , WM_NCLBUTTONDOWN      := 0xA1
 , InputActive           := 0
+, TipsOff               := 1
 , ConfigFile            := "Settings.ini"
 , hScriptGui
 , ControlBelowMouse
@@ -65,6 +66,7 @@ hKey        := "XButton2"
 RPGGames    := 0
 TurnCamera  := 0
 Admin       := 0
+OnTop       := 0
 
 If (FileExist(ConfigFile))
     ReadIni(ConfigFile)
@@ -102,8 +104,8 @@ Gui Add, CheckBox, x120 y104 w104 h23 Checked%RPGGames% vRPGGames gRPGGames, RPG
 Gui Add, CheckBox, x120 y128 w104 h23 +Disabled Checked%TurnCamera% vTurnCamera gTurnCamera, Turn Camera
 Gui Add, Edit, x212 y128 w60 h21 +Disabled Limit1 -TabStop vLeftKey, %LeftKey%
 Gui Add, Edit, x280 y128 w60 h21 +Disabled Limit1 -TabStop vRightKey, %RightKey%
-Gui Add, CheckBox, x216 y80 w104 h23 gTipsOff vTipsOff, Disable tooltips
-Gui Add, CheckBox, x216 y100 w112 h23 gOnTop vOnTop, Gui always on top
+Gui Add, CheckBox, x216 y80 w104 h23 Checked%TipsOff% gTipsOff vTipsOff, Disable tooltips
+Gui Add, CheckBox, x216 y100 w112 h23 Checked%OnTop% gOnTop vOnTop, Gui always on top
 
 OpenFolder_TT := "Open game installation dir.`nControl+Click to open script dir."
 hKey_TT := "HOTKEY.`nClick then press a button to change."
@@ -160,22 +162,20 @@ Return
                     }
                 } Else If (!RPGGames) {
                     InterruptDownState:
-                    {
-                        if (KeyState = "Down")
-                            KeyWait()
 
-                        KeyState := KeyState != "Down" ? "Down" : "Up"
-                        Send {%sKey% %KeyState%}
+                    if (KeyState = "Down")
+                        KeyWait()
 
-                        if (KeyState = "Down") {
-                            Hotkey, ~*Vk057, InterruptDownState, ON     ; Vk057 = w
-                            Hotkey, ~*Vk01, InterruptDownState, ON      ; Vk01  = LButton
-                        } else if (KeyState = "Up") {
-                            Hotkey, ~*Vk057, InterruptDownState, OFF
-                            Hotkey, ~*Vk01, InterruptDownState, OFF
-                        }
+                    KeyState := KeyState != "Down" ? "Down" : "Up"
+                    Send {%sKey% %KeyState%}
+
+                    if (KeyState = "Down") {
+                        Hotkey, ~*Vk057, InterruptDownState, ON     ; Vk057 = w
+                        Hotkey, ~*Vk01, InterruptDownState, ON      ; Vk01  = LButton
+                    } else if (KeyState = "Up") {
+                        Hotkey, ~*Vk057, InterruptDownState, OFF
+                        Hotkey, ~*Vk01, InterruptDownState, OFF
                     }
-                    
                 }
                 Return
             }
@@ -268,6 +268,7 @@ TurnCamera:
 Return
 
 TipsOff:
+Return
 OnTop:
 Return
 
@@ -429,8 +430,6 @@ ControlGetControl(Parms, NotGet = 0) {
 WM_Mouse(wParam, lParam, msg, hWnd) {
     Static ClsNNPrevious, ClsNNCurrent, _TT, CurrControl, PrevControl
     ListLines off   ; Even when globaly enabled. Best to set it off here.
-    ; CoordMode ToolTip, window
-    ; ToolTip % "X: " HIWORD(LPARAM) "`nY: " LOWORD(LPARAM)
 
     ; ClsNNPrevious and ClsNNCurrent will hold the same value while the mouse moves inside a control.
     ClsNNPrevious := ClsNNCurrent
@@ -441,7 +440,7 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
     if (ClsNNPrevious != ClsNNCurrent)
         ControlOldBelowMouse := ClsNNPrevious
 
-    if (msg = WM_MOUSEMOVE) {
+    if ((msg = WM_MOUSEMOVE) & (!TipsOff)) {
         CurrControl := A_GuiControl
 
         if ((ClsNNPrevious != ClsNNCurrent) & (!InStr(CurrControl, " "))) {
