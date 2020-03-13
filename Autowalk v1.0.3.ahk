@@ -48,7 +48,7 @@ Global Wm_LbuttonDown   := 0x201
 , Wm_DraggGui           := 0x5050
 , WM_NCLBUTTONDOWN      := 0xA1
 , InputActive           := 0
-, TipsOff               := 1
+, TipsOff               := 0
 , ConfigFile            := "Settings.ini"
 , hScriptGui
 , ControlBelowMouse
