@@ -61,7 +61,7 @@ KeyState    := "Up"
 sKey        := "W"
 hKey        := "XButton2"
 RPGGames    := 0
-Admin       := 0
+Admin       := 1
 TurnCamera  := 0
 
 If (FileExist(ConfigFile))
@@ -87,7 +87,7 @@ Gui Font, s10 Bold
 Gui Add, Text, x24 y36 w329 h19 +Center +BackgroundTrans +0x200 vTitle, %Title%
 Gui Font
 Gui Add, Picture, x20 y18 w50 h50 +0x09 vPic, % "HICON:*" hIcon := LoadPicture(FullPath, "GDI+ Icon1 w50", ImageType)
-Gui Add, Button, x307 y18 w50 h18, &Browse
+Gui Add, Button, x307 y18 w50 h18 vBrowse, &Browse
 Gui Add, Button, x16 y160 w80 h23 vRunGame, &Start Game
 Gui Add, Button, x104 y160 w80 h23 vOpenFolder, Open Folder
 Gui Add, Button, x280 y160 w80 h23 gGuiClose, Exit
@@ -99,14 +99,14 @@ Gui Add, Text, x24 y128 w43 h14, SendKey
 Gui Add, Edit, x24 y120 w63 h21 Limit1 -TabStop vskey, %skey%
 Gui Add, CheckBox, x120 y104 w80 h23 Checked%RPGGames% vRPGGames gRPGGames, RPG Games
 Gui Add, CheckBox, x120 y128 w77 h17 +Disabled Checked%TurnCamera% vTurnCamera gTurnCamera, Turn Camera
-Gui Add, CheckBox, x120 y80 w83 h23 Checked%Admin% vAdmin gAdmin, Run as admin
+Gui Add, CheckBox, x120 y80 w83 h23 Checked%Admin% vAdmin gAdmin, RunAs Admin
 Gui Add, Edit, x216 y128 w60 h21 +Disabled Limit1 -TabStop vLeftKey, %LeftKey%
 Gui Add, Edit, x280 y128 w60 h21 +Disabled Limit1 -TabStop vRightKey, %RightKey%
 
-OpenFolder_TT := "Hold control to open script folder."
-hKey_TT := "Click and press a button to set new HOTKEY."
-sKey_TT := "Click and press a button to set new SENDKEY."
-RunGame_TT := "Start or launch you're game"
+OpenFolder_TT := "Open game folder. Control+click opens script folder."
+hKey_TT := "HOTKEY. Click and press a button to change."
+sKey_TT := "SENDKEY. Click and press a button to change."
+RunGame_TT := "Start or Activate you're game."
 
 if (RPGGames = 1) {
     GuiControl([["Enable", "TurnCamera"]])
@@ -276,9 +276,8 @@ ButtonStartGame:
         } else {
             WinActivate, ahk_id %hWndClient%, , AutoWalk
         }
-
-        WinSet, Top ,, ahk_id %hWndClient%
     }
+    WinSet, Top,, ahk_id %hWndClient%
     ; Checks for any popup window and wait for it to close.
     if InStr(ClientGuiClass, "Splash") {
         WinWaitClose, ahk_class %ClientGuiClass%, , , AutoWalk
@@ -398,6 +397,9 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
     }    
     
     if (msg = Wm_LbuttonDown) {
+        SetTimer, RemoveToolTip, Off
+        ToolTip
+        
         ; When some control under the mouse is a Edit control and the script is not already getting a key.
         If ((InputActive = 0) & (InputActive := InStr(ControlBelowMouse, "Edit"))) {
             GuiControlGet, IsControlOn, Enabled, %ControlBelowMouse%
@@ -530,10 +532,10 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 40, DeadZ
         MouseGetPos, mX, mY
 
         ; Calculate cursor position, where the vertical/horizontal centre of the display are seen as zero. Both the left and right side
-        ; of the display are seen as positive (Abs). A triangle (ATan) of 70 degrees (35*2) is created from the very centre to the top.
-        ; This triangle will be the dead zone, where the camera does not turn.
+        ; of the display are seen as positive (Abs). A triangle (ATan) of 70 degrees (35*2) is created from the very centre to the top/bottom.
+        ; These triangles will be the dead zone, where the camera does not turn.
         ;
-        if (((((mX := mX-gW/2)*mX)+((mY := gH/2-mY)*mY) < 10000) | (mY > 0)) & ((Abs(ATan(mX/mY)) * Rad) < DeadZone)) {
+        if (((((X := mX-gW/2)*mX)+((Y := gH/2-mY)*mY) < 10000) | (Y > 0)) & ((Abs(ATan(X/Y)) * Rad) < DeadZone)) {
             continue
         }
 
@@ -542,7 +544,7 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 40, DeadZ
         ; then also increase the sleep period to somthing greater then the down perdiod.
         ; This will result in a smoother turning of the camera.
         ;
-        if (mX < 0) {
+        if (X < 0) {
             Send {%RotateL% Down}
             Sleep, %DownPeriod%
             Send {%RotateL% Up}
@@ -594,12 +596,13 @@ ExitScript() {
     Loop, parse, % FileOpen(ConfigFile, 0).read(), `n, `r
     {
         ; Create section name variable 'SectionName'.
-        if InStr(A_Loopfield, "[") {
+        if (InStr(A_Loopfield, "[")) {
             SectionName := StrReplace(A_Loopfield, "["), SectionName := StrReplace(SectionName, "]")
             Continue
         }
         ; Purge empty variables from the configuration file.
-        If (((SubStr(A_LoopField, InStr(A_LoopField, "=")+1)) <= "               ") | (SubStr(A_LoopField, InStr(A_LoopField, "=")+1) = 0))
+        ;If (((SubStr(A_LoopField, InStr(A_LoopField, "=")+1)) <= "               ") | (SubStr(A_LoopField, InStr(A_LoopField, "=")+1) = 0))
+        If (((SubStr(A_LoopField, InStr(A_LoopField, "=")+1)) <= "               "))
             IniDelete, %ConfigFile%, %SectionName%, % SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1)
     }
     ; Remember the position of the script GUI.
