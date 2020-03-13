@@ -268,8 +268,21 @@ TurnCamera:
 Return
 
 TipsOff:
+    GUI, submit, nohide
+    if (TipsOff) {
+        IniWrite, %TipsOff%, %ConfigFile%, Settings, TipsOff
+    } else {
+        IniDelete, %ConfigFile%, Settings, TipsOff
+    }
 Return
+
 OnTop:
+    GUI, submit, nohide
+    if (OnTop) {
+        IniWrite, %OnTop%, %ConfigFile%, Settings, OnTop
+    } else {
+        IniDelete, %ConfigFile%, Settings, OnTop
+    }
 Return
 
 ButtonStartGame:
