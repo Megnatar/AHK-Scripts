@@ -391,24 +391,27 @@ GuiControl(ControlID, SubCommand = 0, Value = 0) {
     }
 }
 
-; A combination of Control and ControlGet. Parameter Parms should be a Array of Objects.
-; Objects should be created for each call to command Control/ControlGet.
-; By default the ControlGet command will be used. To use Control set parameter UseGet to zero.
-; Only one of the commands can be used for each call done to the function.
-; A array with 2 calls to eighter of the commands inside the function would look something like below.
+; A combination of Control and ControlGet. By default the ControlGet command will be used. To use Control set parameter NotGet to one.
+; Parameter Parms should be a Array of Objects. Each seperate Object will hold the command options. Only one of the commands can be
+; used for each call done to the function.
 ;
-; The options order for the Parms array should be the same as in the command to be used:
-;  Control_Parms    := [[Cmd, Value, Control, WinTitle, WinText, ExcludeTitle, ExcludeText], [Cmd, Value ... etc]]
+; The order of the options for the commands should be the same in the array as used by the command.
+; E.g.
 ;  ControlGet_Parms := [[OutputVar, Cmd, Value, Control, WinTitle, WinText, ExcludeTitle, ExcludeText], [OutputVar, Cmd, Value ... etc]]
+;  Control_Parms    := [[Cmd, Value, Control, WinTitle, WinText, ExcludeTitle, ExcludeText], [Cmd, Value ... etc]]
 ;
-ControlGetControl(Parms, UseGet = 1) {
+;  ControlGetControl(ControlGet_Parms)
+;  ControlGetControl(Control_Parms, 1)
+;  ControlGetControl([[Cmd, Value, Control, WinTitle, WinText, ExcludeTitle, ExcludeText]], 1)
+;
+ControlGetControl(Parms, NotGet = 0) {
     If (IsObject(Parms)) {
-        if (UseGet) {
+        if (!NotGet) {
            Loop % Parms.Length() {
                 OutputVar := Parms[A_index][1]
                 ControlGet %OutputVar%, % Parms[A_index][2], % Parms[A_index][3], % Parms[A_index][4], % Parms[A_index][5], % Parms[A_index][6], % Parms[A_index][7], % Parms[A_index][8]
             }
-       } else if (!UseGet) {
+       } else if (NotGet) {
             Loop % Parms.Length() {
                 Control % Parms[A_index][1], % Parms[A_index][2], % Parms[A_index][3], % Parms[A_index][4], % Parms[A_index][5], % Parms[A_index][6], % Parms[A_index][7]
             }
