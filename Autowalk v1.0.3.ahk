@@ -31,6 +31,7 @@
 */
 
 #NoEnv
+#Persistent
 #SingleInstance force
 #InstallKeybdHook
 #KeyHistory 0
@@ -62,8 +63,8 @@ KeyState    := "Up"
 sKey        := "W"
 hKey        := "XButton2"
 RPGGames    := 0
-Admin       := 1
 TurnCamera  := 0
+Admin       := 0
 
 If (FileExist(ConfigFile))
     ReadIni(ConfigFile)
@@ -81,7 +82,7 @@ if ((Admin = 1) & (!A_IsAdmin)) {
     ExitApp
 }
 
-GUI +LastFound +hWndhScriptGui
+GUI +LastFound +hWndhScriptGui -Theme
 Gui Add, GroupBox, x8 y0 w362 h194 +Center, Drop you're game executable here
 Gui Add, GroupBox, x16 y8 w345 h64
 Gui Font, s10 Bold
@@ -94,15 +95,15 @@ Gui Add, Button, x104 y160 w80 h23 vOpenFolder, Open Folder
 Gui Add, Button, x280 y160 w80 h23 gGuiClose, Exit
 Gui Add, GroupBox, x16 y72 w345 h83
 Gui Add, Text, x24 y80 w99 h14, Autowalk keys
-Gui Add, Text, x24 y104 w42 h14, Hotkey
-Gui Add, Edit, x24 y96 w63 h21 Limit1 -TabStop vhKey, %hKey%
-Gui Add, Text, x24 y128 w43 h14, SendKey
-Gui Add, Edit, x24 y120 w63 h21 Limit1 -TabStop vskey, %skey%
-Gui Add, CheckBox, x120 y104 w80 h23 Checked%RPGGames% vRPGGames gRPGGames, RPG Games
-Gui Add, CheckBox, x120 y128 w77 h17 +Disabled Checked%TurnCamera% vTurnCamera gTurnCamera, Turn Camera
-Gui Add, CheckBox, x120 y80 w83 h23 Checked%Admin% vAdmin gAdmin, RunAs Admin
-Gui Add, Edit, x216 y128 w60 h21 +Disabled Limit1 -TabStop vLeftKey, %LeftKey%
+Gui Add, Edit, x24 y100 w63 h21 Limit1 -TabStop vhKey, %hKey%
+Gui Add, Edit, x24 y126 w63 h21 Limit1 -TabStop vskey, %skey%
+Gui Add, CheckBox, x120 y80 w104 h23 Checked%Admin% vAdmin gAdmin, Runas Admin
+Gui Add, CheckBox, x120 y104 w104 h23 Checked%RPGGames% vRPGGames gRPGGames, RPG Games
+Gui Add, CheckBox, x120 y128 w104 h23 +Disabled Checked%TurnCamera% vTurnCamera gTurnCamera, Turn Camera
+Gui Add, Edit, x212 y128 w60 h21 +Disabled Limit1 -TabStop vLeftKey, %LeftKey%
 Gui Add, Edit, x280 y128 w60 h21 +Disabled Limit1 -TabStop vRightKey, %RightKey%
+Gui Add, CheckBox, x216 y80 w104 h23 gTipsOff vTipsOff, Disable tooltips
+Gui Add, CheckBox, x216 y100 w112 h23 gOnTop vOnTop, Gui always on top
 
 OpenFolder_TT := "Open game installation dir.`nControl+Click to open script dir."
 hKey_TT := "HOTKEY.`nClick then press a button to change."
@@ -143,12 +144,13 @@ Return
                 HotKeyAutoWalk:
                 If (RPGGames) {
                     If (A_Hotkey := KeyWait()) {
-                        If (KeyWait(A_hotKey, "D T0.2", 1) = 0) {
+                        If (ErrLvL := KeyWait(A_hotKey, "D T0.2", 1) = 0) {
                             keywait(A_hotKey), KeyState := KeyState != "Down" ? "Down" : "Up"
                             Send {%A_hotKey% %KeyState%}
-
-                            If ((TurnCamera = 1) & (KeyState = "Down"))
+                            
+                            If ((TurnCamera = 1) & (KeyState = "Down")) {
                                 AutoTurnCamera(A_hotKey, LeftKey, RightKey, VirtualKey := 1)
+                            }   
                         } else {
                             if (KeyState = "Down") {
                                 KeyState := "Up"
@@ -183,44 +185,6 @@ Return
 ;_______________________________________ Script Lables _______________________________________
 ; Appart from the start game button. The only thing these lables do is save or change some
 ; gui related setting where needed.
-
-RPGGames:
-    GUI, submit, nohide
-    IniWrite, %RPGGames%, %ConfigFile%, Settings, RPGGames
-    if (RPGGames) {
-        sKey := hKey := "LButton"
-        GuiControl([[ , "hKey", "LButton"], [ , "sKey", "LButton"], ["Enable", "TurnCamera"]])
-        IniWrite, %hKey%, %ConfigFile%, Settings, hKey
-        IniWrite, %sKey%, %ConfigFile%, Settings, sKey
-    } else {
-        TurnCamera := ""
-        GuiControl([["enable", "hKey"], ["Disable", "TurnCamera"], ["Disable", "LeftKey"], ["Disable", "RightKey"], [ , "TurnCamera", "0"]])
-        IniWrite, %TurnCamera%, %ConfigFile%, Settings, TurnCamera
-    }
-    GUI, submit, nohide
-Return
-
-TurnCamera:
-    GUI, submit, nohide
-    IniWrite, %TurnCamera%, %ConfigFile%, Settings, TurnCamera
-    if (TurnCamera) {
-        GuiControl([["Enable", "LeftKey"], ["Enable", "RightKey"]])
-    } else {
-        GuiControl([["Disable", "LeftKey"], ["Disable", "RightKey"]])
-    }
-    GUI, submit, nohide
-Return
-
-Admin:
-    GUI, submit, nohide
-    if (Admin) {
-        IniDelete, %ConfigFile%, Settings, Admin
-        Reload
-    } else {
-        IniWrite, %Admin%, %ConfigFile%, Settings, Admin
-        ExitApp
-    }
-Return
 
 GuiDropFiles:
     Loop, parse, A_GuiEvent, `n, `r
@@ -261,6 +225,48 @@ ButtonBrowse:
     IniWrite %Title%, %ConfigFile%, Settings, Title
 
     Reload
+Return
+
+Admin:
+    GUI, submit, nohide
+    if (Admin) {
+        IniWrite, %Admin%, %ConfigFile%, Settings, Admin
+        Reload
+    } else {
+        IniDelete, %ConfigFile%, Settings, Admin
+        ExitApp
+    }
+Return
+
+RPGGames:
+    GUI, submit, nohide
+    IniWrite, %RPGGames%, %ConfigFile%, Settings, RPGGames
+    if (RPGGames) {
+        sKey := hKey := "LButton"
+        GuiControl([[ , "hKey", "LButton"], [ , "sKey", "LButton"], ["Enable", "TurnCamera"]])
+        IniWrite, %hKey%, %ConfigFile%, Settings, hKey
+        IniWrite, %sKey%, %ConfigFile%, Settings, sKey
+    } else {
+        TurnCamera := ""
+        GuiControl([["enable", "hKey"], ["Disable", "TurnCamera"], ["Disable", "LeftKey"], ["Disable", "RightKey"], [ , "TurnCamera", "0"]])
+        IniWrite, %TurnCamera%, %ConfigFile%, Settings, TurnCamera
+    }
+    GUI, submit, nohide
+Return
+
+TurnCamera:
+    GUI, submit, nohide
+    IniWrite, %TurnCamera%, %ConfigFile%, Settings, TurnCamera
+    if (TurnCamera) {
+        GuiControl([["Enable", "LeftKey"], ["Enable", "RightKey"]])
+    } else {
+        GuiControl([["Disable", "LeftKey"], ["Disable", "RightKey"]])
+    }
+    GUI, submit, nohide
+Return
+
+TipsOff:
+OnTop:
 Return
 
 ButtonStartGame:
@@ -305,14 +311,12 @@ ButtonStartGame:
             WinActivate, ahk_id %hWndClient%, , AutoWalk
         }
     }
-    ; WinSet, Top,, ahk_id %hWndClient%
     ; Checks for any popup window and wait for it to close.
     if InStr(ClientGuiClass, "Splash") {
         WinWaitClose, ahk_class %ClientGuiClass%, , , AutoWalk
         WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
         HwndClient := WinExist("ahk_exe " ExeFile)
     }
-
     ; When a new game starts for the first time.
     If (InStr(Title, "Ready to start you're game")) {
         sleep, 1000
