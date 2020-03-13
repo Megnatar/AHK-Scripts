@@ -1,4 +1,6 @@
 /*
+    Autowalk v1.0.3 writen by Megnatar
+
     Everyone is free to use, add code and redistribute this script.
     But you MUST always credit ME Megnatar for creating the source!
     The source code for this script can be found on my Github repository:
@@ -23,7 +25,7 @@
     - If the game does not accept input. Then enable admin mode and try again!
     - Droping files will NOT work when the script is running in admin mode.
     - You have to use the real executable for you're game, not a shortcut that looks like a exe.
-      This is usually the case with games build on the Unreal engine. Look for a folder named Binaries or Bin. 
+      This is usually the case with games build on the Unreal engine. Look for a folder named Binaries or Bin.
 
     Great thanx to Turul1989 for helping me debug and helping me undestand what needs to be added.
 */
@@ -82,7 +84,7 @@ if ((Admin = 1) & (!A_IsAdmin)) {
 
 GUI +LastFound +hWndhScriptGui
 Gui Add, GroupBox, x8 y0 w362 h194 +Center, Drop you're game executable here
-Gui Add, GroupBox, x16 y8 w345 h64 
+Gui Add, GroupBox, x16 y8 w345 h64
 Gui Font, s10 Bold
 Gui Add, Text, x24 y36 w329 h19 +Center +BackgroundTrans +0x200 vTitle, %Title%
 Gui Font
@@ -153,7 +155,6 @@ Return
                                 KeyState := "Up"
                                 Send {%A_hotKey% %KeyState%}
                             }
-
                         }
                     }
                 } Else If (!RPGGames) {
@@ -181,7 +182,7 @@ Return
 Return
 
 ;_______________________________________ Script Lables _______________________________________
-; Appart from the start game button. The only thing these lables do is save or change some 
+; Appart from the start game button. The only thing these lables do is save or change some
 ; gui related setting where needed.
 
 RPGGames:
@@ -249,17 +250,17 @@ ButtonBrowse:
         Exit
 
     FullPath := Path "\" ExeFile, Title := "Ready to start you're game", Admin := 1
-    
+
     FileGetSize,fileSize, %FullPath%, K
     if (FileSize < 1024)
         MsgBox,,FileSize: %FileSize% KB, % "The size of you're file is less then 1MB`n`nAre you sure this is the real exe and not a shortcut`nto a ecxecutable some folders below`n`nFile size: " FileSize "KB"
-    
+
     IniWrite, %Admin%, %ConfigFile%, Settings, Admin
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
     IniWrite %Path%, %ConfigFile%, Settings, Path
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
     IniWrite %Title%, %ConfigFile%, Settings, Title
-    
+
     Reload
 Return
 
@@ -270,30 +271,29 @@ ButtonStartGame:
         WaitForClient:
         {
             sleep 5000
-            
+
             if (HwndClient := WinExist("ahk_exe " ExeFile)) {
                 WinSet, Top,, ahk_id %hWndClient%
                 WinActivate, ahk_id %hWndClient%, , AutoWalk
-                
+
                 WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
-                
+
             } else if (!(HwndClient := WinExist("ahk_exe " ExeFile)) & (CheckWinExist < 6)) {
                 CheckWinExist += 1
                 Gosub, WaitForClient
-                
+
             }  else if ((CheckWinExist > 5) & (!HwndClient)) {
                 MsgBox,0x24, Something is not oke!?, % "Unable to find client GUI!`nDo you wish to wait a nother 30 seconds?"
                 IfMsgBox Yes, {
                     CheckWinExist := ""
                     Gosub, WaitForClient
-                    
+
                 } else {
                     HwndClient := ClientGuiClass := CheckWinExist := ""
                     Return
                 }
             }
         }
-        
     } else if (HwndClient) {
         WinGet, WinState, MinMax, ahk_exe %ExeFile%, , AutoWalk
         if (!ClientGroupExist) {
@@ -333,7 +333,7 @@ Return
 
 ButtonOpenFolder:
     KeyWait("LButton")
-    If ((GetKeyState("LControl", "P")) | (GetKeyState("RControl", "P"))) {       
+    If ((GetKeyState("LControl", "P")) | (GetKeyState("RControl", "P"))) {
         Run, Explorer.exe "%A_ScriptDir%"
     } else {
         Run, Explorer.exe "%Path%"
@@ -370,10 +370,10 @@ KeyWait(Key = 0, Options = 0, ErrLvL = 0) {
 
 ; Returns the last hotkey used with all basic modifiers removed from it.
 ThisHotKey() {
-   Return RegExReplace(A_ThisHotkey, "[~\*\$]") 
+   Return RegExReplace(A_ThisHotkey, "[~\*\$]")
 }
 
-; GuiControl as a function for more flexible usage. Parameter ControlID can be a array. 
+; GuiControl as a function for more flexible usage. Parameter ControlID can be a array.
 ; For example, if you want to use the GuiControl command 3 times in a row.
 ; Then the array should look something like:
 ;  ControlID := [[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]]
@@ -391,13 +391,39 @@ GuiControl(ControlID, SubCommand = 0, Value = 0) {
     }
 }
 
+; A combination of Control and ControlGet. Parameter Parms should be a Array of Objects.
+; Objects should be created for each call to command Control/ControlGet.
+; By default the ControlGet command will be used. To use Control set parameter UseGet to zero.
+; Only one of the commands can be used for each call done to the function.
+; A array with 2 calls to eighter of the commands inside the function would look something like below.
+;
+; The options order for the Parms array should be the same as in the command to be used:
+;  Control_Parms    := [[Cmd, Value, Control, WinTitle, WinText, ExcludeTitle, ExcludeText], [Cmd, Value ... etc]]
+;  ControlGet_Parms := [[OutputVar, Cmd, Value, Control, WinTitle, WinText, ExcludeTitle, ExcludeText], [OutputVar, Cmd, Value ... etc]]
+;
+ControlGetControl(Parms, UseGet = 1) {
+    If (IsObject(Parms)) {
+        if (UseGet) {
+           Loop % Parms.Length() {
+                OutputVar := Parms[A_index][1]
+                ControlGet %OutputVar%, % Parms[A_index][2], % Parms[A_index][3], % Parms[A_index][4], % Parms[A_index][5], % Parms[A_index][6], % Parms[A_index][7], % Parms[A_index][8]
+            }
+       } else if (!UseGet) {
+            Loop % Parms.Length() {
+                Control % Parms[A_index][1], % Parms[A_index][2], % Parms[A_index][3], % Parms[A_index][4], % Parms[A_index][5], % Parms[A_index][6], % Parms[A_index][7]
+            }
+        }
+    }
+    Return ErrorLevel
+}
+
 ; Keep track of mouse movement and left mouse button state inside the GUI.
 WM_Mouse(wParam, lParam, msg, hWnd) {
     Static ClsNNPrevious, ClsNNCurrent, _TT, CurrControl, PrevControl
     ListLines off   ; Even when globaly enabled. Best to set it off here.
     ; CoordMode ToolTip, window
     ; ToolTip % "X: " HIWORD(LPARAM) "`nY: " LOWORD(LPARAM)
-    
+
     ; ClsNNPrevious and ClsNNCurrent will hold the same value while the mouse moves inside a control.
     ClsNNPrevious := ClsNNCurrent
     MouseGetPos, , , , ClsNNCurrent
@@ -407,10 +433,9 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
     if (ClsNNPrevious != ClsNNCurrent)
         ControlOldBelowMouse := ClsNNPrevious
 
-    ; Below code is not 100% mine, it came from the AHK manual. 
     if (msg = WM_MOUSEMOVE) {
         CurrControl := A_GuiControl
-        
+
         if ((ClsNNPrevious != ClsNNCurrent) & (!InStr(CurrControl, " "))) {
             ToolTip  ; Turn off any previous tooltip.
             SetTimer, DisplayToolTip, 750
@@ -428,12 +453,12 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
         SetTimer, RemoveToolTip, Off
         ToolTip
         return
-    }    
-    
+    }
+
     if (msg = Wm_LbuttonDown) {
         SetTimer, RemoveToolTip, Off
         ToolTip
-        
+
         ; When some control under the mouse is a Edit control and the script is not already getting a key.
         If ((InputActive = 0) & (InputActive := InStr(ControlBelowMouse, "Edit"))) {
             GuiControlGet, IsControlOn, Enabled, %ControlBelowMouse%
@@ -467,6 +492,19 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
         Return
     }
 }
+
+; Return the first two bytes in a 32 bit integer. The first of the two bytes is the Most Significant byte (MSB)
+HIWORD(Dword,Hex=0){
+    Static BITS := 0x10, WORD := 0xFFFF
+    return (!Hex)?((Dword>>BITS)&WORD):Format("{1:#x}",((Dword>>BITS)&WORD))
+}
+
+; Return the second two bytes in a 32bit Integer. The last of the two bytes is the Least Significant byte (LSB)
+LOWORD(Dword,Hex=0){
+    Static WORD := 0xFFFF
+    Return (!Hex)?(Dword&WORD):Format("{1:#x}",(Dword&WORD))
+}
+
 
 ; Write back the name of any keyboard, mouse or joystick button to a edit control.
 EditGetKey() {
