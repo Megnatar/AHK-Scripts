@@ -62,7 +62,7 @@ KeyState    := "Up"
 sKey        := "W"
 hKey        := "XButton2"
 RPGGames    := 0
-Admin       := 0
+Admin       := 1
 TurnCamera  := 0
 
 If (FileExist(ConfigFile))
