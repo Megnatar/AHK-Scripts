@@ -13,7 +13,7 @@
 
     Enable the checkbox "RPG Games" for games with a isometric camera (top Down view).
     All these games use left mouse button Down to move around. Thus, double click the left
-    mouse button to send Lbutton Down. Click again, once or twice, to stop.
+    mouse button to send LButton Down. Click again, once or twice, to stop.
 
     When the camera does not automatically follow the player enable "Turn camera" and
     set the two keys used by the game to rotate the camera left or right.
@@ -61,7 +61,7 @@ KeyState    := "Up"
 sKey        := "W"
 hKey        := "XButton2"
 RPGGames    := 0
-Admin       := 1
+Admin       := 0
 TurnCamera  := 0
 
 If (FileExist(ConfigFile))
@@ -103,10 +103,13 @@ Gui Add, CheckBox, x120 y80 w83 h23 Checked%Admin% vAdmin gAdmin, RunAs Admin
 Gui Add, Edit, x216 y128 w60 h21 +Disabled Limit1 -TabStop vLeftKey, %LeftKey%
 Gui Add, Edit, x280 y128 w60 h21 +Disabled Limit1 -TabStop vRightKey, %RightKey%
 
-OpenFolder_TT := "Open game folder. Control+click opens script folder."
-hKey_TT := "HOTKEY. Click and press a button to change."
-sKey_TT := "SENDKEY. Click and press a button to change."
-RunGame_TT := "Start or Activate you're game."
+OpenFolder_TT := "Open game installation dir.`nControl+Click to open script dir."
+hKey_TT := "HOTKEY.`nClick then press a button to change."
+sKey_TT := "SENDKEY.`nClick then press a button to change."
+RunGame_TT := "Start a new game session.`nActivates it, if it's already running."
+LeftKey_TT := "The key used by the game to turn camera left."
+RightKey_TT := "The key used by the game to turn camera right."
+Browse_TT := "Browse for a game to add."
 
 if (RPGGames = 1) {
     GuiControl([["Enable", "TurnCamera"]])
@@ -163,7 +166,7 @@ Return
 
                     if (KeyState = "Down") {
                         Hotkey, ~*Vk057, InterruptDownState, ON     ; Vk057 = w
-                        Hotkey, ~*Vk01, InterruptDownState, ON      ; Vk01  = Lbutton
+                        Hotkey, ~*Vk01, InterruptDownState, ON      ; Vk01  = LButton
                     } else if (KeyState = "Up") {
                         Hotkey, ~*Vk057, InterruptDownState, OFF
                         Hotkey, ~*Vk01, InterruptDownState, OFF
@@ -185,8 +188,8 @@ RPGGames:
     GUI, submit, nohide
     IniWrite, %RPGGames%, %ConfigFile%, Settings, RPGGames
     if (RPGGames) {
-        sKey := hKey := "Lbutton"
-        GuiControl([[ , "hKey", "Lbutton"], [ , "sKey", "Lbutton"], ["Enable", "TurnCamera"]])
+        sKey := hKey := "LButton"
+        GuiControl([[ , "hKey", "LButton"], [ , "sKey", "LButton"], ["Enable", "TurnCamera"]])
         IniWrite, %hKey%, %ConfigFile%, Settings, hKey
         IniWrite, %sKey%, %ConfigFile%, Settings, sKey
     } else {
@@ -227,7 +230,8 @@ GuiDropFiles:
     if (FileSize < 1024)
         MsgBox,,FileSize: %FileSize% KB, % "The size of you're file is less then 1MB`n`nAre you sure this is the real exe and not a shortcut`nto a ecxecutable some folders below`n`nFile size: " FileSize "KB"
 
-    Title := "Ready to start you're game"
+    Title := "Ready to start you're game", Admin := 1
+    IniWrite, %Admin%, %ConfigFile%, Settings, Admin
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
     IniWrite %Path%, %ConfigFile%, Settings, Path
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
@@ -244,12 +248,13 @@ ButtonBrowse:
     if (ErrorLevel)
         Exit
 
-    FullPath := Path "\" ExeFile, Title := "Ready to start you're game"
+    FullPath := Path "\" ExeFile, Title := "Ready to start you're game", Admin := 1
     
     FileGetSize,fileSize, %FullPath%, K
     if (FileSize < 1024)
         MsgBox,,FileSize: %FileSize% KB, % "The size of you're file is less then 1MB`n`nAre you sure this is the real exe and not a shortcut`nto a ecxecutable some folders below`n`nFile size: " FileSize "KB"
-        
+    
+    IniWrite, %Admin%, %ConfigFile%, Settings, Admin
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
     IniWrite %Path%, %ConfigFile%, Settings, Path
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
@@ -260,14 +265,38 @@ Return
 
 ButtonStartGame:
     If (!(HwndClient := WinExist("ahk_exe " ExeFile))) {
-        Run, %FullPath%, %Path%, , ProcessID
-        WinWaitActive, ahk_exe %ExeFile%, , , AutoWalk
-        WinGet, HwndClient, ID, ahk_exe %ExeFile%
-        WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
-    } else {
+        Run %ExeFile%, %Path%, UseErrorLevel Max
+
+        WaitForClient:
+        {
+            sleep 5000
+            
+            if (HwndClient := WinExist("ahk_exe " ExeFile)) {
+                WinSet, Top,, ahk_id %hWndClient%
+                WinActivate, ahk_id %hWndClient%, , AutoWalk
+                
+                WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
+                
+            } else if (!(HwndClient := WinExist("ahk_exe " ExeFile)) & (CheckWinExist < 6)) {
+                CheckWinExist += 1
+                Gosub, WaitForClient
+                
+            }  else if ((CheckWinExist > 5) & (!HwndClient)) {
+                MsgBox,0x24, Something is not oke!?, % "Unable to find client GUI!`nDo you wish to wait a nother 30 seconds?"
+                IfMsgBox Yes, {
+                    CheckWinExist := ""
+                    Gosub, WaitForClient
+                    
+                } else {
+                    HwndClient := ClientGuiClass := CheckWinExist := ""
+                    Return
+                }
+            }
+        }
+        
+    } else if (HwndClient) {
         WinGet, WinState, MinMax, ahk_exe %ExeFile%, , AutoWalk
         if (!ClientGroupExist) {
-            WinGet, ProcessID, PID, ahk_exe %ExeFile%, , AutoWalk
             WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
         }
         #WinActivateForce
@@ -277,31 +306,33 @@ ButtonStartGame:
             WinActivate, ahk_id %hWndClient%, , AutoWalk
         }
     }
-    WinSet, Top,, ahk_id %hWndClient%
+    ; WinSet, Top,, ahk_id %hWndClient%
     ; Checks for any popup window and wait for it to close.
     if InStr(ClientGuiClass, "Splash") {
         WinWaitClose, ahk_class %ClientGuiClass%, , , AutoWalk
         WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
-        WinGet, HwndClient, ID, ahk_exe %ExeFile%
+        HwndClient := WinExist("ahk_exe " ExeFile)
+    }
+
+    ; When a new game starts for the first time.
+    If (InStr(Title, "Ready to start you're game")) {
+        sleep, 1000
+        WinGetTitle, Title, ahk_exe %ExeFile%
+        IniWrite %Title%, %ConfigFile%, Settings, Title
+        GuiControl([[ , "Title", Title], ["MoveDraw", "Pic"]])
     }
     ; Create ClientGroup only once.
     if (!ClientGroupExist) {
         ClientGroupExist := 1
+        WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
         GroupAdd, ClientGroup, ahk_class %ClientGuiClass%
         GroupAdd, ClientGroup, ahk_id %hWndClient%
-    }
-    ; When a new game starts for the first time.
-    If (InStr(Title, "Ready to start you're game")) {
-        sleep, 10000    ; Give the game some time to load.
-        WinGetTitle, Title, ahk_exe %ExeFile%
-        IniWrite %Title%, %ConfigFile%, Settings, Title
-        GuiControl([[ , "Title", Title], ["MoveDraw", "Pic"]])
     }
     Hotkey, ~%hKey%, HotKeyAutoWalk, On
 Return
 
 ButtonOpenFolder:
-    KeyWait("Lbutton")
+    KeyWait("LButton")
     If ((GetKeyState("LControl", "P")) | (GetKeyState("RControl", "P"))) {       
         Run, Explorer.exe "%A_ScriptDir%"
     } else {
@@ -364,6 +395,8 @@ GuiControl(ControlID, SubCommand = 0, Value = 0) {
 WM_Mouse(wParam, lParam, msg, hWnd) {
     Static ClsNNPrevious, ClsNNCurrent, _TT, CurrControl, PrevControl
     ListLines off   ; Even when globaly enabled. Best to set it off here.
+    ; CoordMode ToolTip, window
+    ; ToolTip % "X: " HIWORD(LPARAM) "`nY: " LOWORD(LPARAM)
     
     ; ClsNNPrevious and ClsNNCurrent will hold the same value while the mouse moves inside a control.
     ClsNNPrevious := ClsNNCurrent
@@ -374,12 +407,13 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
     if (ClsNNPrevious != ClsNNCurrent)
         ControlOldBelowMouse := ClsNNPrevious
 
+    ; Below code is not 100% mine, it came from the AHK manual. 
     if (msg = WM_MOUSEMOVE) {
         CurrControl := A_GuiControl
         
         if ((ClsNNPrevious != ClsNNCurrent) & (!InStr(CurrControl, " "))) {
             ToolTip  ; Turn off any previous tooltip.
-            SetTimer, DisplayToolTip, 1000
+            SetTimer, DisplayToolTip, 750
             PrevControl := CurrControl
         }
         return
@@ -387,7 +421,7 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
         DisplayToolTip:
         SetTimer, DisplayToolTip, Off
         ToolTip % %CurrControl%_TT  ; The leading percent sign tell it to use an expression.
-        SetTimer, RemoveToolTip, 3000
+        SetTimer, RemoveToolTip, 5000
         return
 
         RemoveToolTip:
@@ -417,17 +451,17 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
                 InputActive := 0
             }
         }
-        if ((GetKeyState("Lbutton", "P")) & (!A_GuiControl)) {
+        if ((GetKeyState("LButton", "P")) & (!A_GuiControl)) {
             PostMessage, Wm_DraggGui
         }
         Return
     }
 
     if (msg = Wm_DraggGui) {
-        if ((GetKeyState("Lbutton", "P")) & (!A_GuiControl)) {
+        if ((GetKeyState("LButton", "P")) & (!A_GuiControl)) {
             FadeInOut(hScriptGui, 1)
             PostMessage, WM_NCLBUTTONDOWN, 2
-            KeyWait("Lbutton")
+            KeyWait("LButton")
             FadeInOut(hScriptGui)
         }
         Return
@@ -438,11 +472,11 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
 EditGetKey() {
     static InputKeys := ["LButton", "RButton", "MButton", "XButton1", "XButton2", "Numpad0", "Numpad1", "Numpad2", "Numpad3", "Numpad4", "Numpad5", "Numpad6", "Numpad7", "Numpad8", "Numpad9","Numpad10","NumpadEnter", "NumpadAdd", "NumpadSub","NumpadMult", "NumpadDev", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "Left", "Right", "Up", "Down", "Home","End", "PgUp", "PgDn", "Del", "Ins", "Capslock", "Numlock", "PrintScreen", "Pause", "LControl", "RControl", "LAlt", "RAlt", "LShift","RShift", "LWin", "RWin", "AppsKey", "BackSpace", "space", "Tab", "Esc", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N","O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ",", ".", "/", "[", "]", "\", "'", ";", "` ","Joy1", "Joy2", "Joy3", "Joy4", "Joy5", "Joy6", "Joy7", "Joy8", "Joy9", "Joy10", "Joy11", "Joy12", "Joy13", "Joy14", "Joy15", "Joy16", "Joy17","Joy18", "Joy19", "Joy20", "Joy21", "Joy22", "Joy23", "Joy24", "Joy25", "Joy26", "Joy27", "Joy28", "Joy29", "Joy30","Joy31", "Joy32"]
 
-    KeyWait("Lbutton")
+    KeyWait("LButton")
 
     ; Prevent a right click from showing the context menu.
     Hotkey, IfWinExist, AutoWalk
-    Hotkey, Vk02 Up, RbttnUp, On     ; Vk02 = Rbutton
+    Hotkey, Vk02 Up, RbttnUp, On     ; Vk02 = RButton
 
     ; Loop untill the user pressed some button or as long as the mouse is over some edit box.
     Critical
@@ -490,7 +524,7 @@ EditGetKey() {
 ; Return
 ;
 ; And this will send B when you double click the right mouse button
-; ~Rbutton::
+; ~RButton::
 ;   ButtonSingleDouble("", "B")
 ; Return
 ;
