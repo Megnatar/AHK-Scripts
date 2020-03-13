@@ -31,7 +31,6 @@
 */
 
 #NoEnv
-#Persistent
 #SingleInstance force
 #InstallKeybdHook
 #KeyHistory 0
@@ -158,23 +157,23 @@ Return
                         }
                     }
                 } Else If (!RPGGames) {
-                InterruptDownState:
-                    if (KeyState = "Down")
-                        KeyWait()
+                    InterruptDownState:
+                    {
+                        if (KeyState = "Down")
+                            KeyWait()
 
-                    KeyState := KeyState != "Down" ? "Down" : "Up"
-                    Send {%sKey% %KeyState%}
+                        KeyState := KeyState != "Down" ? "Down" : "Up"
+                        Send {%sKey% %KeyState%}
 
-                    if (KeyState = "Down") {
-                        Hotkey, ~*Vk057, InterruptDownState, ON     ; Vk057 = w
-                        Hotkey, ~*Vk01, InterruptDownState, ON      ; Vk01  = LButton
-                    } else if (KeyState = "Up") {
-                        Hotkey, ~*Vk057, InterruptDownState, OFF
-                        Hotkey, ~*Vk01, InterruptDownState, OFF
+                        if (KeyState = "Down") {
+                            Hotkey, ~*Vk057, InterruptDownState, ON     ; Vk057 = w
+                            Hotkey, ~*Vk01, InterruptDownState, ON      ; Vk01  = LButton
+                        } else if (KeyState = "Up") {
+                            Hotkey, ~*Vk057, InterruptDownState, OFF
+                            Hotkey, ~*Vk01, InterruptDownState, OFF
+                        }
                     }
-                Return
                 }
-            Return
             }
         }
     }
@@ -392,7 +391,7 @@ GuiControl(ControlID, SubCommand = 0, Value = 0) {
 }
 
 ; A combination of Control and ControlGet. By default the ControlGet command will be used. To use Control set parameter NotGet to one.
-; Parameter Parms should be a Array of Objects. Each separate Object will hold the command options. Only one of the commands can be
+; Parameter Parms should be a Array of Objects. Each seperate Object will hold the command options. Only one of the commands can be
 ; used for each call done to the function.
 ;
 ; The order of the options for the commands should be the same in the array as used by the command.
@@ -424,6 +423,8 @@ ControlGetControl(Parms, NotGet = 0) {
 WM_Mouse(wParam, lParam, msg, hWnd) {
     Static ClsNNPrevious, ClsNNCurrent, _TT, CurrControl, PrevControl
     ListLines off   ; Even when globaly enabled. Best to set it off here.
+    ; CoordMode ToolTip, window
+    ; ToolTip % "X: " HIWORD(LPARAM) "`nY: " LOWORD(LPARAM)
 
     ; ClsNNPrevious and ClsNNCurrent will hold the same value while the mouse moves inside a control.
     ClsNNPrevious := ClsNNCurrent
@@ -652,7 +653,7 @@ FadeInOut(hWnd, dragg = 0) {
 ExitScript() {
     WinGetPos, Gui_X, Gui_Y, ,, AutoWalk
 
-    ; See if there are any variables in the ini that are empty.
+    ; See if there are any variables in the ini that are empty or set to zero.
     Loop, parse, % FileOpen(ConfigFile, 0).read(), `n, `r
     {
         ; Create section name variable 'SectionName'.
@@ -661,6 +662,7 @@ ExitScript() {
             Continue
         }
         ; Purge empty variables from the configuration file.
+        ;If (((SubStr(A_LoopField, InStr(A_LoopField, "=")+1)) <= "               ") | (SubStr(A_LoopField, InStr(A_LoopField, "=")+1) = 0))
         If (((SubStr(A_LoopField, InStr(A_LoopField, "=")+1)) <= "               "))
             IniDelete, %ConfigFile%, %SectionName%, % SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1)
     }
