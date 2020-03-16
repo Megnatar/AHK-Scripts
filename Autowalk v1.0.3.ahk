@@ -290,15 +290,10 @@ ButtonStartGame:
         Run %ExeFile%, %Path%, UseErrorLevel Max
 
         Loop {
-            if (HwndClient := WinExist("ahk_exe " ExeFile)) {
-                WinSet, Top,, ahk_id %hWndClient%
-                WinActivate, ahk_id %hWndClient%, , AutoWalk
-                Break
-
-            } else if (!(HwndClient := WinExist("ahk_exe " ExeFile)) & (CheckWinExist < 30)) {
+            if (!(HwndClient := WinExist("ahk_exe " ExeFile)) & (CheckWinExist < 30)) {
                 CheckWinExist += 1
                 
-            }  else if ((CheckWinExist = 30) & (!HwndClient)) {
+            } else if ((!HwndClient) & (CheckWinExist = 30)) {
                 MsgBox,0x24, Something is not oke!?, % "Unable to find client GUI!`nDo you wish to wait a nother 30 seconds?"
                 
                 IfMsgBox Yes, {
@@ -307,9 +302,15 @@ ButtonStartGame:
                     HwndClient := "", CheckWinExist := "NotFound"
                     break
                 }
+                
+            } else if (HwndClient) {
+                WinSet, Top,, ahk_id %hWndClient%
+                WinActivate, ahk_id %hWndClient%, , AutoWalk
+                Break
             }
             sleep, 1000
         }
+        
         if (CheckWinExist = "NotFound") {
             Return
         }
@@ -334,6 +335,7 @@ ButtonStartGame:
     }
 
     ; Get the window title when a new game is launched for the first time.
+    ; Put it on the gui and save it in the setting.ini file.
     If (InStr(Title, "Ready to start you're game")) {
         WinGetTitle, Title, ahk_exe %ExeFile%
         IniWrite %Title%, %ConfigFile%, Settings, Title
