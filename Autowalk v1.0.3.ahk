@@ -15,10 +15,11 @@
 
     Enable the checkbox "RPG Games" for games with a isometric camera (top Down view).
     All these games use left mouse button Down to move around. Thus, double click the left
-    mouse button to send LButton Down. Click again, once or twice, to stop.
+    mouse button to send LButton Down. Click again, once or twice, to stop. 
+    The hotkey and the key to send, are both configurable. 
 
     When the camera does not automatically follow the player enable "Turn camera" and
-    set the two keys used by the game to rotate the camera left or right.
+    specify the two keys used by the game to rotate the camera left or right.
     A double click will now also enable auto rotation of the camera.
 
     IMPORTANT:
@@ -56,17 +57,24 @@ Global Wm_LbuttonDown   := 0x201
 , ctrlTxt
 , A_hotKey
 
-LeftKey     := "Left"
-RightKey    := "Right"
-Gui_X       := "Center"
-Gui_Y       := "Center"
-KeyState    := "Up"
-sKey        := "W"
-hKey        := "XButton2"
-RPGGames    := 0
-TurnCamera  := 0
-Admin       := 0
-OnTop       := 0
+OpenFolder_TT := "Open game installation dir.`nControl+Click to open script dir."
+hKey_TT       := "HOTKEY.`nClick then press a button to change."
+sKey_TT       := "SENDKEY.`nClick then press a button to change."
+RunGame_TT    := "Start a new game session.`nActivates it, if it's already running."
+LeftKey_TT    := "The key used by the game to turn camera left."
+RightKey_TT   := "The key used by the game to turn camera right."
+Browse_TT     := "Browse for a game to add."
+LeftKey       := "Left"
+RightKey      := "Right"
+Gui_X         := "Center"
+Gui_Y         := "Center"
+KeyState      := "Up"
+sKey          := "W"
+hKey          := "XButton2"
+RPGGames      := 0
+TurnCamera    := 0
+Admin         := 0
+OnTop         := 0
 
 If (FileExist(ConfigFile))
     ReadIni(ConfigFile)
@@ -107,14 +115,6 @@ Gui Add, Edit, x280 y128 w60 h21 +Disabled Limit1 -TabStop vRightKey, %RightKey%
 Gui Add, CheckBox, x216 y80 w104 h23 Checked%TipsOff% gTipsOff vTipsOff, Disable tooltips
 Gui Add, CheckBox, x216 y100 w112 h23 Checked%OnTop% gOnTop vOnTop, Gui always on top
 
-OpenFolder_TT := "Open game installation dir.`nControl+Click to open script dir."
-hKey_TT := "HOTKEY.`nClick then press a button to change."
-sKey_TT := "SENDKEY.`nClick then press a button to change."
-RunGame_TT := "Start a new game session.`nActivates it, if it's already running."
-LeftKey_TT := "The key used by the game to turn camera left."
-RightKey_TT := "The key used by the game to turn camera right."
-Browse_TT := "Browse for a game to add."
-
 if (RPGGames = 1) {
     GuiControl([["Enable", "TurnCamera"]])
     if (TurnCamera = 1) {
@@ -149,10 +149,10 @@ Return
                         If (ErrLvL := KeyWait(A_hotKey, "D T0.2", 1) = 0) {
                             keywait(A_hotKey), KeyState := KeyState != "Down" ? "Down" : "Up"
                             Send {%A_hotKey% %KeyState%}
-                            
+
                             If ((TurnCamera = 1) & (KeyState = "Down")) {
                                 AutoTurnCamera(A_hotKey, LeftKey, RightKey, VirtualKey := 1)
-                            }   
+                            }
                         } else {
                             if (KeyState = "Down") {
                                 KeyState := "Up"
@@ -201,7 +201,7 @@ GuiDropFiles:
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
     IniWrite %Path%, %ConfigFile%, Settings, Path
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
-    IniWrite %Title%, %ConfigFile%, Settings, Title
+     IniWrite %Title%, %ConfigFile%, Settings, Title
 
     Reload
 Return
@@ -289,64 +289,66 @@ ButtonStartGame:
     If (!(HwndClient := WinExist("ahk_exe " ExeFile))) {
         Run %ExeFile%, %Path%, UseErrorLevel Max
 
-        WaitForClient:
-        {
-            sleep 5000
-
+        Loop {
             if (HwndClient := WinExist("ahk_exe " ExeFile)) {
                 WinSet, Top,, ahk_id %hWndClient%
                 WinActivate, ahk_id %hWndClient%, , AutoWalk
+                Break
 
-                WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
-
-            } else if (!(HwndClient := WinExist("ahk_exe " ExeFile)) & (CheckWinExist < 6)) {
+            } else if (!(HwndClient := WinExist("ahk_exe " ExeFile)) & (CheckWinExist < 30)) {
                 CheckWinExist += 1
-                Gosub, WaitForClient
-
-            }  else if ((CheckWinExist > 5) & (!HwndClient)) {
+                
+            }  else if ((CheckWinExist = 30) & (!HwndClient)) {
                 MsgBox,0x24, Something is not oke!?, % "Unable to find client GUI!`nDo you wish to wait a nother 30 seconds?"
+                
                 IfMsgBox Yes, {
                     CheckWinExist := ""
-                    Gosub, WaitForClient
-
                 } else {
-                    HwndClient := ClientGuiClass := CheckWinExist := ""
-                    Return
+                    HwndClient := "", CheckWinExist := "NotFound"
+                    break
                 }
             }
+            sleep, 1000
+        }
+        if (CheckWinExist = "NotFound") {
+            Return
         }
     } else if (HwndClient) {
         WinGet, WinState, MinMax, ahk_exe %ExeFile%, , AutoWalk
-        if (!ClientGroupExist) {
-            WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
-        }
+
         #WinActivateForce
         if (WinState = -1) {
-            WinRestore, ahk_id %hWndClient%, , AutoWalk
+            WinRestore, ahk_id %hWndClient%,, AutoWalk
         } else {
-            WinActivate, ahk_id %hWndClient%, , AutoWalk
+            WinActivate, ahk_id %hWndClient%,, AutoWalk
         }
     }
-    ; Checks for any popup window and wait for it to close.
-    if InStr(ClientGuiClass, "Splash") {
-        WinWaitClose, ahk_class %ClientGuiClass%, , , AutoWalk
-        WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
+    WinGet WinStyle, Style, ahk_exe %ExeFile%,, AutoWalk
+
+    ; A game gui always hase style 0x94000000. So when the active windows started by the exe
+    ; does not have this style. Then it's probably a splashscreen or some other gui.
+    ; Thus wait for it to close and getting the correct handle for the game window.
+    If (WinStyle != 0x94000000) {
+        WinWaitClose, ahk_id %hWndClient%, , , AutoWalk
         HwndClient := WinExist("ahk_exe " ExeFile)
     }
-    ; When a new game starts for the first time.
+
+    ; Get the window title when a new game is launched for the first time.
     If (InStr(Title, "Ready to start you're game")) {
-        sleep, 1000
         WinGetTitle, Title, ahk_exe %ExeFile%
         IniWrite %Title%, %ConfigFile%, Settings, Title
         GuiControl([[ , "Title", Title], ["MoveDraw", "Pic"]])
     }
-    ; Create ClientGroup only once.
-    if (!ClientGroupExist) {
-        ClientGroupExist := 1
+
+    ; Create ClientGroup only once. The "ahk_group ClientGroup" is used by #IfWin[Not]Exist
+    ; and #IfWin[Not]Active. All directives are loaded before ahk runs a script. Thus they
+    ; don't understand variables and there content. However ahk_group is supported.
+    if (!ClientGuiClass) {
         WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
         GroupAdd, ClientGroup, ahk_class %ClientGuiClass%
-        GroupAdd, ClientGroup, ahk_id %hWndClient%
     }
+
+    ; The hotkey and it's lable that are used by autowalk.
     Hotkey, ~%hKey%, HotKeyAutoWalk, On
 Return
 
@@ -408,6 +410,7 @@ GuiControl(ControlID, SubCommand = 0, Value = 0) {
     } else {
         GuiControl % SubCommand, % ControlID, % Value
     }
+    Return ErrorLevel
 }
 
 ; A combination of Control and ControlGet. By default the ControlGet command will be used. To use Control set parameter NotGet to one.
@@ -639,7 +642,6 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 40, DeadZ
 
 ; Fade transparency out or in while dragging the Gui.
 FadeInOut(hWnd, dragg = 0) {
-    SetBatchLines -1
     static Transparency := 250
     if (dragg = 1) {
         Loop {
@@ -671,7 +673,7 @@ FadeInOut(hWnd, dragg = 0) {
 ExitScript() {
     WinGetPos, Gui_X, Gui_Y, ,, AutoWalk
 
-    ; See if there are any variables in the ini that are empty or set to zero.
+    ; See if there are any variables in the ini that are empty.
     Loop, parse, % FileOpen(ConfigFile, 0).read(), `n, `r
     {
         ; Create section name variable 'SectionName'.
@@ -680,7 +682,6 @@ ExitScript() {
             Continue
         }
         ; Purge empty variables from the configuration file.
-        ;If (((SubStr(A_LoopField, InStr(A_LoopField, "=")+1)) <= "               ") | (SubStr(A_LoopField, InStr(A_LoopField, "=")+1) = 0))
         If (((SubStr(A_LoopField, InStr(A_LoopField, "=")+1)) <= "               "))
             IniDelete, %ConfigFile%, %SectionName%, % SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1)
     }
