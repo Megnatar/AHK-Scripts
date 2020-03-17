@@ -286,7 +286,7 @@ OnTop:
 Return
 
 ButtonStartGame:
-    ; Is thhe game already running?
+    ; Is the game already running?
     If (!(HwndClient := WinExist("ahk_exe " ExeFile))) {
         Run %ExeFile%, %Path%
         AAAA_WorkingDir := A_WorkingDir
