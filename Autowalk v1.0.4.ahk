@@ -1,5 +1,5 @@
 /*
-    Autowalk v1.0.3 writen by Megnatar
+    Autowalk v1.0.4 writen by Megnatar
 
     Everyone is free to use, add code and redistribute this script.
     But you MUST always credit ME Megnatar for creating the source!
@@ -36,7 +36,7 @@
 #SingleInstance force
 #InstallKeybdHook
 #KeyHistory 0
-ListLines off
+;ListLines off
 SetBatchLines -1
 SetTitleMatchMode 3
 SetKeyDelay 5, 1
@@ -286,13 +286,20 @@ OnTop:
 Return
 
 ButtonStartGame:
+    ; Is thhe game already running?
     If (!(HwndClient := WinExist("ahk_exe " ExeFile))) {
-        Run %ExeFile%, %Path%, UseErrorLevel
+        Run %ExeFile%, %Path%
+        AAAA_WorkingDir := A_WorkingDir
 
+        ; Keep on checking for our window to appear. Untill var HwndClient holds some value.
         While(!(HwndClient := WinExist("ahk_exe " ExeFile))) {
             if (CheckWinExist < 30) {
                 CheckWinExist += 1
-                GuiControl([[ , "Title", Title " " CheckWinExist ]])
+                
+                ; Show a counter in the GUI when the script is waiting longer then 4 seconds.
+                if (CheckWinExist > 4)
+                    GuiControl([[ , "Title", Title " " CheckWinExist ]])
+            ; After 30 second a timeout will occur.
             } else if ((!HwndClient) & (CheckWinExist > 29)) {
                 MsgBox,0x24, Something is not oke!?, % "Unable to find client GUI!`nDo you wish to wait a nother 30 seconds?"
                 IfMsgBox Yes, {
@@ -305,51 +312,60 @@ ButtonStartGame:
             }
             sleep, 1000
         }
+        ; Whem a timeout occurred and while() broke. Then jump back to the last return because messagebox choise was No.
         if (CheckWinExist = "NotFound") {
             Return
         } else {
+            ; Remove timer from gui only when it started.
+            if (CheckWinExist > 4)
+                GuiControl([[ , "Title", Title]])
+                
             WinSet, Bottom,, AutoWalk
-            WinActivate, ahk_id %hWndClient%, , AutoWalk
             WinSet, Top,, ahk_id %hWndClient%
-            GuiControl([[ , "Title", Title]])
+            
+            ; Is active window the game window? A top most window is not always the active one.
+            If (WinActive("A") != HwndClient)
+                WinActivate, ahk_id %hWndClient%, , AutoWalk
         }
+    ; When the game was already running.    
     } else if (HwndClient) {
         WinGet, WinState, MinMax, ahk_exe %ExeFile%, , AutoWalk
 
-        #WinActivateForce
         if (WinState = -1) {
             WinRestore, ahk_id %hWndClient%,, AutoWalk
         } else {
             WinActivate, ahk_id %hWndClient%,, AutoWalk
         }
     }
-    WinGet WinStyle, Style, ahk_exe %ExeFile%,, AutoWalk
-
-    ; A game gui always hase style 0x94000000. So when the active windows started by the exe
-    ; does not have this style. Then it's probably a splashscreen or some other gui.
-    ; Thus wait for it to close and getting the correct handle for the game window.
-    If (WinStyle != 0x94000000) {
-        WinWaitClose, ahk_id %hWndClient%, , , AutoWalk
-        HwndClient := WinExist("ahk_exe " ExeFile)
+    sleep 5000
+    
+    ; Some games launch a different window first.
+    ; A window must exist by now. But is it our window? A game GUI never contains any
+    ; controls in it. So getting all controls of the window that was just launched.
+    WinGet, EmptyCtrlList, ControlList, ahk_exe %ExeFile%
+    
+    ; Eveluates true when var EmptyCtrlList is indeed empty.
+    If (EmptyCtrlList ? 0 : 1) {
+    
+        ; Get the window title and it's class name when a new game is launched for the first time.
+        ; Save class and title to setting.ini file and put the title on the gui.
+        If ((InStr(Title, "Ready to start you're game")) | (!Title)) {
+            WinGetTitle, Title, ahk_exe %ExeFile%
+            WinGetClass, ClientGuiClass, ahk_exe %ExeFile%
+            
+            IniWrite %Title%, %ConfigFile%, Settings, Title
+            IniWrite %ClientGuiClass%, %ConfigFile%, Settings, ClientGuiClass
+            
+            GuiControl([[ , "Title", Title], ["MoveDraw", "Pic"]])
+        }        
     }
-
-    ; Get the window title when a new game is launched for the first time.
-    ; Put it on the gui and save it in the setting.ini file.
-    If (InStr(Title, "Ready to start you're game")) {
-        WinGetTitle, Title, ahk_exe %ExeFile%
-        IniWrite %Title%, %ConfigFile%, Settings, Title
-        GuiControl([[ , "Title", Title], ["MoveDraw", "Pic"]])
-    }
-
+    
     ; Create ClientGroup only once. The "ahk_group ClientGroup" is used by #IfWin[Not]Exist
     ; and #IfWin[Not]Active. All directives are loaded before ahk runs a script. Thus they
-    ; don't understand variables and there content. However ahk_group is supported.
-    if (!ClientGuiClass) {
-        WinGetClass, ClientGuiClass, ahk_exe %ExeFile%, , AutoWalk
+    ; don't understand variables. However ahk_group is supported.
+    if (ClientGroup := ClientGroup  ? 0 : 1)
         GroupAdd, ClientGroup, ahk_class %ClientGuiClass%
-    }
 
-    ; The hotkey and it's lable that are used by autowalk.
     Hotkey, ~%hKey%, HotKeyAutoWalk, On
 Return
 
