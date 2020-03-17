@@ -15,8 +15,8 @@
 
     Enable the checkbox "RPG Games" for games with a isometric camera (top Down view).
     All these games use left mouse button Down to move around. Thus, double click the left
-    mouse button to send LButton Down. Click again, once or twice, to stop. 
-    The hotkey and the key to send, are both configurable. 
+    mouse button to send LButton Down. Click again, once or twice, to stop.
+    The hotkey and the key to send, are both configurable.
 
     When the camera does not automatically follow the player enable "Turn camera" and
     specify the two keys used by the game to rotate the camera left or right.
@@ -287,32 +287,31 @@ Return
 
 ButtonStartGame:
     If (!(HwndClient := WinExist("ahk_exe " ExeFile))) {
-        Run %ExeFile%, %Path%, UseErrorLevel Max
+        Run %ExeFile%, %Path%, UseErrorLevel
 
-        Loop {
-            if (!(HwndClient := WinExist("ahk_exe " ExeFile)) & (CheckWinExist < 30)) {
+        While(!(HwndClient := WinExist("ahk_exe " ExeFile))) {
+            if (CheckWinExist < 30) {
                 CheckWinExist += 1
-                
-            } else if ((!HwndClient) & (CheckWinExist = 30)) {
+                GuiControl([[ , "Title", Title " " CheckWinExist ]])
+            } else if ((!HwndClient) & (CheckWinExist > 29)) {
                 MsgBox,0x24, Something is not oke!?, % "Unable to find client GUI!`nDo you wish to wait a nother 30 seconds?"
-                
                 IfMsgBox Yes, {
                     CheckWinExist := ""
+                    Continue
                 } else {
                     HwndClient := "", CheckWinExist := "NotFound"
                     break
                 }
-                
-            } else if (HwndClient) {
-                WinSet, Top,, ahk_id %hWndClient%
-                WinActivate, ahk_id %hWndClient%, , AutoWalk
-                Break
             }
             sleep, 1000
         }
-        
         if (CheckWinExist = "NotFound") {
             Return
+        } else {
+            WinSet, Bottom,, AutoWalk
+            WinActivate, ahk_id %hWndClient%, , AutoWalk
+            WinSet, Top,, ahk_id %hWndClient%
+            GuiControl([[ , "Title", Title]])
         }
     } else if (HwndClient) {
         WinGet, WinState, MinMax, ahk_exe %ExeFile%, , AutoWalk
@@ -488,6 +487,11 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
         If ((InputActive = 0) & (InputActive := InStr(ControlBelowMouse, "Edit"))) {
             GuiControlGet, IsControlOn, Enabled, %ControlBelowMouse%
 
+            ; Ignore the windows used by autohotkey for ListVars, ListLines and so on.
+            If (WinGetActiveTitle() != "AutoWalk")
+             Return
+
+
             ; And when this control is not disabled.
             If (IsControlOn = 1) {
 
@@ -516,6 +520,11 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
         }
         Return
     }
+}
+
+WinGetActiveTitle() {
+    WinGetActiveTitle OutputVar
+    Return OutputVar
 }
 
 ; Write back the name of any keyboard, mouse or joystick button to a edit control.
