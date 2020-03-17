@@ -36,7 +36,7 @@
 #SingleInstance force
 #InstallKeybdHook
 #KeyHistory 0
-;ListLines off
+ListLines off
 SetBatchLines -1
 SetTitleMatchMode 3
 SetKeyDelay 5, 1
@@ -503,12 +503,12 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
         If ((InputActive = 0) & (InputActive := InStr(ControlBelowMouse, "Edit"))) {
             GuiControlGet, IsControlOn, Enabled, %ControlBelowMouse%
 
-            ; Ignore Gui's used by autohotkey.exe. Those like ListVars, ListLines and so on.
-            If (WinGetActiveTitle() != "AutoWalk") {
-                Return
-            }
-             
-            ; And a control under the mouse is not disabled.
+            ; Ignore the windows used by autohotkey for ListVars, ListLines and so on.
+            If (WinGetActiveTitle() != "AutoWalk")
+             Return
+
+
+            ; And when this control is not disabled.
             If (IsControlOn = 1) {
 
                 ; store it's text and give the control input focus (actually it's the other way around, hehe).
@@ -518,8 +518,6 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
                 ; Briefly enable this control to call function EditGetKey when it recieves some input.
                 GuiControl([["+gEditGetKey", ControlBelowMouse], [ , ControlBelowMouse], ["-gEditGetKey", ControlBelowMouse]])
             } else {
-                ; Set InputActive back to zero when EditGetKey was not running.
-                ; But the control below the mouse was disabled.
                 InputActive := 0
             }
         }
@@ -540,7 +538,6 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
     }
 }
 
-; WinGetActiveTitle function, so it can be used more expressive.
 WinGetActiveTitle() {
     WinGetActiveTitle OutputVar
     Return OutputVar
