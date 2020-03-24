@@ -1,5 +1,5 @@
 /*
-    Autowalk v1.0.4 writen by Megnatar
+    Autowalk v1.0.4.1 writen by Megnatar
 
     Everyone is free to use, add code and redistribute this script.
     But you MUST always credit ME Megnatar for creating the source!
@@ -36,7 +36,7 @@
 #SingleInstance force
 #InstallKeybdHook
 #KeyHistory 0
-ListLines off
+;ListLines off
 SetBatchLines -1
 SetTitleMatchMode 3
 SetKeyDelay 5, 1
@@ -74,12 +74,13 @@ hKey          := "XButton2"
 RPGGames      := 0
 TurnCamera    := 0
 Admin         := 0
-OnTop         := 0
+OnTop         := 1
 
-If (FileExist(ConfigFile))
+If (FileExist(ConfigFile)) {
     ReadIni(ConfigFile)
+}
 
-if ((Admin = 1) & (!A_IsAdmin)) {
+if (Admin & !A_IsAdmin) {
     Try {
         if (A_IsCompiled) {
             Run, *RunAs "%A_ScriptFullPath%"
@@ -92,7 +93,7 @@ if ((Admin = 1) & (!A_IsAdmin)) {
     ExitApp
 }
 
-GUI +LastFound +hWndhScriptGui -Theme
+GUI +LastFound +OwnDialogs +AlwaysOnTop +hWndhScriptGui -Theme
 Gui Add, GroupBox, x8 y0 w362 h194 +Center, Drop you're game executable here
 Gui Add, GroupBox, x16 y8 w345 h64
 Gui Font, s10 Bold
@@ -196,36 +197,36 @@ GuiDropFiles:
     if (FileSize < 1024)
         MsgBox,,FileSize: %FileSize% KB, % "The size of you're file is less then 1MB`n`nAre you sure this is the real exe and not a shortcut`nto a ecxecutable some folders below`n`nFile size: " FileSize "KB"
 
-    Title := "Ready to start you're game", Admin := 1
-    IniWrite, %Admin%, %ConfigFile%, Settings, Admin
+    If (FileExist(ConfigFile))
+        FileDelete %ConfigFile%
+
     IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
     IniWrite %Path%, %ConfigFile%, Settings, Path
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
-     IniWrite %Title%, %ConfigFile%, Settings, Title
-
+    IniWrite % Title := "Ready to start you're game", %ConfigFile%, Settings, Title
+    IniWrite, % Admin := 1, %ConfigFile%, Settings, Admin
     Reload
 Return
 
 ButtonBrowse:
     FileSelectFile, FullPath, M3, , ,*.exe
-
     Loop, parse, % FullPath, `n, `r
         A_Index <= 1 ? Path := A_LoopField : ExeFile := A_LoopField
     if (ErrorLevel)
         Exit
 
-    FullPath := Path "\" ExeFile, Title := "Ready to start you're game", Admin := 1
-
-    FileGetSize,fileSize, %FullPath%, K
-    if (FileSize < 1024)
+    FileGetSize, fileSize, %FullPath%, K
+    if ((FileSize < 1024) & (FileSize != ""))
         MsgBox,,FileSize: %FileSize% KB, % "The size of you're file is less then 1MB`n`nAre you sure this is the real exe and not a shortcut`nto a ecxecutable some folders below`n`nFile size: " FileSize "KB"
 
-    IniWrite, %Admin%, %ConfigFile%, Settings, Admin
-    IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
+    If (FileExist(ConfigFile))
+        FileDelete %ConfigFile%
+        
+    IniWrite, % Admin := 1, %ConfigFile%, Settings, Admin
+    IniWrite % FullPath := Trim(Path) "\" Trim(ExeFile), %ConfigFile%, Settings, FullPath
     IniWrite %Path%, %ConfigFile%, Settings, Path
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
-    IniWrite %Title%, %ConfigFile%, Settings, Title
-
+    IniWrite % Title := "Ready to start you're game", %ConfigFile%, Settings, Title
     Reload
 Return
 
@@ -244,14 +245,14 @@ RPGGames:
     GUI, submit, nohide
     IniWrite, %RPGGames%, %ConfigFile%, Settings, RPGGames
     if (RPGGames) {
-        sKey := hKey := "LButton"
+        ;sKey := hKey := "LButton"
         GuiControl([[ , "hKey", "LButton"], [ , "sKey", "LButton"], ["Enable", "TurnCamera"]])
-        IniWrite, %hKey%, %ConfigFile%, Settings, hKey
-        IniWrite, %sKey%, %ConfigFile%, Settings, sKey
+        IniWrite, % hKey := "LButton", %ConfigFile%, Settings, hKey
+        IniWrite, % sKey := "LButton", %ConfigFile%, Settings, sKey
     } else {
-        TurnCamera := ""
+        ;TurnCamera := ""
         GuiControl([["enable", "hKey"], ["Disable", "TurnCamera"], ["Disable", "LeftKey"], ["Disable", "RightKey"], [ , "TurnCamera", "0"]])
-        IniWrite, %TurnCamera%, %ConfigFile%, Settings, TurnCamera
+        IniWrite, % TurnCamera := "", %ConfigFile%, Settings, TurnCamera
     }
     GUI, submit, nohide
 Return
@@ -278,20 +279,18 @@ Return
 
 OnTop:
     GUI, submit, nohide
-    if (OnTop) {
-        IniWrite, %OnTop%, %ConfigFile%, Settings, OnTop
-    } else {
-        IniDelete, %ConfigFile%, Settings, OnTop
-    }
+    tgl := OnTop < 1 ? "-" : "+"
+    Gui 1:%tgl%AlwaysOnTop
+    IniWrite, %OnTop%, %ConfigFile%, Settings, OnTop
 Return
 
 ButtonStartGame:
     ; Is the game already running?
     If (!(HwndClient := WinExist("ahk_exe " ExeFile))) {
         Run %ExeFile%, %Path%
-        AAAA_WorkingDir := A_WorkingDir
+        sleep, 10
 
-        ; Keep on checking for our window to appear. Untill var HwndClient holds some value.
+        ; Keep on checking for our window to appear. This is untill var HwndClient holds some value.
         While(!(HwndClient := WinExist("ahk_exe " ExeFile))) {
             if (CheckWinExist < 30) {
                 CheckWinExist += 1
@@ -299,6 +298,8 @@ ButtonStartGame:
                 ; Show a counter in the GUI when the script is waiting longer then 4 seconds.
                 if (CheckWinExist > 4)
                     GuiControl([[ , "Title", Title " " CheckWinExist ]])
+                    
+                    
             ; After 30 second a timeout will occur.
             } else if ((!HwndClient) & (CheckWinExist > 29)) {
                 MsgBox,0x24, Something is not oke!?, % "Unable to find client GUI!`nDo you wish to wait a nother 30 seconds?"
@@ -345,7 +346,8 @@ ButtonStartGame:
     WinGet, EmptyCtrlList, ControlList, ahk_exe %ExeFile%
     
     ; Eveluates true when var EmptyCtrlList is indeed empty.
-    If (EmptyCtrlList ? 0 : 1) {
+    ; And if the game was not already launched by the script.
+    If ((EmptyCtrlList ? 0 : 1) & (!ClientGroup)) {
     
         ; Get the window title and it's class name when a new game is launched for the first time.
         ; Save class and title to setting.ini file and put the title on the gui.
@@ -358,12 +360,28 @@ ButtonStartGame:
             
             GuiControl([[ , "Title", Title], ["MoveDraw", "Pic"]])
         }        
+    } else if (!ClientGroup & !OddCLient) {
+        MsgBox,0x24, Game Window!?, % "This does not look like a game window!`n`nDo you want to reload the script?`nYou should then press the Start Game`nbutton once the game window is active."
+        IfMsgBox Yes, {
+            Reload
+        } else If (!OddCLient) {
+            If ((InStr(Title, "Ready to start you're game")) | (!Title)) {
+                WinGetTitle, Title, ahk_exe %ExeFile%
+                WinGetClass, ClientGuiClass, ahk_exe %ExeFile%
+                
+                IniWrite %Title%, %ConfigFile%, Settings, Title
+                IniWrite %ClientGuiClass%, %ConfigFile%, Settings, ClientGuiClass
+                IniWrite % OddCLient := 1, %ConfigFile%, Settings, OddCLient
+                
+                GuiControl([[ , "Title", Title], ["MoveDraw", "Pic"]])
+            }
+        }
     }
     
     ; Create ClientGroup only once. The "ahk_group ClientGroup" is used by #IfWin[Not]Exist
     ; and #IfWin[Not]Active. All directives are loaded before ahk runs a script. Thus they
     ; don't understand variables. However ahk_group is supported.
-    if (ClientGroup := ClientGroup  ? 0 : 1)
+    if (!ClientGroup, ClientGroup := 1)
         GroupAdd, ClientGroup, ahk_class %ClientGuiClass%
 
     Hotkey, ~%hKey%, HotKeyAutoWalk, On
@@ -388,12 +406,22 @@ GuiClose:
 ; Referenced variables are not local to functions. So %VarRef% represents global
 ; variables to which some value is added %VarRef% := "ValueOfVar"
 ;
-ReadIni(InputFile) {
+ReadIni(InputFile, LoadSection = 0) {
     Loop, parse, % FileOpen(InputFile, 0).read(), `n, `r
     {
+        if (LoadSection) {
+            if (InStr(A_Loopfield, "[")) {
+                SectionName := StrReplace(A_Loopfield, "["), SectionName := StrReplace(SectionName, "]")
+                Continue
+            }
+            If (LoadSection = SectionName) {
+                VarRef := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1), %VarRef% := SubStr(A_LoopField, InStr(A_LoopField, "=")+1)        
+            }
+        }
+        
         if (((InStr(A_LoopField, "[")) = 1 ? 1) || ((InStr(A_LoopField, "`;")) = 1 ? 1) || !A_LoopField)
-            Continue
-        VarRef := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1), %VarRef% := SubStr(A_LoopField, InStr(A_LoopField, "=")+1)
+                Continue
+            VarRef := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1), %VarRef% := SubStr(A_LoopField, InStr(A_LoopField, "=")+1)
     }
     Return
 }
@@ -408,7 +436,7 @@ KeyWait(Key = 0, Options = 0, ErrLvL = 0) {
 
 ; Returns the last hotkey used with all basic modifiers removed from it.
 ThisHotKey() {
-   Return RegExReplace(A_ThisHotkey, "[~\*\$]")
+    Return RegExReplace(A_ThisHotkey, "[~\*\$]")
 }
 
 ; GuiControl as a function for more flexible usage. Parameter ControlID can be a array.
@@ -506,7 +534,6 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
             ; Ignore the windows used by autohotkey for ListVars, ListLines and so on.
             If (WinGetActiveTitle() != "AutoWalk")
              Return
-
 
             ; And when this control is not disabled.
             If (IsControlOn = 1) {
