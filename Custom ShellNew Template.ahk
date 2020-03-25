@@ -7,7 +7,7 @@
 #Include %A_MyDocuments%\AutoHotkey\Lib     ; Includes the default user library and use all functions. Function libraries need be added later.
 #KeyHistory 0                               ; Improve performance. Key history is not recorded.
 Listlines off                               ; Improve performance. Line history is not recorded. [Off | On = default]
-SetBatchLines -1                            ; Improve performance. Do not sleep 10ms between line execution. Fast but may cause failures.
+SetBatchLines 1                             ; Improve performance. Do not sleep 10ms between line execution. Fast but may cause failures.
 SendMode Event                              ; Send will act as SendEvent. Slower but more reliable. [Input | Play | Event | InputThenPlay]
 SetKeyDelay 50, 10                          ; Pause 50ms between sending key's. Default is 10. Not used if SendMode is Input.
 SetTitleMatchMode 2                         ; Matches you're string anywhere within the title. [1 = Must start with | 3 = Exact Match | RegEx]
