@@ -16,7 +16,7 @@ SetWorkingDir %A_ScriptDir%                 ; Set 'working directory' to the fil
 ; position controls according to the font size used by you're GUI. When font size increases, controls will position correctly inside the GUI.
 ; Use AutoXYWH.ahk function to handle resizeing. http://ahkscript.org/boards/viewtopic.php?t=1079
 ;=============================================================================================================================================
-FS  := 8                           		    ; Default font size. In windows Margins are defined by the hight of a font used by the GUI.
+FS  := 8                                  ; Default font size. In windows Margins are defined by the hight of a font used by the GUI.
 Xm	:= Round(FS*1.25)                     ; Width margin (X), 1.25 times font size. Left to right.
 Ym 	:= Round(FS*0.75)                     ; Hight margin (Y), 0.75 times font size. Top to bottom. e.g. Gui, add, text, X%Xm% Y%Ym%
 ;=============================================================================================================================================
