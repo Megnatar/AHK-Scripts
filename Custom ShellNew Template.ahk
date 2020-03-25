@@ -9,7 +9,7 @@
 Listlines off                               ; Improve performance. Line history is not recorded. [Off | On = default]
 SetBatchLines -1                            ; Improve performance. Do not sleep 10ms between line execution. Fast but may cause failures.
 SendMode Event                              ; Send will act as SendEvent. Slower but more reliable. [Input | Play | Event | InputThenPlay]
-SetKeyDelay 50, 10					                ; Pause 50ms between sending key's. Default is 10. Not used if SendMode is Input.
+SetKeyDelay 50, 10                          ; Pause 50ms between sending key's. Default is 10. Not used if SendMode is Input.
 SetTitleMatchMode 2                         ; Matches you're string anywhere within the title. [1 = Must start with | 3 = Exact Match | RegEx]
 SetWorkingDir %A_ScriptDir%                 ; Set 'working directory' to the file location of the script.
 ;=============================================================================================================================================
