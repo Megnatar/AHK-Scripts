@@ -1,5 +1,5 @@
 /*
-    Autowalk v1.0.4.2 writen by Megnatar
+    Autowalk v1.0.4.3 writen by Megnatar
 
     Everyone is free to use, add code and redistribute this script.
     But you MUST always credit ME Megnatar for creating the source!
@@ -32,17 +32,15 @@
 */
 
 #NoEnv
-;#Persistent
 #SingleInstance force
 #InstallKeybdHook
 #KeyHistory 0
-#Include, Gdip_all.ahk
+;#Include, Gdip_all.ahk
 ;ListLines off
 SetBatchLines -1
 SetTitleMatchMode 3
 SetKeyDelay 5, 1
 SetWorkingDir %A_ScriptDir%
-DetectHiddenWindows On
 sendmode Input
 CoordMode, Mouse, screen
 
@@ -54,7 +52,9 @@ Global Wm_LbuttonDown   := 0x201
 , Ws_Border             := 0x800000
 , InputActive           := 0
 , TipsOff               := 0
-, ConfigFile            := "Settings.ini"
+, ConfigFile            := A_ScriptDir "\Settings.ini"
+, Profiles              := A_ScriptDir "\GameProfiles\GamesConfig.ini"
+, IconLib               := []
 , hScriptGui
 , ControlBelowMouse
 , ControlOldBelowMouse
@@ -62,28 +62,33 @@ Global Wm_LbuttonDown   := 0x201
 , A_hotKey
 , now_x
 , now_y
+, Title
 
-OpenFolder_TT := "Open game installation dir.`nControl+Click to open script dir."
-hKey_TT       := "HOTKEY.`nClick then press a button to change."
-sKey_TT       := "SENDKEY.`nClick then press a button to change."
-RunGame_TT    := "Start a new game session.`nActivates it, if it's already running."
-LeftKey_TT    := "The key used by the game to turn camera left."
-RightKey_TT   := "The key used by the game to turn camera right."
-Browse_TT     := "Browse for a game to add."
-LeftKey       := "Left"
-RightKey      := "Right"
-Gui_X         := "Center"
-Gui_Y         := "Center"
-KeyState      := "Up"
-sKey          := "W"
-hKey          := "XButton2"
-RPGGames      := 0
-TurnCamera    := 0
-Admin         := 0
-OnTop         := 1
+MenuItems           := {"Toggle Admin": "Admin", "Toggle Tooltips": "TipsOff", "Toggle OnTop": "OnTop", "Show Game List": "ShowGameList"}
+DropNotice          := "Drop you're game executable here"
+OpenFolder_TT       := "Open game installation dir.`nControl+Click to open script dir."
+hKey_TT             := "HOTKEY.`nClick then press a button to change."
+sKey_TT             := "SENDKEY.`nClick then press a button to change."
+RunGame_TT          := "Start a new game session.`nActivates it, if it's already running."
+LeftKey_TT          := "The key used by the game to turn camera left."
+RightKey_TT         := "The key used by the game to turn camera right."
+Browse_TT           := "Browse for a game to add."
+LeftKey             := "Left"
+RightKey            := "Right"
+Gui_X               := "Center"
+Gui_Y               := "Center"
+KeyState            := "Up"
+sKey                := "W"
+hKey                := "XButton2"
+RPGGames            := 0
+TurnCamera          := 0
+Admin               := 0
+ShowGameList        := 0
+OnTop               := 0
+i                   := 0
 
 If (FileExist(ConfigFile)) {
-    IniRead(ConfigFile)
+    iniRead(ConfigFile)
 }
 
 if (Admin & !A_IsAdmin) {
@@ -99,29 +104,22 @@ if (Admin & !A_IsAdmin) {
     ExitApp
 }
 
-GUI +LastFound +OwnDialogs +AlwaysOnTop +hWndhScriptGui -Theme
-Gui, Color, 0xF0F0F0, 0xFFFFFF 
-Menu GameMenu, Add, Save Profile, SaveProfile
-Menu GameMenu, Add, Load Profile, LoadProfile
-Menu GameMenu, Add, Remove Profile, RemoveProfile
-Menu MenuBar, Add, &Game, :GameMenu
-Menu OptionsMenu, Add, Toggle Tooltips, ToggleTips
-Menu OptionsMenu, ToggleCheck, Toggle Tooltips
-Menu OptionsMenu, Add, Toggle Admin, ToggleAdmin
-Menu OptionsMenu, ToggleCheck, Toggle Admin
-Menu OptionsMenu, Add, Toggle OnTop, ToggleOnTop
-Menu OptionsMenu, ToggleCheck, Toggle OnTop
+GUI % "+LastFound " (tgl := !OnTop ? "-" : "+") "AlwaysOnTop +OwnDialogs +hWndhScriptGui -Theme"
+Menu GameMenu, Add, Get Vars, GameMenuActions
+Menu Menu, Add, &Game, :GameMenu
+Menu OptionsMenu, Add, Toggle Tooltips, MenuToggleOptions
+Menu OptionsMenu, Add, Toggle Admin, MenuToggleOptions
+Menu OptionsMenu, Add, Toggle OnTop, MenuToggleOptions
 Menu OptionsMenu, Add
-Menu OptionsMenu, Add, Disable Auto Admin On, DisableAutoAdmin
-Menu OptionsMenu, Add
-Menu OptionsMenu, Add, Show Profile List, ShowProfileList
-Menu OptionsMenu, Add, Add Code, AddCode
-Menu OptionsMenu, Add, Spy Glass, SpyGlass
-Menu MenuBar, Add, &Options, :OptionsMenu
-Gui Menu, MenuBar
+Menu OptionsMenu, Add, Show Game List, MenuToggleOptions
+Menu Menu, Add, &Options, :OptionsMenu
+Menu ToolsMenu, Add, Add Code, AddCode
+Menu ToolsMenu, Add, Spy Glass, SpyGlass
+Menu Menu, Add, &Tools, :ToolsMenu
+Gui Menu, Menu
 
-Gui Add, CheckBox, x368 y1 w10 h10 vShowProfileList gShowProfileList -theme +0x1020 +E0x20000
-Gui Add, GroupBox, x8 y0 w362 h194 +Center, Drop you're game executable here
+Gui Add, CheckBox, x368 y1 w10 h10 Checked%ShowGameList% vShowGameList gShowGameList -theme +0x1020 +E0x20000
+Gui Add, GroupBox, x8 y0 w362 h194 +Center, % Admin ? "" : DropNotice
 Gui Add, GroupBox, x16 y8 w345 h64
 Gui Font, s10 Bold
 Gui Add, Text, x24 y36 w329 h19 +Center +BackgroundTrans +0x200 vTitle, %Title%
@@ -133,27 +131,38 @@ Gui Add, Button, x88 y160 w70 h23 vOpenFolder, Open Folder
 Gui Add, Button, x304 y160 w60 h23 gGuiClose, Exit
 Gui Add, Button, x160 y160 w70 h23 vDelConf gDelConf, Delete ini
 Gui Add, Button, x232 y160 w70 h23 vEndGame gEndGame, End Game
- 
 Gui Add, GroupBox, x16 y72 w345 h83
 Gui Add, Text, x24 y80 w99 h14, Autowalk keys
 Gui Add, Edit, x24 y100 w63 h21 Limit1 -TabStop vhKey, %hKey%
 Gui Add, Edit, x24 y126 w63 h21 Limit1 -TabStop vskey, %skey%
-Gui Add, CheckBox, x120 y80 w90 h23 Checked%Admin% vAdmin gAdmin, Runas Admin
 Gui Add, CheckBox, x120 y104 w82 h23 Checked%RPGGames% vRPGGames gRPGGames, RPG Games
 Gui Add, CheckBox, x120 y128 w82 h23 +Disabled Checked%TurnCamera% vTurnCamera gTurnCamera, Turn Camera
 Gui Add, Edit, x212 y128 w60 h21 +Disabled Limit1 -TabStop vLeftKey, %LeftKey%
 Gui Add, Edit, x280 y128 w60 h21 +Disabled Limit1 -TabStop vRightKey, %RightKey%
-Gui Add, CheckBox, x216 y80 w104 h23 Checked%TipsOff% gTipsOff vTipsOff, Disable tooltips
-Gui Add, CheckBox, x216 y100 w112 h23 Checked%OnTop% gOnTop vOnTop, Gui always on top
+Gui Add, GroupBox, x376 y0 w154 h193 +Hidden vGBGameList
+Gui Add, ListView, x384 y16 w137 h169 vLoadGameSetting gLoadGameSetting hWndhLVItems +Hidden, Icon|Window Title
 
-if (RPGGames = 1) {
+LoadIcons()
+
+if (RPGGames) {
     GuiControl([["Enable", "TurnCamera"]])
     if (TurnCamera = 1) {
         GuiControl([["Enable", "LeftKey"], ["Enable", "RightKey"]])
     }
 }
 
-Gui Show, w378 h201 x%Gui_X% y%Gui_Y%, AutoWalk
+For MenuItemTxt, VariableName in MenuItems
+{
+    if (%VariableName% = 1)
+       Menu OptionsMenu, ToggleCheck, % MenuItemTxt
+}
+
+if (ShowGameList) {
+    GuiControl([["Show", "GBGameList"], ["Show","LoadGameSetting"]])
+    Gui Show, % "w" (Gui_W := 538) " h201 x" Gui_X " y" Gui_Y, AutoWalk
+} else {
+    Gui Show, % "w" (Gui_W := 378) " h201 x" Gui_X " y" Gui_Y, AutoWalk
+}
 
 OnMessage(Wm_MouseMove, "WM_Mouse"), OnMessage(Wm_LbuttonDown, "WM_Mouse"), OnMessage(Wm_DraggGui, "WM_Mouse"), OnExit("ExitScript")
 Return
@@ -207,6 +216,7 @@ Return
                         Hotkey, ~*Vk057, InterruptDownState, OFF
                         Hotkey, ~*Vk01, InterruptDownState, OFF
                     }
+                    Return
                 }
                 Return
             }
@@ -216,18 +226,96 @@ Return
 Return
 
 ;_______________________________________ Script Lables _______________________________________
-; Appart from the start game button. The only thing these lables do is save or change some
-; gui related setting where needed.
 
-SaveProfile:
+GameMenuActions:
+    If (A_ThisMenuItem = "Get Vars") {
+        Gosub, ButtonStartGame
+    }
 Return
-RemoveProfile:
+
+MenuToggleOptions:
+    ; Check or uncheks the menuitem. Then toggles the value for the variable that is accosiated
+    ; with the menuitem to the opsite. Saves or remove the variable to/from ini file.
+    For MenuItemTxt, VariableName in MenuItems
+    {
+        If (A_ThisMenuItem = MenuItemTxt) {
+            Menu %A_ThisMenu%, ToggleCheck, %MenuItemTxt%
+
+            if (%VariableName% := %VariableName% ? 0 : 1) {
+                IniWrite, % %VariableName%, %ConfigFile%, Settings, %VariableName%
+            } else {
+                IniDelete, %ConfigFile%, Settings, %VariableName%
+            }
+        }
+    }
+    ; Menu specific actions. They pritty much speak for them self.
+    If (A_ThisMenuItem = "Toggle Admin") {
+        i := Admin ? Reload() : ExitApp()
+    }
+    else If (A_ThisMenuItem = "Toggle OnTop") {
+        tgl := OnTop = 0 ? "-" : "+"
+        Gui 1:%tgl%AlwaysOnTop
+    }
+    else If (A_ThisMenuItem = "Show Game List") {
+        if (ShowGameList) {
+            WinMove, AutoWalk,,,, 538
+            GuiControl([["Show", "GBGameList"], ["Show","LoadGameSetting"], ["", "ShowGameList", ShowGameList]])
+        } else {
+            GuiControl([["Hide", "GBGameList"], ["Hide","LoadGameSetting"], ["", "ShowGameList", ShowGameList]])
+            WinMove, AutoWalk,,,, 384
+        }
+    }
 Return
-LoadProfile:
+
+ShowGameList:
+    Menu OptionsMenu, ToggleCheck, Show Game List
+
+    if (ShowGameList := ShowGameList ? 0 : 1) {
+        WinMove, AutoWalk,,,, 538
+        GuiControl([["Show", "GBGameList"], ["Show","LoadGameSetting"]])
+
+        IniWrite, %ShowGameList%, %ConfigFile%, Settings, ShowGameList
+    } else {
+        GuiControl([["Hide", "GBGameList"], ["Hide","LoadGameSetting"]])
+        WinMove, AutoWalk,,,, 384
+
+        IniDelete, %ConfigFile%, Settings, ShowGameList
+    }
 Return
-DisableAutoAdmin:
-Return
-ShowProfileList:
+
+LoadGameSetting:
+    Loop {
+        if (!(RowNumber := LV_GetNext(RowNumber)))
+            break
+        LV_GetText(GameTitle, RowNumber, 2)
+    }
+    if (!GameTitle)
+        Return
+
+    MsgBox,0x24, Load new settings, % "Do you want to load the settings for this game:`n " GameTitle ""
+    IfMsgBox Yes
+    {
+        If (FileExist(ConfigFile))
+            FileDelete %ConfigFile%
+
+        If (FileExist(Profiles)) {
+            Loop, parse, % FileOpen(Profiles, 0).read(), `n, `r
+            {
+                if ((InStr(A_LoopField, "[",, 1, 1)) = 1) {
+                    SectionName := StrReplace(A_Loopfield, "["), SectionName := StrReplace(SectionName, "]")
+
+                } else if (GameTitle = SectionName) {
+                    VarRef := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1), %VarRef% := SubStr(A_LoopField, InStr(A_LoopField, "=")+1)
+                    if (%VarRef%)
+                        IniWrite, % %VarRef%, %ConfigFile%, Settings, %VarRef%
+                }
+            }
+            Reload()
+        }
+    }
+return
+
+AddCode:
 Return
 
 SpyGlass:
@@ -242,24 +330,23 @@ SpyGlass:
 
     Gui 2:+AlwaysOnTop +ToolWindow +OwnDialogs -0xC00000 -0x800000 +0x40000000 +E0x80000 +HwndhWndScript
     Gui 2:Show, w250 h250 x%X% y%Y%, Magnifier
+
     OnMessage(Wm_Mousemove, "Wm_Mousemove")
     WinGetClass, ClientGuiClass, ahk_id %hWndScript%
     WinSet, Region, 0-0 W150 H150 E, ahk_class %ClientGuiClass%
-    WinSet, Transparent , 254, Magnifier 
+    WinSet, Transparent , 254, Magnifier
 
+    SetTimer, MoveWin, 10
 
-    SetTimer, MoveWin, 0
-
-
-    ;retrieve the unique ID number (HWND/handle) of that window 
-    ;WinGet, hhWndWinBelowCur, id 
+    ;retrieve the unique ID number (HWND/handle) of that window
+    WinGet, hWndWinBelowCur, id
     hdc_frame := DllCall("GetDC", UInt, hWndScript)
-    hdd_frame := DllCall("GetDC", UInt, hWndWinBelowCur) 
-    hdc_buffer := DllCall("gdi32.dll\CreateCompatibleDC", UInt,  hdc_frame)  ; buffer 
-    hbm_buffer := DllCall("gdi32.dll\CreateCompatibleBitmap", UInt,hdc_frame, Int,A_ScreenWidth, Int,A_ScreenHeight) 
+    hdd_frame := DllCall("GetDC", UInt, hWndWinBelowCur)
+    hdc_buffer := DllCall("gdi32.dll\CreateCompatibleDC", UInt,  hdc_frame)  ; buffer
+    hbm_buffer := DllCall("gdi32.dll\CreateCompatibleBitmap", UInt,hdc_frame, Int,A_ScreenWidth, Int,A_ScreenHeight)
     SystemCursor("Toggle")
-    Gosub, Repaint 
-return 
+    Gosub, Repaint
+return
 
 Repaint:
     if (GetKeyState("LButton", "D")) {
@@ -267,16 +354,16 @@ Repaint:
         OnMessage(Wm_LbuttonDown, "WM_Mouse"), OnMessage(Wm_DraggGui, "WM_Mouse")
     }
 
-   MouseGetPos, X, Y, hWndWinBelowCur             ;  position of mouse  
-   WinGetPos, wx, wy, ww, wh, Magnifier 
+   MouseGetPos, X, Y, hWndWinBelowCur             ;  position of mouse
+   WinGetPos, wx, wy, ww, wh, Magnifier
    wh2 := wh
 
-   DllCall( "gdi32.dll\SetStretchBltMode", "uint", hdc_frame, "int", 0 )  ; No Antializing 
-  
-   DllCall("gdi32.dll\StretchBlt", UInt, hdc_frame, Int, 0, Int, 0, Int, ww, Int, wh, UInt, hdd_frame, Int, X-(ww / 2 / zoom), Int, Y-(wh/2/zoom), Int, ww/zoom, Int, wh2/zoom ,UInt,0xCC0020) ; SRCCOPY 
-  
-   SetTimer, Repaint , 0 
-Return 
+   DllCall( "gdi32.dll\SetStretchBltMode", "uint", hdc_frame, "int", 0 )  ; No Antializing
+
+   DllCall("gdi32.dll\StretchBlt", UInt, hdc_frame, Int, 0, Int, 0, Int, ww, Int, wh, UInt, hdd_frame, Int, X-(ww / 2 / zoom), Int, Y-(wh/2/zoom), Int, ww/zoom, Int, wh2/zoom ,UInt,0xCC0020) ; SRCCOPY
+
+   SetTimer, Repaint , 0
+Return
 
 MoveWin:
 MouseGetPos, now_x, now_y`
@@ -297,85 +384,25 @@ Return
 
 !x::
     SystemCursor("On")
-    DllCall("gdi32.dll\DeleteObject", UInt,hbm_buffer) 
-    DllCall("gdi32.dll\DeleteDC", UInt,hdc_frame ) 
-    DllCall("gdi32.dll\DeleteDC", UInt,hdd_frame ) 
-    DllCall("gdi32.dll\DeleteDC", UInt,hdc_buffer) 
+    DllCall("gdi32.dll\DeleteObject", UInt,hbm_buffer)
+    DllCall("gdi32.dll\DeleteDC", UInt,hdc_frame )
+    DllCall("gdi32.dll\DeleteDC", UInt,hdd_frame )
+    DllCall("gdi32.dll\DeleteDC", UInt,hdc_buffer)
     Gui 2:Destroy
-Return
-/*
-
-MouseGetPos, mX, mY
-; Uncomment if Gdip.ahk is not in your standard library
-
-; Start gdi+
-If !pToken := Gdip_Startup()
-{
-	MsgBox, 48, gdiplus error!, Gdiplus failed to start. Please ensure you have gdiplus on your system
-	ExitApp
-}
-
-
-; Set the width and height we want as our drawing area, to draw everything in. This will be the dimensions of our bitmap
-Width := 150, Height := 150
-Gui 2:-Caption -%Ws_Caption% +%Ws_Border% +E0x80000 +LastFound +AlwaysOnTop +ToolWindow +OwnDialogs +hwndhWndGui
-gui 2:Margin, 1
-Gui 2:Show
-
-hbm := CreateDIBSection(A_ScreenWidth, A_ScreenHeight)
-hdc := CreateCompatibleDC(), obm := SelectObject(hdc, hbm)
-
-G := Gdip_GraphicsFromHDC(hdc), Gdip_SetSmoothingMode(G, 4)
-pPen := Gdip_CreatePen(0xFF363636, 3), Gdip_DrawEllipse(G, pPen, mX-75, mY-75, 150, 150)
-Gdip_DeletePen(pPen)
-
-UpdateLayeredWindow(hWndGui, hdc, 0, 0, A_ScreenWidth, A_ScreenHeight)
-SelectObject(hdc, obm),DeleteObject(hbm),DeleteDC(hdc),Gdip_DeleteGraphics(G)
-
-
-OnMessage(0x201, "WM_LBUTTONDOWN")
-
-;SelectObject(hdc, obm),DeleteObject(hbm),DeleteDC(hdc),Gdip_DeleteGraphics(G)
-
-
-*/
-
-Return
-
-
-AddCode:
-Return
-
-Return
 Return
 
 GuiDropFiles:
     Loop, parse, A_GuiEvent, `n, `r
-        FullPath := A_LoopField, Path := SubStr(A_LoopField, 1, InStr(A_LoopField, "\", ,-1)-1), ExeFile := SubStr(A_LoopField, InStr(A_LoopField, "\", ,-1)+1)
-
-    FileGetSize,fileSize, %FullPath%, K
-    if (FileSize < 1024)
-        MsgBox,,FileSize: %FileSize% KB, % "The size of you're file is less then 1MB`n`nAre you sure this is the real exe and not a shortcut`nto a ecxecutable some folders below`n`nFile size: " FileSize "KB"
-
-    If (FileExist(ConfigFile))
-        FileDelete %ConfigFile%
-
-    IniWrite %FullPath%, %ConfigFile%, Settings, FullPath
-    IniWrite %Path%, %ConfigFile%, Settings, Path
-    IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
-    IniWrite % Title := "Ready to start you're game", %ConfigFile%, Settings, Title
-    IniWrite, % Admin := 1, %ConfigFile%, Settings, Admin
-    IniWrite, % TipsOff := 1, %ConfigFile%, Settings, TipsOff
-    IniWrite, % OnTop := 0, %ConfigFile%, Settings, OnTop
-    Reload
-Return
+        FullPath := A_LoopField, Path := SubStr(A_LoopField, 1, InStr(A_LoopField, "\", ,-1)-1), ExeFile := SubStr(A_LoopField, InStr(A_LoopField, "\", ,-1)+1), FileDrop := 1
 
 ButtonBrowse:
-    FileSelectFile, FullPath, M3, , ,*.exe
-    Loop, parse, % FullPath, `n, `r
-        A_Index <= 1 ? Path := A_LoopField : ExeFile := A_LoopField
-    if (ErrorLevel)
-        Exit
+    If (!FileDrop) {
+        FileSelectFile, FullPath, M3, , ,*.exe
+        Loop, parse, % FullPath, `n, `r
+            A_Index <= 1 ? Path := A_LoopField : ExeFile := A_LoopField
+        if (ErrorLevel)
+            Exit
+    }
 
     FileGetSize, fileSize, %FullPath%, K
     if ((FileSize < 1024) & (FileSize != ""))
@@ -383,7 +410,7 @@ ButtonBrowse:
 
     If (FileExist(ConfigFile))
         FileDelete %ConfigFile%
-        
+
     IniWrite, % Admin := 1, %ConfigFile%, Settings, Admin
     IniWrite, % TipsOff := 1, %ConfigFile%, Settings, TipsOff
     IniWrite % FullPath := Trim(Path) "\" Trim(ExeFile), %ConfigFile%, Settings, FullPath
@@ -391,20 +418,7 @@ ButtonBrowse:
     IniWrite %ExeFile%, %ConfigFile%, Settings, ExeFile
     IniWrite % Title := "Ready to start you're game", %ConfigFile%, Settings, Title
     IniWrite, % OnTop := 0, %ConfigFile%, Settings, OnTop
-    Reload
-Return
-
-ToggleAdmin:
-Admin := Admin ? 0 : 1
-Admin:
-    GUI, submit, nohide
-    if (Admin) {
-        IniWrite, %Admin%, %ConfigFile%, Settings, Admin
-        Reload
-    } else {
-        IniDelete, %ConfigFile%, Settings, Admin
-        ExitApp
-    }
+    Reload()
 Return
 
 RPGGames:
@@ -434,119 +448,115 @@ TurnCamera:
     GUI, submit, nohide
 Return
 
-ToggleTips:
-TipsOff := TipsOff ? 0 : 1
-TipsOff:
-    GUI, submit, nohide
-    if (TipsOff) {
-        IniWrite, %TipsOff%, %ConfigFile%, Settings, TipsOff
-    } else {
-        IniDelete, %ConfigFile%, Settings, TipsOff
-    }
-Return
-
-ToggleOnTop:
-OnTop := OnTop ? 0 : 1
-OnTop:
-    GUI, submit, nohide
-    tgl := OnTop < 1 ? "-" : "+"
-    Gui 1:%tgl%AlwaysOnTop
-    IniWrite, %OnTop%, %ConfigFile%, Settings, OnTop
-Return
-
 ButtonStartGame:
     ; Is the game already running?
     If (!(HwndClient := WinExist("ahk_exe " ExeFile))) {
         Run %ExeFile%, %Path%
         sleep, 10
 
-        ; Keep on checking for our window to appear. This is untill var HwndClient holds some value.
-        While(!(HwndClient := WinExist("ahk_exe " ExeFile))) {
-            if (CheckWinExist < 30) {
-                CheckWinExist += 1
-                
-                ; Show a counter in the GUI when the script is waiting longer then 4 seconds.
-                if (CheckWinExist > 4)
-                    GuiControl([[ , "Title", Title " " CheckWinExist ]])
+        loop {
+            ; Keep on checking for our window to appear. This is untill var HwndClient holds some value.
+            If (!(HwndClient := WinExist("ahk_exe " ExeFile))) {
+                if (CheckWinExist < 60) {
+                    CheckWinExist += 1
 
-            ; After 30 second a timeout will occur.
-            } else if ((!HwndClient) & (CheckWinExist > 29)) {
-                MsgBox,0x24, Something is not oke!?, % "Unable to find client GUI!`nDo you wish to wait a nother 30 seconds?"
-                IfMsgBox Yes, {
-                    CheckWinExist := ""
+                    ; Show a counter in the GUI when the script is waiting longer then 4 seconds.
+                    if (CheckWinExist > 9)
+                        GuiControl([[ , "Title", Title " " CheckWinExist ]])
+
+                ; After 30 second a timeout will occur.
+                } else if ((!HwndClient) & (CheckWinExist > 59)) {
+                    MsgBox,0x24, Something is not oke!?, % "Unable to find client GUI!`nDo you wish to wait a nother 30 seconds?"
+                    IfMsgBox Yes, {
+                        CheckWinExist := ""
+                        Continue
+                    } else {
+                        HwndClient := "", CheckWinExist := "NotFound"
+                        break
+                    }
+                }
+                sleep, 500
+            }
+            else If (HwndClient) {
+                WinGetClass, GuiClass, ahk_exe %ExeFile%
+                if (GuiClass = "DIEmWin" || GuiClass = "D3DProxyWindow" || GuiClass = "DXGIWatchdogThreadWindow"){
+                    HwndClient := ""
                     Continue
                 } else {
-                    HwndClient := "", CheckWinExist := "NotFound"
-                    break
+                    Break
                 }
             }
-            sleep, 1000
         }
         ; Whem a timeout occurred and while() broke. Then jump back to the last return because messagebox choise was No.
         if (CheckWinExist = "NotFound") {
             Return
         } else {
             ; Remove timer from gui only when it started.
-            if (CheckWinExist > 4)
+            if (CheckWinExist > 9)
                 GuiControl([[ , "Title", Title]])
-                
-            WinSet, Bottom,, AutoWalk
-            WinSet, Top,, ahk_id %hWndClient%
-            
-            ; Is active window the game window? A top most window is not always the active one.
-            If (WinActive("A") != HwndClient)
-                WinActivate, ahk_id %hWndClient%, , AutoWalk
+
+            WinGet, WinState, MinMax, ahk_exe %ExeFile%, , AutoWalk
         }
-    ; When the game was already running.    
+    ; When the game was already running.
     } else if (HwndClient) {
         WinGet, WinState, MinMax, ahk_exe %ExeFile%, , AutoWalk
 
-        if (WinState = -1) {
-            WinRestore, ahk_id %hWndClient%,, AutoWalk
-        } else {
-            WinActivate, ahk_id %hWndClient%,, AutoWalk
-        }
     }
     sleep 5000
-    
+
+    if (WinState = -1) {
+        WinSet, Bottom,, AutoWalk
+        WinRestore, ahk_id %hWndClient%,, AutoWalk
+        WinSet, Top,, ahk_id %hWndClient%
+    } else {
+        WinSet, Bottom,, AutoWalk
+        WinActivate, ahk_id %hWndClient%,, AutoWalk
+        WinSet, Top,, ahk_id %hWndClient%
+    }
+
+    ; Is active window the game window? A top most window is not always the active one.
+    If (WinActive("A") != HwndClient)
+        WinActivate, ahk_id %hWndClient%, , AutoWalk
+
+    ;If ((Wintitle) & (Wintitle != "Ready to start you're game"))
     ; Some games launch a different window first.
     ; A window must exist by now. But is it our window? A game GUI never contains any
     ; controls in it. So getting all controls of the window that was just launched.
     WinGet, EmptyCtrlList, ControlList, ahk_exe %ExeFile%
-    
+
     ; Eveluates true when var EmptyCtrlList is indeed empty.
     ; And if the game was not already launched by the script.
-    If ((EmptyCtrlList ? 0 : 1) & (!ClientGroup)) {
-    
+    If (EmptyCtrlList ? 0 : 1) {
+
         ; Get the window title and it's class name when a new game is launched for the first time.
         ; Save class and title to setting.ini file and put the title on the gui.
         If ((InStr(Title, "Ready to start you're game")) | (!Title)) {
             WinGetTitle, Title, ahk_exe %ExeFile%
             WinGetClass, ClientGuiClass, ahk_exe %ExeFile%
-            
+
             IniWrite %Title%, %ConfigFile%, Settings, Title
             IniWrite %ClientGuiClass%, %ConfigFile%, Settings, ClientGuiClass
-            
+
             GuiControl([[ , "Title", Title], ["MoveDraw", "Pic"]])
-        }        
+        }
     } else if (!ClientGroup & !OddCLient) {
-        MsgBox,0x24, Game Window!?, % "This does not look like a game window!`n`nDo you want to reload the script?`nYou should then press the Start Game`nbutton once the game window is active."
+        MsgBox,0x24, Game Window!?, % "This does not look like a game window!`n`nDo you want to Reload() the script?`nYou should then press the Start Game`nbutton once the game window is active."
         IfMsgBox Yes, {
-            Reload
+            Reload()
         } else If (!OddCLient) {
             If ((InStr(Title, "Ready to start you're game")) | (!Title)) {
                 WinGetTitle, Title, ahk_exe %ExeFile%
                 WinGetClass, ClientGuiClass, ahk_exe %ExeFile%
-                
+
                 IniWrite %Title%, %ConfigFile%, Settings, Title
                 IniWrite %ClientGuiClass%, %ConfigFile%, Settings, ClientGuiClass
                 IniWrite % OddCLient := 1, %ConfigFile%, Settings, OddCLient
-                
+
                 GuiControl([[ , "Title", Title], ["MoveDraw", "Pic"]])
             }
         }
     }
-    
+
     ; Create ClientGroup only once. The "ahk_group ClientGroup" is used by #IfWin[Not]Exist
     ; and #IfWin[Not]Active. All directives are loaded before ahk runs a script. Thus they
     ; don't understand variables. However ahk_group is supported.
@@ -568,12 +578,12 @@ Return
 DelConf:
     If (FileExist(ConfigFile))
         FileDelete %ConfigFile%
-    Reload
+    Reload()
 Return
 
 EndGame:
     WinClose, ahk_class %ClientGuiClass%
-    Reload
+    Reload()
 Return
 
 GuiEscape:
@@ -582,14 +592,36 @@ GuiClose:
 
 ;_______________________________________ Script Functions _______________________________________
 
-; Read ini file and create variables. Sections are not supported!
+
+LoadIcons() {
+    Global
+
+    Loop, parse, % FileOpen(Profiles, 0).read(), `n, `r
+    {
+        if ((InStr(A_LoopField, "[",, 1, 1)) = 1) {
+            i += 1, SectionName := StrReplace(A_Loopfield, "["), SectionName := StrReplace(SectionName, "]")
+            IniRead, Iconfile%i%, %Profiles%, %SectionName%, FullPath
+            IconLib[i, 1] := Iconfile%i%, IconLib[i, 2] := SectionName
+        }
+    }
+
+    i := 0, IconList := IL_Create(IconLib.Length())
+    LV_SetImageList(IconList)
+
+    loop % IconLib.Length()
+    {
+        IL_Add(IconList, IconLib[A_Index, 1]), LV_Add("Icon" . A_Index, , IconLib[A_Index, 2])
+    }
+    LV_ModifyCol("Hdr")
+}
+
+; Read ini file and create variables. Sections are supported.
 ; Referenced variables are not local to functions. So %VarRef% represents global
 ; variables to which some value is added %VarRef% := "ValueOfVar"
 ;
-
-iniRead(InputFile, LoadSection := "") {
+iniRead(InputFile, LoadSection = 0) {
     if (LoadSection) {
-        if (IsObject(LoadSection)) {
+        if (IsObject(LoadSection)) {                                            ; Load multiple sections from object
              for i, Name in LoadSection
              {
                 Loop, parse, % FileOpen(InputFile, 0).read(), `n, `r
@@ -598,22 +630,24 @@ iniRead(InputFile, LoadSection := "") {
                         SectionName := StrReplace(A_Loopfield, "["), SectionName := StrReplace(SectionName, "]")
                         Continue
                     }
-                    if (SectionName){
-                        if (((InStr(A_Loopfield, "[",,,1)) & (!InStr(A_Loopfield, "[",,2))) | (InStr(A_LoopField, "`;")) | (!A_LoopField)) {
-                            SectionName := ""
-                            break
+                    if (SectionName) {
+                        if (((InStr(A_LoopField, "[",, 1, 1)) = 1) | ((InStr(A_LoopField, "`;",, 1, 1)) = 1) | (!A_LoopField)) {
+                            if (((InStr(A_LoopField, "`;",, 1, 1)) = 1) | (!A_LoopField)) {
+                                Continue
+                            } else {
+                                SectionName := ""
+                                break
+                            }
                         }
                         VarRef := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1), %VarRef% := SubStr(A_LoopField, InStr(A_LoopField, "=")+1)
                     }
                 }
             }
         } else if (!IsObject(LoadSection)) {
-            if (InStr(LoadSection, " ",,,2)) {
+            if ((InStr(LoadSection, " ")) > 1) {                                ; Load multiple sections
+                Sections := []
                 Loop, Parse, LoadSection, " ", A_Space
-                {
                     Sections[A_Index] := A_Loopfield
-                 }
-                 
                 for i, Name in Sections
                 {
                     Loop, parse, % FileOpen(InputFile, 0).read(), `n, `r
@@ -622,16 +656,20 @@ iniRead(InputFile, LoadSection := "") {
                             SectionName := StrReplace(A_Loopfield, "["), SectionName := StrReplace(SectionName, "]")
                             Continue
                         }
-                        if (SectionName){
-                            if (((InStr(A_Loopfield, "[",,,1)) & (!InStr(A_Loopfield, "[",,2))) | (InStr(A_LoopField, "`;")) | (!A_LoopField)) {
-                                SectionName := ""
-                                break
+                        if (SectionName) {
+                            if (((InStr(A_LoopField, "[",, 1, 1)) = 1) | ((InStr(A_LoopField, "`;",, 1, 1)) = 1) | (!A_LoopField)) {
+                                if (((InStr(A_LoopField, "`;",, 1, 1)) = 1) | (!A_LoopField)) {
+                                    Continue
+                                } else {
+                                    SectionName := ""
+                                    break
+                                }
                             }
                             VarRef := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1), %VarRef% := SubStr(A_LoopField, InStr(A_LoopField, "=")+1)
                         }
                     }
                 }
-            } Else {
+            } Else {                                                        ; Load single section
                 Loop, parse, % FileOpen(InputFile, 0).read(), `n, `r
                 {
                     if (InStr(A_Loopfield, LoadSection)) {
@@ -639,18 +677,17 @@ iniRead(InputFile, LoadSection := "") {
                         Continue
                     }
                     If (SectionName) {
-                        if ((InStr(A_Loopfield, "[",,,1)) & (!InStr(A_Loopfield, "[",,2))) {
+                        if ((InStr(A_LoopField, "[",, 1, 1)) = 1)
                             Break
-                        }
-                        VarRef := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1), %VarRef% := SubStr(A_LoopField, InStr(A_LoopField, "=")+1)        
+                        VarRef := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1), %VarRef% := SubStr(A_LoopField, InStr(A_LoopField, "=")+1)
                     }
                 }
             }
         }
-    } else if (!LoadSection) {
+    } else if (!LoadSection) {                                              ; Load all variables from ini
         Loop, parse, % FileOpen(InputFile, 0).read(), `n, `r
         {
-            if (((InStr(A_Loopfield, "[",,,1)) & (!InStr(A_Loopfield, "[",,2))) | (InStr(A_LoopField, "`;")) | (!A_LoopField))
+            if (((InStr(A_LoopField, "[",, 1, 1)) = 1) | ((InStr(A_LoopField, "`;",, 1, 1)) = 1) | (!A_LoopField))
                 Continue
             VarRef := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1), %VarRef% := SubStr(A_LoopField, InStr(A_LoopField, "=")+1)
         }
@@ -671,14 +708,32 @@ ThisHotKey() {
     Return RegExReplace(A_ThisHotkey, "[~\*\$]")
 }
 
-; GuiControl as a function for more flexible usage. Parameter ControlID can be a array.
-; For example, if you want to use the GuiControl command 3 times in a row.
-; Then the array should look something like:
-;  ControlID := [[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]]
-;
-; You can also insert objects directly on the parameter for ControlID.
-;  GuiControl([[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]])
-;
+/*
+    GuiControl as a function for more flexible usage. Parameter ControlID can be a array.
+    For example, if you want to use the GuiControl command 3 times in a row.
+    Then the array should look something like:
+    ControlID := [[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]]
+
+    You can also insert objects directly on the parameter for ControlID.
+    GuiControl([[SubCommand, ControlID, Value], [SubCommand, ControlID], [ , ControlID, Value]])
+
+    Command options. See ahk manual for details.
+
+    â€¢ (Blank): Puts new contents into the control.
+    â€¢ Text: Changes the text/caption of the control.
+    â€¢ Move: Moves and/or resizes the control.
+    â€¢ MoveDraw: Moves and/or resizes the control and repaints the region occupied by it.
+    â€¢ Focus: Sets keyboard focus to the control.
+    â€¢ Disable: Disables (grays out) the control.
+    â€¢ Enable: Enables the control.
+    â€¢ Hide: Hides the control.
+    â€¢ Show: Shows the control.
+    â€¢ Delete: Not yet implemented.
+    â€¢ Choose: Selects the specified item number in a multi-item control.
+    â€¢ ChooseString: Selects a item in a multi-item control whose leading part matches a string.
+    â€¢ Font: Changes the control's font typeface, size, color, and style.
+    â€¢ Options: Add or remove various control-specific or general options and styles.
+*/
 GuiControl(ControlID, SubCommand = 0, Value = 0) {
     If (IsObject(ControlID)) {
         Loop % ControlID.Length() {
@@ -686,35 +741,6 @@ GuiControl(ControlID, SubCommand = 0, Value = 0) {
         }
     } else {
         GuiControl % SubCommand, % ControlID, % Value
-    }
-    Return ErrorLevel
-}
-
-; A combination of Control and ControlGet. By default the ControlGet command will be used. To use Control set parameter NotGet to one.
-; Parameter Parms should be a Array of Objects. Each seperate Object will hold the command options. Only one of the commands can be
-; used for each call done to the function.
-;
-; The order of the options for the commands should be the same in the array as used by the command.
-; E.g.
-;  ControlGet_Parms := [[OutputVar, Cmd, Value, Control, WinTitle, WinText, ExcludeTitle, ExcludeText], [OutputVar, Cmd, Value ... etc]]
-;  Control_Parms    := [[Cmd, Value, Control, WinTitle, WinText, ExcludeTitle, ExcludeText], [Cmd, Value ... etc]]
-;
-;  ControlGetControl(ControlGet_Parms)
-;  ControlGetControl(Control_Parms, 1)
-;  ControlGetControl([[Cmd, Value, Control, WinTitle, WinText, ExcludeTitle, ExcludeText]], 1)
-;
-ControlGetControl(Parms, NotGet = 0) {
-    If (IsObject(Parms)) {
-        if (!NotGet) {
-           Loop % Parms.Length() {
-                OutputVar := Parms[A_index][1]
-                ControlGet %OutputVar%, % Parms[A_index][2], % Parms[A_index][3], % Parms[A_index][4], % Parms[A_index][5], % Parms[A_index][6], % Parms[A_index][7], % Parms[A_index][8]
-            }
-       } else if (NotGet) {
-            Loop % Parms.Length() {
-                Control % Parms[A_index][1], % Parms[A_index][2], % Parms[A_index][3], % Parms[A_index][4], % Parms[A_index][5], % Parms[A_index][6], % Parms[A_index][7]
-            }
-        }
     }
     Return ErrorLevel
 }
@@ -738,7 +764,7 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
             MouseGetPos, now_x, now_y
             now_x -= 75
             now_y -= 75
-            WinMove, Magnifier, , %now_x%, %now_y%  
+            WinMove, Magnifier, , %now_x%, %now_y%
             ToolTip % now_x "  " now_y
         }
 
@@ -957,43 +983,18 @@ FadeInOut(hWnd, dragg = 0) {
                     break
                 }
             }
-
         }
     }
     return
 }
 
-; This is called right before the script terminates. It keep the setting.ini clean
-; from unused values and saves GUI position.
-ExitScript() {
-    WinGetPos, Gui_X, Gui_Y, ,, AutoWalk
-
-    ; See if there are any variables in the ini that are empty.
-    Loop, parse, % FileOpen(ConfigFile, 0).read(), `n, `r
-    {
-        ; Create section name variable 'SectionName'.
-        if (InStr(A_Loopfield, "[")) {
-            SectionName := StrReplace(A_Loopfield, "["), SectionName := StrReplace(SectionName, "]")
-            Continue
-        }
-        ; Purge empty variables from the configuration file.
-        If (((SubStr(A_LoopField, InStr(A_LoopField, "=")+1)) <= "               "))
-            IniDelete, %ConfigFile%, %SectionName%, % SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1)
-    }
-    ; Remember the position of the script GUI.
-    if ((Gui_X > -1) & (Gui_Y > -1)) {
-        IniWrite, %Gui_X%, %ConfigFile%, Settings, Gui_X
-        IniWrite, %Gui_Y%, %ConfigFile%, Settings, Gui_Y
-    }
-}
-
 SystemCursor(OnOff=1)   ; INIT = "I","Init"; OFF = 0,"Off"; TOGGLE = -1,"T","Toggle"; ON = others
 {
     static AndMask, XorMask, $, h_cursor
-        ,c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13 ; system cursors
-        , b1,b2,b3,b4,b5,b6,b7,b8,b9,b10,b11,b12,b13   ; blank cursors
-        , h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12,h13   ; handles of default cursors
-    if (OnOff = "Init" or OnOff = "I" or $ = "")       ; init when requested or at first call
+        , c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13 ; system cursors
+        , b1,b2,b3,b4,b5,b6,b7,b8,b9,b10,b11,b12,b13    ; blank cursors
+        , h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12,h13    ; handles of default cursors
+    if (OnOff = "Init" or OnOff = "I" or $ = "")        ; init when requested or at first call
     {
         $ := "h"                                       ; active default cursors
         VarSetCapacity( h_cursor,4444, 1 )
@@ -1021,34 +1022,46 @@ SystemCursor(OnOff=1)   ; INIT = "I","Init"; OFF = 0,"Off"; TOGGLE = -1,"T","Tog
     }
 }
 
-Class ShellHookWindow
-{
-    __New(ThisExe) {
-        This.OnExitApp := ThisExe
-        AppName := This.OnExitApp
-    }
-
-    __Set(OnExitApp, Name) {
-        DllCall("RegisterShellHookWindow", UInt, A_ScriptHwnd)
-        OnMessage((ShellMessageID := DllCall("RegisterWindowMessage", Str, "SHELLHOOK")), OnExitApp)
-    }
+Reload() {
+    OnExit("ExitScript", 0)
+    Reload
 }
 
-OnExitApp(wParam, lparam) {
-    ListLines off
-    SystemCursor("On")
-    DllCall("gdi32.dll\DeleteObject", UInt,hbm_buffer) 
-    DllCall("gdi32.dll\DeleteDC", UInt,hdc_frame ) 
-    DllCall("gdi32.dll\DeleteDC", UInt,hdd_frame ) 
-    DllCall("gdi32.dll\DeleteDC", UInt,hdc_buffer) 
-    Static HSHELL_ACCESSIBILITYSTATE := 11, HSHELL_ACTIVATESHELLWINDOW := 3, HSHELL_APPCOMMAND := 12, HSHELL_GETMINRECT := 5, HSHELL_LANGUAGE := 8, HSHELL_REDRAW := 6 , HSHELL_TASKMAN := 7 , HSHELL_WINDOWACTIVATED := 4 , HSHELL_WINDOWCREATED := 1 , HSHELL_WINDOWDESTROYED := 2, HSHELL_WINDOWREPLACED := 13
+ExitApp() {
+    OnExit("ExitScript", 0)
+    ExitApp
+}
 
+; This is called right before the script terminates. It keep the setting.ini clean
+; from unused values and saves GUI position.
+ExitScript() {
+    WinGetPos, Gui_X, Gui_Y, ,, AutoWalk
 
-    if (wParam = HSHELL_WINDOWDESTROYED && !WinExist("ahk_exe " AppName)) {
-        DllCall("DeregisterShellHookWindow", UInt, A_ScriptHwnd)
-        ExitApp
-    } else {
-        Return
+     ; Remember the position of the script GUI.
+    if ((Gui_X > -1) & (Gui_Y > -1)) {
+        IniWrite, %Gui_X%, %ConfigFile%, Settings, Gui_X
+        IniWrite, %Gui_Y%, %ConfigFile%, Settings, Gui_Y
     }
-    sleep 25
+
+    if (Title) {
+        If (!FileExist(Profiles)) {
+            FileCreateDir, GameProfiles
+            FileAppend,, %Profiles%
+        }
+
+        If (Title != "Ready to start you're game") {
+            Loop, parse, % FileOpen(ConfigFile, 0).read(), `n, `r
+            {
+                if (InStr(A_Loopfield, "[")) {
+                    SectionName := StrReplace(A_Loopfield, "["), SectionName := StrReplace(SectionName, "]")
+                    IniDelete, %Profiles%, %Title%
+                    FileAppend, % "[" Title "]", %Profiles%
+                }
+                Else If (SectionName && A_LoopField) {
+                    VarRef := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1)
+                    IniWrite, % %VarRef%, %Profiles%, %Title%, %VarRef%
+                }
+            }
+        }
+    }
 }
