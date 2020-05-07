@@ -12,8 +12,8 @@
 #NoEnv
 #SingleInstance force
 #InstallKeybdHook
-;#KeyHistory 0
-;ListLines off
+#KeyHistory 0
+ListLines off
 SetBatchLines -1
 SetTitleMatchMode 3
 SetKeyDelay 5, 1
