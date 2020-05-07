@@ -1,32 +1,10 @@
 /*
-    Autowalk v1.0.4.1 writen by Megnatar ⬖⬘⬗⬙
+    Autowalk v1.0.4.4 writen by Megnatar ⬖⬘⬗⬙
 
     Everyone is free to use, add code and redistribute this script.
     But you MUST always credit ME Megnatar for creating the source!
     The source code for this script can be found on my Github repository:
      https://github.com/Megnatar/AHK-Scripts/blob/master/Autowalk.ahk
-
-    Usage:
-    To add a new game, just drop the executable on the gui or use the browse button.
-
-    Click in a edit box to set a new hotkey. Any posible key will do. The script will write
-    the name of the key to the edit control. For example pressing numpad1 after a click inside a edit
-    control will write numpad1 to it, not 1. Game controllers are supported.
-
-    Enable the checkbox "RPG Games" for games with a isometric camera (top Down view).
-    All these games use left mouse button Down to move around. Thus, double click the left
-    mouse button to send LButton Down. Click again, once or twice, to stop.
-    The hotkey and the key to send, are both configurable.
-
-    When the camera does not automatically follow the player enable "Turn camera" and
-    specify the two keys used by the game to rotate the camera left or right.
-    A double click will now also enable auto rotation of the camera.
-
-    IMPORTANT:
-    - If the game does not accept input. Then enable admin mode and try again!
-    - Droping files will NOT work when the script is running in admin mode.
-    - You have to use the real executable for you're game, not a shortcut that looks like a exe.
-      This is usually the case with games build on the Unreal engine. Look for a folder named Binaries or Bin.
 
     Great thanx to Turul1989 for helping me debug and undestand what needs to be added.
 */
@@ -65,33 +43,34 @@ Global Wm_LbuttonDown   := 0x201
 , now_y
 , Title
 
-MenuItems       := {"Toggle Admin": "Admin", "Toggle Tooltips off": "TipsOff", "Toggle OnTop": "OnTop", "Show Game List": "ShowGameList"}
-DropNotice      := "Drop you're game executable here"
-OpenFolder_TT   := "Open game installation dir.`nControl+Click to open script dir."
-hKey_TT         := "HOTKEY.`nClick then press a button to change."
-sKey_TT         := "SENDKEY.`nClick then press a button to change."
-RunGame_TT      := "Start a new game session.`nActivates it, if it's already running."
-LeftKey_TT      := "The key used by the game to turn camera left."
-RightKey_TT     := "The key used by the game to turn camera right."
-Browse_TT       := "Browse for a game to add."
-LeftKey         := "Left"
-RightKey        := "Right"
-Gui_X           := "Center"
-Gui_Y           := "Center"
-KeyState        := "Up"
-sKey            := "W"
-hKey            := "XButton2"
-RPGGames        := 0
-TurnCamera      := 0
-Admin           := 0
-ShowGameList    := 0
-OnTop           := 0
-i               := 0
-FS              := 8
-Xm	            := Round(FS*1.25)
-Ym 	            := Round(FS*0.75)
-
-
+RPGGames                := 0
+TurnCamera              := 0
+Admin                   := 0
+ShowGameList            := 0
+OnTop                   := 0
+i                       := 0
+FS                      := 8
+Xm	                    := Round(FS*1.25)
+Ym 	                    := Round(FS*0.75)
+FullScreen              := 0xb4000000
+AppwindowAlwaysOnTop    := 0x20040808
+WS_EX_TOPMOST           := 0x00000008
+MenuItems               := {"Toggle Admin": "Admin", "Toggle Tooltips off": "TipsOff", "Toggle OnTop": "OnTop", "Show Game List": "ShowGameList"}
+DropNotice              := "Drop you're game executable here"
+OpenFolder_TT           := "Open game installation dir.`nControl+Click to open script dir."
+hKey_TT                 := "HOTKEY.`nClick then press a button to change."
+sKey_TT                 := "SENDKEY.`nClick then press a button to change."
+RunGame_TT              := "Start a new game session.`nActivates it, if it's already running."
+LeftKey_TT              := "The key used by the game to turn camera left."
+RightKey_TT             := "The key used by the game to turn camera right."
+Browse_TT               := "Browse for a game to add."
+LeftKey                 := "Left"
+RightKey                := "Right"
+Gui_X                   := "Center"
+Gui_Y                   := "Center"
+KeyState                := "Up"
+sKey                    := "W"
+hKey                    := "XButton2"
 
 If (FileExist(ConfigFile)) {
     iniRead(ConfigFile)
@@ -299,14 +278,13 @@ MenuActions:
             if (OnTop)
                 Gui +AlwaysOnTop
         }
-
     }
     else If (A_ThisMenu = "LvMenu") {
         if (A_ThisMenuItem = "Change Title") {
             InputBox NewTitle, Change Title, Enter a new title below.,,,132,,,,, %GameTitle%
             if (!ErrorLevel && NewTitle) {
                 LV_Modify(EventInfo, "Text", NewTitle)
-                
+
                 if (GameTitle = Title) {
                     GuiControl([[ , "Title", NewTitle]]), Title := NewTitle, NewTitle := ""
                     IniWrite %Title%, %ConfigFile%, Settings, Title
@@ -315,12 +293,12 @@ MenuActions:
                     {
                         f.Seek(StrLen(A_LoopField),0)
 
-                        MsgBox,,, % f.Tell()
+                        MsgBox,,1, % f.Tell()
                         if ((InStr(A_LoopField, "[",, 1, 1)) = 1) {
                             SectionName := StrReplace(A_Loopfield, "["), SectionName := StrReplace(SectionName, "]")
-                        MsgBox,,, % f.Tell()
+                        MsgBox,,2, % f.Tell()
                         } Else if (GameTitle = SectionName) {
-                            MsgBox,,, % f.Tell()
+                            MsgBox,,3, % f.Tell()
 
                         }
                     }
@@ -331,17 +309,16 @@ MenuActions:
     }
 Return
 
-ListviewActions:
 /*
 LVM_SETITEMTEXTA := 0x102E
 DubItem := ""
 SetTxt := ""
+
 SendMessage 0x102E, HwndLV, DubItem,, ahk_id %hWnd% ; LVM_SETITEMTEXTA
-
-
 SendMessage 0x102D, HwndLV, lParam,, ahk_id %hWnd% ; LVM_GETITEMTEXTA
-
 */
+
+ListviewActions:
     Loop {
         if (!(RowNumber := LV_GetNext(RowNumber)))
             break
@@ -434,7 +411,7 @@ ButtonBrowse:
 Return
 
 ButtonStartGame:
-    If ((Title > 0) & (InStr(Title ,"Ready to start you're game") = 0 )) {
+    If ((Title > 0) & (InStr(Title ,"Ready to start you're game") = 0)) {
         If (!(HwndClient := WinExist("ahk_class " ClientGuiClass))) {
             Run %FullPath%, %Path%
         }
@@ -443,8 +420,8 @@ ButtonStartGame:
         WinGet ExS, ExStyle
 
         ; Remove AlwaysOnTop from a fullscreen window. It's anoying behavier.
-        if ((S = (FullScreen := 0xb4000000) & (ExS = (AppwindowAlwaysOnTop := 0x20040808 )))) {
-            WinSet, ExStyle, % "-" (WS_EX_TOPMOST := 0x00000008), ahk_class %ClientGuiClass%
+        if ((S = FullScreen) & (ExS = AppwindowAlwaysOnTop)) {
+            WinSet, ExStyle, % "-" WS_EX_TOPMOST, ahk_class %ClientGuiClass%
         }
 
         WinActivate ahk_class %ClientGuiClass%
@@ -458,11 +435,10 @@ ButtonStartGame:
         }
     }
     Else If (Title = "Ready to start you're game") {
-        Text := "WAIT UNTIL THE MAIN GAME WINDOW IS FULLY LOADED!`n`nThen press escape to close this window.`nThis will ensure the script can always identify you're game.`nYou need to do this once for each new game added."
+        Text := "WAIT UNTIL THE MAIN GAME WINDOW IS FULLY LOADED!`n`nThen press escape to close this window even if you don't see it.`nMaybe you need to press button 'Start Game' one more time afterwords."
 
         WinSet, Bottom,, AutoWalk
         Gui 1:+Disabled
-        Run %FullPath%, %Path%
 
         Gui ClipMsg:+LastFound +AlwaysOnTop hwndhClipMsg -border -Caption -SysMenu
         Gui ClipMsg:Margin, 10, 12
@@ -474,7 +450,9 @@ ButtonStartGame:
 
         Hotkey, IfWinExist, ClipMsg
         Hotkey, ~*Vk1B, ClipMsgEscape, On   ; Vk1B = Escape
-
+        
+        sleep 5000
+        Run %FullPath%, %Path%
         WinWaitClose, ClipMsg
         Return
 
@@ -524,7 +502,7 @@ Return
 
 RPGGames:   ; Checkbox
     GUI, submit, nohide
-    
+
     if (RPGGames) {
         GuiControl([[ , "hKey", "LButton"], [ , "sKey", "LButton"], ["Enable", "TurnCamera"]])
         IniWrite, %RPGGames%, %ConfigFile%, Settings, RPGGames
@@ -541,7 +519,7 @@ Return
 
 TurnCamera: ; Checkbox
     GUI, submit, nohide
-    
+
     if (TurnCamera) {
         GuiControl([["Enable", "LeftKey"], ["Enable", "RightKey"]])
         IniWrite, %TurnCamera%, %ConfigFile%, Settings, TurnCamera
@@ -624,7 +602,7 @@ LoadIcons() {
 
 GuiContextMenu(GuiHwnd, CtrlHwnd, E, IsRightClick, X, Y) {
     Global hLVItems, EventInfo := E, GameTitle
-    
+
     if (CtrlHwnd = hLVItems) {
         LV_GetText(GameTitle, EventInfo)
         menu, LVMenu, add, Delete %GameTitle%, MenuActions
@@ -1037,12 +1015,11 @@ SaveSettings() {
     }
 
     ; When the window title is the title of the game window.
-    if ((Title) & (Title != "Ready to start you're game")) {
+    if ((Title) && (Title != "Ready to start you're game")) {
         If (!FileExist(Profiles)) {
             FileCreateDir, GameProfiles
             FileAppend,, %Profiles%
         }
-
         ; Save all values from Settings.ini to the Profiles.ini file
         Loop, parse, % FileOpen(ConfigFile, 0).read(), `n, `r
         {
