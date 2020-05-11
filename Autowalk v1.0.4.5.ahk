@@ -1,5 +1,5 @@
 /*
-    Autowalk v1.0.4.4 writen by Megnatar ⬖⬘⬗⬙
+    Autowalk v1.0.4.1 writen by Megnatar ⬖⬘⬗⬙
 
     Everyone is free to use, add code and redistribute this script.
     But you MUST always credit ME Megnatar for creating the source!
@@ -226,6 +226,10 @@ MenuActions:
     else If (A_ThisMenu = "ScriptMenu") {
         If (A_ThisMenuItem = "Reset Script") {
             SaveSettings()
+            If (FileExist(A_ScriptDir "\UserCode.ahk")) {
+                FileCopy, % A_ScriptDir "\UserCode.ahk", % UserCodeFiles "\" Title ".ahk", 1
+                FileDelete % A_ScriptDir "\UserCode.ahk"
+            }
             FileDelete %ConfigFile%
             Admin ? Reload() : ExitApp()
         }
@@ -435,7 +439,7 @@ ButtonStartGame:
         }
     }
     Else If (Title = "Ready to start you're game") {
-        Text := "WAIT UNTIL THE MAIN GAME WINDOW IS FULLY LOADED!`n`nThen press escape to close this window even if you don't see it.`nMaybe you need to press button 'Start Game' one more time afterwords."
+        Text := "WAIT UNTIL THE MAIN GAME WINDOW IS FULLY LOADED!`n`nThen press escape to close this window even if you don't see it anymore!`n"
 
         WinSet, Bottom,, AutoWalk
         Gui 1:+Disabled
@@ -454,6 +458,7 @@ ButtonStartGame:
         sleep 5000
         Run %FullPath%, %Path%
         WinWaitClose, ClipMsg
+        GoSub, ButtonStartGame
         Return
 
         ClipMsgEscape:
@@ -469,7 +474,8 @@ ButtonStartGame:
             IniWrite %ClientGuiClass%, %ConfigFile%, Settings, ClientGuiClass
 
             GuiControl([[ , "Title", Title]])
-            GroupAdd, ClientGroup, ahk_class %ClientGuiClass%
+            
+            ;GroupAdd, ClientGroup, ahk_class %ClientGuiClass%
         Return
     }
     Else if (!Title) {
