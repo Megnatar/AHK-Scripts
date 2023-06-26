@@ -1,7 +1,7 @@
 #NoEnv
+#SingleInstance force
 #Persistent
 #NoTrayIcon
-#SingleInstance force
 #KeyHistory 0
 ListLines off
 SetBatchLines -1
@@ -16,9 +16,9 @@ Global AppName = "vlc.exe"
 if (!WinExist("ahk_exe " AppName)) {
     Run % AppName
     WinWait, % "ahk_exe " AppName
+    
+    new ShellHookWindow("vlc.exe")
 }
-
-new ShellHookWindow("vlc.exe")
 Return
 
 #IfWinExist ahk_exe vlc.exe
@@ -101,5 +101,5 @@ OnExitApp(wParam, lparam) {
         #IfWinNotActive ahk_exe vlc.exe
             DllCall("DeregisterShellHookWindow", UInt, A_ScriptHwnd)
             ExitApp
-    } 
+    }
 }
