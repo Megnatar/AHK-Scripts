@@ -16,9 +16,6 @@ Global AppName = "vlc.exe"
 if (!WinExist("ahk_exe " AppName)) {
     Run % AppName
     WinWait, % "ahk_exe " AppName
-    
-} else {
-    ExitApp
 }
 
 new ShellHookWindow("vlc.exe")
