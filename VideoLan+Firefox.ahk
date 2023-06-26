@@ -11,14 +11,17 @@ SetWorkingDir C:\Program Files\VideoLAN\VLC\
 DetectHiddenWindows on
 SetTitleMatchMode 2
 
-Global AppName
+Global AppName = "vlc.exe"
 
-if (!WinExist("ahk_exe " "vlc.exe")) {
-    Run vlc.exe
-    WinWait, ahk_exe vlc.exe 
+if (!WinExist("ahk_exe " AppName)) {
+    Run % AppName
+    WinWait, % "ahk_exe " AppName
+    
+} else {
+    ExitApp
 }
 
-new ShellHookWindow("Vlc.exe")
+new ShellHookWindow("vlc.exe")
 Return
 
 #IfWinExist ahk_exe vlc.exe
@@ -52,7 +55,9 @@ Return
     XButton2::
         Send, {LControl down}{ h }{LControl up}
         KeyWait, Lcontrol, L
-        Send, {LControl down}{ y }{LControl up}{tab}{Enter}
+        Send, {LControl down}{ y }{LControl up}
+        KeyWait, LControl, L
+        Send, {Enter}{tab}{Enter}
         KeyWait, Enter, L
         Send, {LControl down}{ h }{LControl up}
         KeyWait, Lcontrol, L
@@ -76,12 +81,13 @@ Class ShellHookWindow
 {
     __New(ThisExe) {
         This.OnExitApp := ThisExe
-        AppName := This.OnExitApp
     }
 
-    __Set(OnExitApp, Name) {
+    __Set(OnExitApp, ThisExe) {
+        MessageID := DllCall("RegisterWindowMessage", Str, "SHELLHOOK")
+        
         DllCall("RegisterShellHookWindow", UInt, A_ScriptHwnd)
-        OnMessage((ShellMessageID := DllCall("RegisterWindowMessage", Str, "SHELLHOOK")), OnExitApp)
+        OnMessage(MessageID, OnExitApp)
     }    
 }
 
@@ -98,4 +104,5 @@ OnExitApp(wParam, lparam) {
         #IfWinNotActive ahk_exe vlc.exe
             DllCall("DeregisterShellHookWindow", UInt, A_ScriptHwnd)
             ExitApp
-} }
+    } 
+}
