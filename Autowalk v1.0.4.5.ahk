@@ -667,14 +667,14 @@ ShowGameList:   ; Checkbox
 
     if (ShowGameList := ShowGameList ? 0 : 1) {
     
-        WinMove, AutoWalk,,,, 638
+        WinMove, AutoWalk,,,, 963
         GuiControl([["Show", "GBGameList"], ["Show","ListviewActions"], ["move", GBGameList,"w254"]])
         IniWrite, %ShowGameList%, %ConfigFile%, Settings, ShowGameList
         
     } else {
     
         GuiControl([["Hide", "GBGameList"], ["Hide","ListviewActions"]])
-        WinMove, AutoWalk,,,, 384
+        WinMove, AutoWalk,,,, 573
         IniDelete, %ConfigFile%, Settings, ShowGameList
         
     }
