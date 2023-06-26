@@ -290,14 +290,15 @@ MenuActions:
         } Else If (A_ThisMenuItem = "Show Game List") {
         
             if (ShowGameList) {
-            
-                WinMove, AutoWalk,,,, 638
-                GuiControl([["Show", "GBGameList"], ["Show","ListviewActions"], ["", "ShowGameList", ShowGameList]])
+                
+                GuiControl([["Show", "GBGameList"], ["Show", "ListviewActions"]])
+                WinMove, AutoWalk,,,, 963
+
                 
             } else {
-            
-                GuiControl([["Hide", "GBGameList"], ["Hide","ListviewActions"], ["", "ShowGameList", ShowGameList]])
-                WinMove, AutoWalk,,,, 384
+
+                GuiControl([["Hide", "GBGameList"], ["Hide", "ListviewActions"]])
+                WinMove, AutoWalk,,,, 573
             }
         }
     }
