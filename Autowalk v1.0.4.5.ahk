@@ -992,8 +992,9 @@ LoadIcons(IconLib) {
 }
 
 ; Read ini file and create variables. Sections are supported.
-; Referenced variables are not local to functions. So %VarRef% represents global
-; variables to which some value is added %VarRef% := "ValueOfVar"
+; Referenced variables are not local to functions!
+; Thus %VarRef% represents the name of some variable,
+; that usually is declaired at the top of the script
 iniRead(InputFile, LoadSection = 0) {
 
     if (LoadSection) {
@@ -1090,7 +1091,12 @@ iniRead(InputFile, LoadSection = 0) {
         {
             if (((InStr(A_LoopField, "[",, 1, 1)) = 1) | ((InStr(A_LoopField, "`;",, 1, 1)) = 1) | (!A_LoopField))
                 Continue
-            VarRef := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1), %VarRef% := SubStr(A_LoopField, InStr(A_LoopField, "=")+1)
+                
+            ; Save only the first word in A_LoopField to VarRef. This word is a variable name.
+            VarRef := SubStr(A_LoopField, 1, InStr(A_LoopField, "=")-1)
+            
+            ; Give the variable it's value.
+            %VarRef% := SubStr(A_LoopField, InStr(A_LoopField, "=")+1)
         }
     }
     Return
