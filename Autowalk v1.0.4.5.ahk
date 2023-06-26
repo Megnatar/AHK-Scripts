@@ -288,17 +288,17 @@ MenuActions:
             Gui % (OnTop ? "+" : "-") "AlwaysOnTop"
             
         } Else If (A_ThisMenuItem = "Show Game List") {
-        
+            
             if (ShowGameList) {
                 
-                GuiControl([["Show", "GBGameList"], ["Show", "ListviewActions"]])
+                GuiControl([["Show", "GBGameList"], ["Show", "ListviewActions"], ["", "ShowGameList", 1]])
                 WinMove, AutoWalk,,,, 963
-
                 
             } else {
 
-                GuiControl([["Hide", "GBGameList"], ["Hide", "ListviewActions"]])
+                GuiControl([["Hide", "GBGameList"], ["Hide", "ListviewActions"], ["", "ShowGameList", 0]])
                 WinMove, AutoWalk,,,, 573
+                IniDelete, %ConfigFile%, Settings, ShowGameList
             }
         }
     }
@@ -667,8 +667,8 @@ ShowGameList:   ; Checkbox
 
     if (ShowGameList := ShowGameList ? 0 : 1) {
     
+        GuiControl([["Show", "GBGameList"], ["Show","ListviewActions"]])
         WinMove, AutoWalk,,,, 963
-        GuiControl([["Show", "GBGameList"], ["Show","ListviewActions"], ["move", GBGameList,"w254"]])
         IniWrite, %ShowGameList%, %ConfigFile%, Settings, ShowGameList
         
     } else {
