@@ -134,10 +134,10 @@ Gui Menu, Menu
 Gui Add, CheckBox, x368 y1 w10 h10 Checked%ShowGameList% vShowGameList gShowGameList -theme +0x1020 +E0x20000
 Gui Add, GroupBox, x8 y0 w362 h194 +Center, % Admin ? "" : DropNotice
 Gui Add, GroupBox, x16 y8 w345 h64
-Gui Font, s10 Bold
-Gui Add, Text, x80 y40 w276 +0x200 vTitle, %Title%
+Gui Font, s10 
+Gui Add, Text, x83 y40 w276 +0x200 vTitle, %Title%
 Gui Font
-Gui Add, Picture, x20 y18 w50 h50 +0x09 vPic, % "HICON:*" hIcon := LoadPicture(FullPath, "GDI+ Icon1 w50", ImageType)
+Gui Add, Picture, x19 y18 w50 h50 +0x09 vPic, % "HICON:*" hIcon := LoadPicture(FullPath, "GDI+ Icon1 w50", ImageType)
 Gui Add, Button, x307 y18 w50 h18 vBrowse, Browse
 Gui Add, Button, x16 y160 w70 h23 vRunGame, &Start Game
 Gui Add, Button, x88 y160 w70 h23 vOpenFolder, Open Folder
@@ -293,6 +293,7 @@ MenuActions:
                 
                 GuiControl([["Show", "GBGameList"], ["Show", "ListviewActions"], ["", "ShowGameList", 1]])
                 WinMove, AutoWalk,,,, 963
+                IniWrite, %ShowGameList%, %ConfigFile%, Settings, ShowGameList
                 
             } else {
 
@@ -666,15 +667,17 @@ ShowGameList:   ; Checkbox
     Menu OptionsMenu, ToggleCheck, Show Game List
 
     if (ShowGameList := ShowGameList ? 0 : 1) {
-    
+
         GuiControl([["Show", "GBGameList"], ["Show","ListviewActions"]])
         WinMove, AutoWalk,,,, 963
+        Menu, OptionsMenu, Check, Show Game List
         IniWrite, %ShowGameList%, %ConfigFile%, Settings, ShowGameList
         
     } else {
     
         GuiControl([["Hide", "GBGameList"], ["Hide","ListviewActions"]])
         WinMove, AutoWalk,,,, 573
+        Menu, OptionsMenu, Uncheck, Show Game List
         IniDelete, %ConfigFile%, Settings, ShowGameList
         
     }
