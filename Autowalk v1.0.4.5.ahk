@@ -142,6 +142,7 @@ Gui Add, Button, x307 y18 w50 h18 vBrowse, Browse
 Gui Add, Button, x16 y160 w70 h23 vRunGame, &Start Game
 Gui Add, Button, x88 y160 w70 h23 vOpenFolder, Open Folder
 Gui Add, Button, x304 y160 w60 h23 gGuiClose, Exit
+Gui Add, Button, x226 y160 w70 h23 gQuitGame, Quit Game
 Gui Add, GroupBox, x16 y72 w345 h83
 Gui Add, Text, x24 y80 w99 h14, Autowalk keys
 Gui Add, Edit, x24 y100 w63 h21 Limit1 -TabStop vhKey, %hKey%
@@ -605,7 +606,7 @@ ButtonStartGame:
     Else If (Title = "Ready to start you're game") {
     
         Text := "WAIT UNTIL THE MAIN GAME WINDOW IS FULLY LOADED!`n`nThen press escape to close this window even if you don't see it anymore!`n"
-
+        Gui % (OnTop ? "+" : "-") "AlwaysOnTop"
         WinSet, Bottom,, AutoWalk
         Gui 1:+Disabled
 
@@ -797,24 +798,27 @@ TriggerPot: ; Timer
     }
 return
 
+QuitGame:
+Return
+
 GuiEscape:
 GuiClose:
     ExitApp
 
 
 HotKeyAutoWalk:
-    if (!IsObject(Walk) && !RPGGames) {
+    if (!IsObject(Walk)) {
     
-        Walk := New Autowalk("w")
+        Walk := New Autowalk("w", "LButton")
         WalkEnabled := 0
-        
     }
     
-    if (!RPGGames) {
+    if (!RPGGames && IsObject(Walk)) {
+    
         WalkEnabled := WalkEnabled = 0 ? Walk.Start() : Walk.Stop()
         
     ; When enabled, you need to press the hotkey twice to trigger the key to send.
-    } Else If (RPGGames = 1) {
+    } else if (RPGGames = 1) {
     
         If (A_Hotkey := KeyWait()) {
         
@@ -843,6 +847,46 @@ HotKeyAutoWalk:
 Return
 
 ;_______________________________________ Script Functions And Classes _______________________________________
+
+class AutoWalk
+{
+    
+    __New(sndkey, inpkey) {
+    
+        Static SendKey, InputKey
+        
+        if (SendKey)
+            SendKey   := ""
+            
+        if (InputKey)
+            InputKey   := ""
+            
+        this.SendKey  := sndKey
+        this.InputKey := inpkey
+    }
+    
+    
+    Start() {
+    
+        KeyOut := This.Sendkey
+        KeyIn := this.InputKey
+        
+        SendEvent {%KeyOut% Down}
+        Hotkey, ~*Vk057, HotKeyAutoWalk, ON     ; Vk057 = w
+        Hotkey, Vk01, HotKeyAutoWalk, ON        ; Vk01  = LButton
+        Return 1
+    }
+
+    Stop() {
+    
+        Key := This.Sendkey
+        
+        SendEvent {%Key% Up}
+        Hotkey, ~*Vk057, HotKeyAutoWalk, Off    ; Vk057 = w
+        Hotkey, Vk01, HotKeyAutoWalk, Off       ; Vk01  = LButton
+        Return 0
+    }
+}
 
 ; Creates the right click contextmenu in the listview.
 GuiContextMenu(GuiHwnd, CtrlHwnd, EventInfo, IsRightClick, X, Y) {
@@ -878,43 +922,6 @@ GuiContextMenu(GuiHwnd, CtrlHwnd, EventInfo, IsRightClick, X, Y) {
     
     ; Set number of clicks back to none.
     LeftClick := 0
-}
-
-
-
-class AutoWalk
-{
-    
-    __New(sndKey) {
-    
-        Static SendKey
-        
-        if (SendKey)
-            SendKey := ""
-            
-        This.SendKey := sndKey
-    }
-    
-    
-    Start() {
-    
-        Key := This.Sendkey
-        
-        SendEvent {%Key% Down}
-        Hotkey, ~*Vk057, HotKeyAutoWalk, ON     ; Vk057 = w
-        Hotkey, Vk01, HotKeyAutoWalk, ON        ; Vk01  = LButton
-        Return 1
-    }
-
-    Stop() {
-    
-        Key := This.Sendkey
-        
-        SendEvent {%Key% Up}
-        Hotkey, ~*Vk057, HotKeyAutoWalk, Off    ; Vk057 = w
-        Hotkey, Vk01, HotKeyAutoWalk, Off       ; Vk01  = LButton
-        Return 0
-    }
 }
 
 LoadIcons(IconLib) {
@@ -1133,20 +1140,20 @@ ThisHotKey() {
 
     Command options. See ahk manual for details.
 
-    â€¢ (Blank): Puts new contents into the control.
-    â€¢ Text: Changes the text/caption of the control.
-    â€¢ Move: Moves and/or resizes the control.
-    â€¢ MoveDraw: Moves and/or resizes the control and repaints the region occupied by it.
-    â€¢ Focus: Sets keyboard focus to the control.
-    â€¢ Disable: Disables (grays out) the control.
-    â€¢ Enable: Enables the control.
-    â€¢ Hide: Hides the control.
-    â€¢ Show: Shows the control.
-    â€¢ Delete: Not yet implemented.
-    â€¢ Choose: Selects the specified item number in a multi-item control.
-    â€¢ ChooseString: Selects a item in a multi-item control whose leading part matches a string.
-    â€¢ Font: Changes the control's font typeface, size, color, and style.
-    â€¢ Options: Add or remove various control-specific or general options and styles.
+    .(Blank): Puts new contents into the control.
+    .Text: Changes the text/caption of the control.
+    .Move: Moves and/or resizes the control.
+    .MoveDraw: Moves and/or resizes the control and repaints the region occupied by it.
+    .Focus: Sets keyboard focus to the control.
+    .Disable: Disables (grays out) the control.
+    .Enable: Enables the control.
+    .Hide: Hides the control.
+    .Show: Shows the control.
+    .Delete: Not yet implemented.
+    .Choose: Selects the specified item number in a multi-item control.
+    .ChooseString: Selects a item in a multi-item control whose leading part matches a string.
+    .Font: Changes the control's font typeface, size, color, and style.
+    .Options: Add or remove various control-specific or general options and styles.
 */
 GuiControl(ControlID, SubCommand = 0, Value = 0) {
 
@@ -1176,7 +1183,7 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
     ControlBelowMouse := ClsNNCurrent
 
     ; When the mouse moved from one control to the other. ClsNNPrevious and ClsNNCurrent, both hold a different value.
-    if (ClsNNPrevious != ClsNNCurrent)
+    if (ClsNNCurrent != ClsNNPrevious)
         ControlOldBelowMouse := ClsNNPrevious
 
     if (msg = WM_MOUSEMOVE) {
@@ -1227,8 +1234,7 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
 
             ; Ignore the windows used by autohotkey for ListVars, ListLines and so on.
             If (WinGetActiveTitle() != "AutoWalk")
-            
-             Return
+                Return
 
             ; And when this control is not disabled.
             If (IsControlOn = 1) {
@@ -1238,7 +1244,7 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
                 ControlGetText, ctrlTxt, %ControlBelowMouse%
 
                 ; Briefly enable this control to call function EditGetKey when it recieves some input.
-                GuiControl([["+gEditGetKey", ControlBelowMouse], [ , ControlBelowMouse], ["-gEditGetKey", ControlBelowMouse]])
+                GuiControl([["+gEditGetKey", ControlBelowMouse], [, ControlBelowMouse], ["-gEditGetKey", ControlBelowMouse]])
                 
             } else {
             
@@ -1360,8 +1366,8 @@ ButtonSingleDouble(KeySingle, KeyDouble, ThisHotKey = 0, WaitRelease = 0) {
 }
 
 ; Automaticly turn the ingame camera to follow the player when some key is down.
-AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 40, DeadZone = 35) {
-    Static Rad := 180 / 3.1415926
+AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 350, DeadZone = 65) {
+    Static Rad := 182.5 / 3.1415926
 
     ; The width and hight of the client gui might change in between calls, so getting them here.
     WinGetPos, , ,gW, gH, A
@@ -1402,22 +1408,25 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 40, DeadZ
 
 ; Fade transparency out or in while dragging the Gui.
 FadeInOut(hWnd, dragg = 0) {
-    static Transparency := 250
+    static Transparency := 255, TransparencyOff := 255, WaitNextTick := 0, IncrementValue := 25, MlsNextLoop := 05, TransparencyLow := 100
+    
     if (dragg = 1) {
         Loop {
             If (A_TickCount >= WaitNextTick) {
-                WaitNextTick := A_TickCount+50
-                WinSet, Transparent, % Transparency -= 20, ahk_id %hWnd%
-                If (Transparency <= 210)
+                WaitNextTick := A_TickCount+MlsNextLoop
+                
+                WinSet, Transparent, % Transparency -= IncrementValue, ahk_id %hWnd%
+                If (Transparency <= TransparencyLow)
                     break
             }
         }
     } Else if (dragg = 0) {
         Loop {
             If (A_TickCount >= WaitNextTick) {
-                WaitNextTick := A_TickCount+50
-                WinSet, Transparent, % Transparency += 20, ahk_id %hWnd%
-                If (Transparency >= 255) {
+                WaitNextTick := A_TickCount+MlsNextLoop
+                
+                WinSet, Transparent, % Transparency += IncrementValue, ahk_id %hWnd%
+                If (Transparency >= TransparencyOff) {
                     WinSet, Transparent, Off, ahk_id %hWnd%
                     break
                 }
