@@ -1274,6 +1274,36 @@ WM_Mouse(wParam, lParam, msg, hWnd) {
     }
 }
 
+; Fade transparency out or in while dragging the Gui.
+FadeInOut(hWnd, dragg = 0) {
+    static Transparency := 255, TransparencyOff := 255, WaitNextTick := 0, IncrementValue := 25, MlsNextLoop := 05, TransparencyLow := 100
+    
+    if (dragg = 1) {
+        Loop {
+            If (A_TickCount >= WaitNextTick) {
+                WaitNextTick := A_TickCount+MlsNextLoop
+                
+                WinSet, Transparent, % Transparency -= IncrementValue, ahk_id %hWnd%
+                If (Transparency <= TransparencyLow)
+                    break
+            }
+        }
+    } Else if (dragg = 0) {
+        Loop {
+            If (A_TickCount >= WaitNextTick) {
+                WaitNextTick := A_TickCount+MlsNextLoop
+                
+                WinSet, Transparent, % Transparency += IncrementValue, ahk_id %hWnd%
+                If (Transparency >= TransparencyOff) {
+                    WinSet, Transparent, Off, ahk_id %hWnd%
+                    break
+                }
+            }
+        }
+    }
+    return
+}
+
 WinGetActiveTitle() {
 
     WinGetActiveTitle OutputVar
@@ -1404,36 +1434,6 @@ AutoTurnCamera(KeyDown, RotateL, RotateR, VirtualKey = 0, DownPeriod = 350, Dead
         sleep 50
     }
     Return
-}
-
-; Fade transparency out or in while dragging the Gui.
-FadeInOut(hWnd, dragg = 0) {
-    static Transparency := 255, TransparencyOff := 255, WaitNextTick := 0, IncrementValue := 25, MlsNextLoop := 05, TransparencyLow := 100
-    
-    if (dragg = 1) {
-        Loop {
-            If (A_TickCount >= WaitNextTick) {
-                WaitNextTick := A_TickCount+MlsNextLoop
-                
-                WinSet, Transparent, % Transparency -= IncrementValue, ahk_id %hWnd%
-                If (Transparency <= TransparencyLow)
-                    break
-            }
-        }
-    } Else if (dragg = 0) {
-        Loop {
-            If (A_TickCount >= WaitNextTick) {
-                WaitNextTick := A_TickCount+MlsNextLoop
-                
-                WinSet, Transparent, % Transparency += IncrementValue, ahk_id %hWnd%
-                If (Transparency >= TransparencyOff) {
-                    WinSet, Transparent, Off, ahk_id %hWnd%
-                    break
-                }
-            }
-        }
-    }
-    return
 }
 
 PotGetCoords(SendKeys, CoPot1, CoPot2 := "" ) {
